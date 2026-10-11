@@ -1092,3 +1092,57 @@ h1 {
     padding: 12px 18px;
   }
 }
+
+/* Manufacturer and package filters */
+.filter-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+  gap: 14px;
+  align-items: end;
+  margin-top: 22px;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.filter-field label {
+  color: #aab8c9;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.filter-field select {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid #2b394b;
+  border-radius: 8px;
+  background: #111a27;
+  color: #e7edf5;
+  font: inherit;
+  outline: none;
+}
+
+.filter-field select:focus {
+  border-color: #55c8f5;
+  box-shadow: 0 0 0 2px rgb(85 200 245 / 12%);
+}
+
+.reset-filters-button {
+  min-height: 42px;
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .filter-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .reset-filters-button {
+    width: 100%;
+  }
+}

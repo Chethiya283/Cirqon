@@ -1,5 +1,4 @@
-
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 
 type ComponentData = {
@@ -31,6 +30,8 @@ type ComponentData = {
   dataStatus: "verified" | "incomplete";
 };
 
+const API_URL = "http://localhost:5000/api/components";
+
 const categories = [
   { name: "All Components", icon: "▦" },
   { name: "Resistors", icon: "⌁" },
@@ -46,16 +47,49 @@ const categories = [
 
 function App() {
   const [components, setComponents] = useState<ComponentData[]>([]);
+  const [filterOptions, setFilterOptions] = useState<ComponentData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] =
     useState("All Components");
+  const [selectedManufacturer, setSelectedManufacturer] = useState("");
+  const [selectedPackage, setSelectedPackage] = useState("");
 
-  // Stores the component whose details are currently open.
   const [selectedComponent, setSelectedComponent] =
     useState<ComponentData | null>(null);
 
+  // Load the full component list once to populate filter options.
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchFilterOptions() {
+      try {
+        const response = await fetch(API_URL);
+
+        if (!response.ok) {
+          throw new Error("Failed to load filter options");
+        }
+
+        const data: ComponentData[] = await response.json();
+
+        if (!cancelled) {
+          setFilterOptions(data);
+        }
+      } catch (err) {
+        console.error("Filter options fetch failed:", err);
+      }
+    }
+
+    fetchFilterOptions();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Fetch components whenever a search or filter changes.
   useEffect(() => {
     let cancelled = false;
 
@@ -74,10 +108,18 @@ function App() {
           params.set("category", selectedCategory);
         }
 
+        if (selectedManufacturer) {
+          params.set("manufacturer", selectedManufacturer);
+        }
+
+        if (selectedPackage) {
+          params.set("package", selectedPackage);
+        }
+
         const queryString = params.toString();
         const url = queryString
-          ? `http://localhost:5000/api/components?${queryString}`
-          : "http://localhost:5000/api/components";
+          ? `${API_URL}?${queryString}`
+          : API_URL;
 
         const response = await fetch(url);
 
@@ -111,9 +153,35 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, [search, selectedCategory]);
+  }, [
+    search,
+    selectedCategory,
+    selectedManufacturer,
+    selectedPackage,
+  ]);
 
-  // Allow the user to close the modal with the Escape key.
+  // Generate unique manufacturer and package options from the database.
+  const manufacturers = useMemo(
+    () =>
+      [...new Set(
+        filterOptions
+          .map((component) => component.manufacturer)
+          .filter(Boolean)
+      )].sort((a, b) => a.localeCompare(b)),
+    [filterOptions]
+  );
+
+  const packages = useMemo(
+    () =>
+      [...new Set(
+        filterOptions
+          .map((component) => component.package?.name)
+          .filter((name): name is string => Boolean(name))
+      )].sort((a, b) => a.localeCompare(b)),
+    [filterOptions]
+  );
+
+  // Close the component details modal with the Escape key.
   useEffect(() => {
     if (!selectedComponent) return;
 
@@ -129,6 +197,13 @@ function App() {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [selectedComponent]);
+
+  function clearFilters() {
+    setSearch("");
+    setSelectedCategory("All Components");
+    setSelectedManufacturer("");
+    setSelectedPackage("");
+  }
 
   return (
     <div className="app-shell">
@@ -254,6 +329,56 @@ function App() {
             <div className="search-hint">
               <span>↳</span> Search by part number or component name
             </div>
+
+            <div className="filter-controls">
+              <div className="filter-field">
+                <label htmlFor="manufacturer-filter">
+                  Manufacturer
+                </label>
+                <select
+                  id="manufacturer-filter"
+                  value={selectedManufacturer}
+                  onChange={(event) =>
+                    setSelectedManufacturer(event.target.value)
+                  }
+                >
+                  <option value="">All manufacturers</option>
+                  {manufacturers.map((manufacturer) => (
+                    <option key={manufacturer} value={manufacturer}>
+                      {manufacturer}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="filter-field">
+                <label htmlFor="package-filter">
+                  Package type
+                </label>
+                <select
+                  id="package-filter"
+                  value={selectedPackage}
+                  onChange={(event) =>
+                    setSelectedPackage(event.target.value)
+                  }
+                >
+                  <option value="">All packages</option>
+                  {packages.map((packageName) => (
+                    <option key={packageName} value={packageName}>
+                      {packageName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <button
+                className="filter-button reset-filters-button"
+                type="button"
+                onClick={clearFilters}
+              >
+                Reset all filters
+              </button>
+            </div>
           </section>
 
           <div className="section-heading">
@@ -282,7 +407,7 @@ function App() {
               <p className="error-message">{error}</p>
             ) : components.length === 0 ? (
               <p className="empty-message">
-                No components found. Try another search or category.
+                No components found. Try changing your search or filters.
               </p>
             ) : (
               components.map((component) => (
@@ -354,7 +479,6 @@ function App() {
         </section>
       </main>
 
-      {/* The modal appears only when a component has been selected. */}
       {selectedComponent && (
         <div
           className="modal-backdrop"
