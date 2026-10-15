@@ -160,26 +160,65 @@ function App() {
     selectedPackage,
   ]);
 
-  // Generate unique manufacturer and package options from the database.
-  const manufacturers = useMemo(
-    () =>
-      [...new Set(
+  // Calculate manufacturer options using the other active filters.
+  const manufacturers = useMemo(() => {
+    return [
+      ...new Set(
         filterOptions
+          .filter((component) => {
+            const matchesSearch =
+              !search.trim() ||
+              component.name.toLowerCase().includes(search.trim().toLowerCase()) ||
+              component.partNumber
+                .toLowerCase()
+                .includes(search.trim().toLowerCase());
+
+            const matchesCategory =
+              selectedCategory === "All Components" ||
+              component.category === selectedCategory;
+
+            const matchesPackage =
+              !selectedPackage ||
+              component.package?.name === selectedPackage;
+
+            return matchesSearch && matchesCategory && matchesPackage;
+          })
           .map((component) => component.manufacturer)
           .filter(Boolean)
-      )].sort((a, b) => a.localeCompare(b)),
-    [filterOptions]
-  );
+      ),
+    ].sort((a, b) => a.localeCompare(b));
+  }, [filterOptions, search, selectedCategory, selectedPackage]);
 
-  const packages = useMemo(
-    () =>
-      [...new Set(
-        filterOptions
-          .map((component) => component.package?.name)
-          .filter((name): name is string => Boolean(name))
-      )].sort((a, b) => a.localeCompare(b)),
-    [filterOptions]
-  );
+// Calculate package options using the other active filters.
+const packages = useMemo(() => {
+  return [
+    ...new Set(
+      filterOptions
+        .filter((component) => {
+          const matchesSearch =
+            !search.trim() ||
+            component.name.toLowerCase().includes(search.trim().toLowerCase()) ||
+            component.partNumber
+              .toLowerCase()
+              .includes(search.trim().toLowerCase());
+
+          const matchesCategory =
+            selectedCategory === "All Components" ||
+            component.category === selectedCategory;
+
+          const matchesManufacturer =
+            !selectedManufacturer ||
+            component.manufacturer === selectedManufacturer;
+
+          return matchesSearch && matchesCategory && matchesManufacturer;
+        })
+        .map((component) => component.package?.name)
+        .filter((name): name is string => Boolean(name))
+    ),
+  ].sort((a, b) => a.localeCompare(b));
+}, [filterOptions, search, selectedCategory, selectedManufacturer]);
+  
+
 
   // Close the component details modal with the Escape key.
   useEffect(() => {
