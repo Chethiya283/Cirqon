@@ -55,6 +55,20 @@ function App() {
   const [error, setError] = useState("");
 
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
+
+  // Debounce text search input by 300ms
+  useEffect(() => {
+    // Clear immediately if search is empty, otherwise wait 300ms
+    const delay = search.trim() ? 300 : 0;
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, delay);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [search]);
   const [selectedCategory, setSelectedCategory] =
     useState("All Components");
   const [selectedManufacturer, setSelectedManufacturer] = useState("");
@@ -103,8 +117,8 @@ function App() {
       try {
         const params = new URLSearchParams();
 
-        if (search.trim()) {
-          params.set("search", search.trim());
+        if (debouncedSearch.trim()) {
+          params.set("search", debouncedSearch.trim());
         }
 
         if (selectedCategory !== "All Components") {
@@ -157,7 +171,7 @@ function App() {
       cancelled = true;
     };
   }, [
-    search,
+    debouncedSearch,
     selectedCategory,
     selectedManufacturer,
     selectedPackage,
