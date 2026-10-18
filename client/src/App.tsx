@@ -30,7 +30,10 @@ type ComponentData = {
   dataStatus: "verified" | "incomplete";
 };
 
-const API_URL = "http://localhost:5000/api/components";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+const API_URL =
+  import.meta.env.VITE_API_URL || `${API_BASE_URL}/components`;
 
 const categories = [
   { name: "All Components", icon: "▦" },
