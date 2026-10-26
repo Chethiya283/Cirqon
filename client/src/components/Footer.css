@@ -1,0 +1,160 @@
+/* ========================================================
+   CIRQON — Footer Styles
+   Uses Design Tokens from tokens.css
+   ======================================================== */
+
+.site-footer {
+  background: var(--cq-surface);
+  border-top: 1px solid var(--cq-border-default);
+  margin-top: auto;
+  width: 100%;
+}
+
+.site-footer-container {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: var(--cq-space-10) var(--cq-space-4) var(--cq-space-8);
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1.2fr 1.2fr;
+  gap: var(--cq-space-8);
+}
+
+.footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cq-space-3);
+}
+
+.footer-brand-header {
+  display: flex;
+  align-items: center;
+  gap: var(--cq-space-2);
+}
+
+.footer-description {
+  font-size: var(--cq-text-sm);
+  color: var(--cq-text-secondary);
+  line-height: var(--cq-leading-normal);
+  margin: 0;
+  max-width: 340px;
+}
+
+.footer-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  background: var(--cq-surface-subtle);
+  border: 1px solid var(--cq-border-subtle);
+  padding: 4px 10px;
+  border-radius: var(--cq-radius-pill);
+  font-size: var(--cq-text-xs);
+  color: var(--cq-text-muted);
+  font-weight: 500;
+}
+
+.status-indicator-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cq-emerald);
+}
+
+.footer-heading {
+  font-family: var(--cq-font-sans);
+  font-size: var(--cq-text-sm);
+  font-weight: 600;
+  color: var(--cq-text-primary);
+  margin: 0;
+  letter-spacing: var(--cq-tracking-normal);
+}
+
+.footer-links-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.footer-link-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--cq-text-secondary);
+  font-size: var(--cq-text-sm);
+  font-weight: 400;
+  cursor: pointer;
+  text-align: left;
+  transition: color var(--cq-transition-fast);
+}
+
+.footer-link-btn:hover {
+  color: var(--cq-emerald);
+  text-decoration: underline;
+}
+
+.footer-ext-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--cq-text-secondary);
+  font-size: var(--cq-text-sm);
+  text-decoration: none;
+  transition: color var(--cq-transition-fast);
+}
+
+.footer-ext-link:hover {
+  color: var(--cq-blue);
+  text-decoration: underline;
+}
+
+.footer-text-item {
+  color: var(--cq-text-muted);
+  font-size: var(--cq-text-sm);
+}
+
+/* Bottom Copyright Bar */
+.footer-bottom-bar {
+  border-top: 1px solid var(--cq-border-subtle);
+  background: var(--cq-surface-subtle);
+}
+
+.footer-bottom-container {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: var(--cq-space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--cq-space-2);
+}
+
+.copyright-text,
+.footer-system-tag {
+  font-size: var(--cq-text-xs);
+  color: var(--cq-text-muted);
+}
+
+/* Responsive Footer Breakdown */
+@media (max-width: 960px) {
+  .site-footer-container {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--cq-space-6);
+  }
+}
+
+@media (max-width: 600px) {
+  .site-footer-container {
+    grid-template-columns: 1fr;
+    gap: var(--cq-space-5);
+  }
+
+  .footer-bottom-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+

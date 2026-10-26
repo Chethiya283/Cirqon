@@ -3,6 +3,8 @@ import "./App.css";
 import "./ComponentImage.css";
 import { ComponentThumbnail } from "./ComponentImage";
 import { getComponentImageInfo } from "./componentImageUtils";
+import { Navbar, type NavView } from "./components/Navbar";
+import { Footer } from "./components/Footer";
 
 type ComponentData = {
   _id: string;
@@ -1124,110 +1126,23 @@ function App() {
 
   return (
     <div className="app-shell">
-      <header className="topbar">
-        <div className="topbar-left">
-          <a
-            className="brand"
-            href="/"
-            onClick={(event) => {
-              event.preventDefault();
-              setActiveView("library");
-            }}
-          >
-            <span className="brand-mark" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="9" />
-                <path d="M12 3v4" />
-                <path d="M12 17v4" />
-                <path d="M3 12h4" />
-                <path d="M17 12h4" />
-                <circle cx="12" cy="12" r="2.5" fill="currentColor" />
-              </svg>
-            </span>
-            <span className="brand-text">
-              <strong>Cirqon</strong>
-              <small>PRECISION ENGINEERING WORKSPACE</small>
-            </span>
-          </a>
-
-          <nav className="top-nav" aria-label="Workspace navigation">
-            <button
-              className={
-                activeView === "library" ? "nav-item active" : "nav-item"
-              }
-              type="button"
-              onClick={() => setActiveView("library")}
-            >
-              <span className="nav-icon">▦</span>
-              <span>Component Library</span>
-            </button>
-
-            <button
-              className={
-                activeView === "compare" ? "nav-item active" : "nav-item"
-              }
-              type="button"
-              onClick={() => setActiveView("compare")}
-            >
-              <span className="nav-icon">⇄</span>
-              <span>Component Compare</span>
-              {selectedForCompare.length > 0 && (
-                <span className="nav-badge">{selectedForCompare.length}</span>
-              )}
-            </button>
-
-            <button
-              className={activeView === "pcb" ? "nav-item active" : "nav-item"}
-              type="button"
-              onClick={() => setActiveView("pcb")}
-            >
-              <span className="nav-icon">⌘</span>
-              <span>PCB Design Assistant</span>
-            </button>
-          </nav>
-        </div>
-
-        <div className="topbar-search">
-          <div className="search-input-wrap">
-            <span className="search-icon">⌕</span>
-            <input
-              id="component-search"
-              type="search"
-              aria-label="Search components by part number or keyword"
-              value={search}
-              onChange={(event) => {
-                setSearch(event.target.value);
-                if (activeView !== "library") {
-                  setActiveView("library");
-                }
-              }}
-              placeholder="Search part number, IC, package, or specs (Press '/' to focus)..."
-            />
-            {search ? (
-              <button
-                className="clear-search-inline"
-                type="button"
-                onClick={() => setSearch("")}
-                aria-label="Clear search"
-              >
-                ×
-              </button>
-            ) : (
-              <kbd className="search-kbd" title="Press '/' anywhere to search">/</kbd>
-            )}
-          </div>
-        </div>
-
-        <div className="topbar-right">
-          <div
-            className={`system-status-indicator ${error ? "offline" : "online"}`}
-            title={error ? "Backend service unreachable" : "Connected to catalog database"}
-          >
-            <span className={`status-dot ${error ? "offline" : "online"}`} />
-            <span className="status-label">{error ? "Database Offline" : "Catalog Ready"}</span>
-          </div>
-        </div>
-      </header>
+      {/* Shared Site Shell Header (Navbar with Search, Navigation & Auth UI) */}
+      <Navbar
+        activeView={activeView}
+        onNavigate={(view: NavView) => {
+          if (view === "home" || view === "library" || view === "compare" || view === "pcb") {
+            setActiveView(view === "home" ? "library" : view);
+          }
+        }}
+        searchQuery={search}
+        onSearchChange={(query) => {
+          setSearch(query);
+          if (activeView !== "library") {
+            setActiveView("library");
+          }
+        }}
+        compareCount={selectedForCompare.length}
+      />
 
       <div className="workspace-body">
         <aside className="sidebar" aria-label="Parametric and category filters">
@@ -2474,15 +2389,16 @@ function App() {
             </section>
           )}
 
-          <footer className="page-footer">
-            <span>
-              CIR<span className="footer-accent">Q</span>ON
-            </span>
-            <span>Built for electronics discovery and PCB design</span>
-          </footer>
           </section>
         </main>
       </div>
+
+      {/* Shared Site Shell Footer */}
+      <Footer
+        onNavigate={(view) => {
+          setActiveView(view === "home" ? "library" : view);
+        }}
+      />
 
       {selectedForCompare.length > 0 && activeView === "library" && (
         <aside className="compare-bar" aria-label="Component comparison dock">
