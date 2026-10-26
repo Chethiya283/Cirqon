@@ -171,6 +171,20 @@
   line-height: var(--cq-leading-normal);
 }
 
+/* Server Error Banner */
+.auth-error-box {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--cq-space-3);
+  padding: var(--cq-space-3) var(--cq-space-4);
+  border: 1px solid var(--cq-error-border);
+  border-radius: var(--cq-radius-sm);
+  background: var(--cq-error-soft);
+  color: var(--cq-error);
+  font-size: var(--cq-text-sm);
+  line-height: var(--cq-leading-normal);
+}
+
 /* Submit Button */
 .auth-submit-btn {
   display: flex;

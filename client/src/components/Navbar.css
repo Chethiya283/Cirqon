@@ -215,6 +215,36 @@
   background: var(--cq-emerald-hover);
 }
 
+.nav-user-identity {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cq-space-2);
+  height: 34px;
+  padding: 0 var(--cq-space-3);
+  border: 1px solid var(--cq-border-subtle);
+  border-radius: var(--cq-radius-sm);
+  background: var(--cq-surface-subtle);
+  color: var(--cq-text-primary);
+  font-size: var(--cq-text-sm);
+  font-weight: 600;
+}
+
+.nav-user-name {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobile-user-identity {
+  display: flex;
+  align-items: center;
+  gap: var(--cq-space-2);
+  padding: var(--cq-space-2) var(--cq-space-1);
+  color: var(--cq-text-secondary);
+  font-size: var(--cq-text-sm);
+}
+
 /* Mobile Toggle */
 .mobile-menu-toggle {
   display: none;

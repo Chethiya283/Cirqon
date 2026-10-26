@@ -1,23 +1,31 @@
-// User registration authentication view with strict client-side validation and password privacy guarantees.
+// User registration view with client validation, API integration, and password privacy safeguards.
 
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { Eye, EyeOff, UserPlus, CheckCircle2 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Eye, EyeOff, UserPlus, AlertCircle } from "lucide-react";
+import { useAuth } from "../auth/AuthContext";
 import "./AuthPage.css";
 
 /**
  * RegisterPage Component
  * 
  * VIVA EXPLANATION:
- * 1. Comprehensive Validation: Checks name presence, email syntax validity, password length (>= 8),
- *    and matching confirm password values directly in browser memory before any action.
- * 2. Privacy & Security: In accordance with university project guidelines, credentials are NEVER stored
- *    in browser storage or sent across API requests.
- * 3. Accessibility: Adheres to WCAG standards with explicit labels (`htmlFor`), input error status (`aria-invalid`),
- *    and linked error descriptions (`aria-describedby`).
- * 4. Milestone Simulation: The submission button displays "Coming soon" representing the milestone UI state.
+ * 1. Client-Side + Server-Side Defense in Depth:
+ *    Inputs are first validated locally to give instant user feedback, followed by
+ *    rigorous backend validation (format, length, duplicate email detection).
+ * 2. API Integration:
+ *    Invokes `register()` from `AuthContext`, which sends `POST /api/auth/register`.
+ * 3. Error Handling:
+ *    Catches API error responses (such as HTTP 409 for duplicate emails) and presents
+ *    clear, accessible inline feedback.
+ * 4. Post-Registration Flow:
+ *    Navigates to `/login` with an informational state message, prompting the engineer
+ *    to authenticate and receive their JWT session.
  */
 export const RegisterPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { register } = useAuth();
+
   // Controlled input states
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -28,7 +36,7 @@ export const RegisterPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Validation error state dictionary
+  // Field validation error state
   const [errors, setErrors] = useState<{
     name?: string;
     email?: string;
@@ -36,12 +44,12 @@ export const RegisterPage: React.FC = () => {
     confirmPassword?: string;
   }>({});
 
-  // Feedback flag shown when client-side validation passes
-  const [validationSuccess, setValidationSuccess] = useState(false);
+  // Server error message received from API
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   /**
    * Run client-side validation against all registration constraints.
-   * Returns true only when every field is compliant.
    */
   const validateForm = (): boolean => {
     const newErrors: {
@@ -83,15 +91,29 @@ export const RegisterPage: React.FC = () => {
   };
 
   /**
-   * Handle registration form submission: validates inputs without persisting data.
+   * Handle form submission: validates inputs and calls backend registration API.
    */
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setValidationSuccess(false);
+    setServerError(null);
 
-    if (validateForm()) {
-      // VIVA NOTE: User credentials are intentionally NOT transmitted or stored.
-      setValidationSuccess(true);
+    if (!validateForm()) return;
+
+    try {
+      setIsSubmitting(true);
+      await register(name.trim(), email.trim(), password);
+      // Navigate to /login with a success notification banner
+      navigate("/login", {
+        state: {
+          successNote: "Registration successful! You can now log in with your credentials.",
+        },
+      });
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : "Registration failed. Please try again.";
+      setServerError(msg);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -109,14 +131,12 @@ export const RegisterPage: React.FC = () => {
           </p>
         </header>
 
-        {validationSuccess && (
-          <div className="auth-notice-box" role="status">
-            <CheckCircle2 size={18} aria-hidden="true" />
+        {serverError && (
+          <div className="auth-error-box" role="alert">
+            <AlertCircle size={18} aria-hidden="true" />
             <div>
-              <strong>Registration Form Validated.</strong>
-              <p style={{ margin: "2px 0 0" }}>
-                Backend user persistence is scheduled for the next milestone. Credentials are not stored.
-              </p>
+              <strong>Registration Failed</strong>
+              <p style={{ margin: "2px 0 0" }}>{serverError}</p>
             </div>
           </div>
         )}
@@ -141,6 +161,7 @@ export const RegisterPage: React.FC = () => {
                 aria-invalid={Boolean(errors.name)}
                 aria-describedby={errors.name ? "register-name-error" : undefined}
                 autoComplete="name"
+                disabled={isSubmitting}
               />
             </div>
             {errors.name && (
@@ -169,6 +190,7 @@ export const RegisterPage: React.FC = () => {
                 aria-invalid={Boolean(errors.email)}
                 aria-describedby={errors.email ? "register-email-error" : undefined}
                 autoComplete="email"
+                disabled={isSubmitting}
               />
             </div>
             {errors.email && (
@@ -197,6 +219,7 @@ export const RegisterPage: React.FC = () => {
                 aria-invalid={Boolean(errors.password)}
                 aria-describedby={errors.password ? "register-password-error" : undefined}
                 autoComplete="new-password"
+                disabled={isSubmitting}
               />
               <button
                 type="button"
@@ -204,6 +227,7 @@ export const RegisterPage: React.FC = () => {
                 onClick={() => setShowPassword((prev) => !prev)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
                 title={showPassword ? "Hide password" : "Show password"}
+                disabled={isSubmitting}
               >
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
@@ -239,6 +263,7 @@ export const RegisterPage: React.FC = () => {
                 aria-invalid={Boolean(errors.confirmPassword)}
                 aria-describedby={errors.confirmPassword ? "register-confirm-error" : undefined}
                 autoComplete="new-password"
+                disabled={isSubmitting}
               />
               <button
                 type="button"
@@ -246,6 +271,7 @@ export const RegisterPage: React.FC = () => {
                 onClick={() => setShowConfirmPassword((prev) => !prev)}
                 aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
                 title={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                disabled={isSubmitting}
               >
                 {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
@@ -258,8 +284,8 @@ export const RegisterPage: React.FC = () => {
           </div>
 
           {/* Submit Action */}
-          <button type="submit" className="auth-submit-btn">
-            Coming soon
+          <button type="submit" className="auth-submit-btn" disabled={isSubmitting}>
+            {isSubmitting ? "Creating account..." : "Create account"}
           </button>
         </form>
 
@@ -273,4 +299,3 @@ export const RegisterPage: React.FC = () => {
     </div>
   );
 };
-

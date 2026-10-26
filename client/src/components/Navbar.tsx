@@ -9,7 +9,10 @@ import {
   Cpu,
   LogIn,
   UserPlus,
+  User,
+  LogOut,
 } from "lucide-react";
+import { useAuth } from "../auth/AuthContext";
 import "./Navbar.css";
 
 interface NavbarProps {
@@ -38,6 +41,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   compareCount = 0,
 }) => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   // Local state controlling the mobile slide-down menu drawer
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -127,25 +131,45 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
 
-        {/* Authentication Navigation Links */}
+        {/* Authentication Navigation Controls */}
         <div className="header-auth-group">
-          <Link
-            to="/login"
-            className="btn-auth-text"
-            title="Log in to Cirqon"
-          >
-            <LogIn size={15} aria-hidden="true" />
-            <span>Log in</span>
-          </Link>
+          {user ? (
+            <>
+              <div className="nav-user-identity" title={`Signed in as ${user.email}`}>
+                <User size={15} aria-hidden="true" />
+                <span className="nav-user-name">{user.name}</span>
+              </div>
+              <button
+                type="button"
+                className="btn-auth-text"
+                onClick={logout}
+                title="Log out of Cirqon"
+              >
+                <LogOut size={15} aria-hidden="true" />
+                <span>Log out</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="btn-auth-text"
+                title="Log in to Cirqon"
+              >
+                <LogIn size={15} aria-hidden="true" />
+                <span>Log in</span>
+              </Link>
 
-          <Link
-            to="/register"
-            className="btn-auth-primary"
-            title="Create an account"
-          >
-            <UserPlus size={15} aria-hidden="true" />
-            <span>Sign up</span>
-          </Link>
+              <Link
+                to="/register"
+                className="btn-auth-primary"
+                title="Create an account"
+              >
+                <UserPlus size={15} aria-hidden="true" />
+                <span>Sign up</span>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile Hamburger Toggle Button */}
@@ -209,23 +233,45 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           <div className="mobile-auth-group">
-            <Link
-              to="/login"
-              className="btn-auth-text mobile-auth-btn"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              <LogIn size={16} aria-hidden="true" />
-              <span>Log in</span>
-            </Link>
+            {user ? (
+              <>
+                <div className="mobile-user-identity">
+                  <User size={16} aria-hidden="true" />
+                  <span>Signed in as <strong>{user.name}</strong></span>
+                </div>
+                <button
+                  type="button"
+                  className="btn-auth-text mobile-auth-btn"
+                  onClick={() => {
+                    logout();
+                    setIsMobileMenuOpen(false);
+                  }}
+                >
+                  <LogOut size={16} aria-hidden="true" />
+                  <span>Log out</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="btn-auth-text mobile-auth-btn"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <LogIn size={16} aria-hidden="true" />
+                  <span>Log in</span>
+                </Link>
 
-            <Link
-              to="/register"
-              className="btn-auth-primary mobile-auth-btn"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              <UserPlus size={16} aria-hidden="true" />
-              <span>Sign up</span>
-            </Link>
+                <Link
+                  to="/register"
+                  className="btn-auth-primary mobile-auth-btn"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <UserPlus size={16} aria-hidden="true" />
+                  <span>Sign up</span>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}
