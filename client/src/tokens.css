@@ -1,0 +1,141 @@
+/**
+ * Cirqon Design Tokens System
+ * 
+ * Defines all global CSS variables for colors, typography, surfaces,
+ * radii, shadows, and spacing. Follows a warm-neutral light engineering theme:
+ * - Page background: Warm-neutral off-white (#F9F8F6)
+ * - Surfaces: Crisp white cards and modals (#FFFFFF)
+ * - Text: High-contrast deep navy (#0F172A)
+ * - Primary accent: Emerald (#059669)
+ * - Secondary technical accent: Muted blue (#2563EB) for pinouts and specs
+ * - Monospace strictly for MPNs and numeric values
+ * - Radii consistently 8px to 12px
+ */
+
+:root {
+  /* ========================================================
+     1. Surface & Background Colors
+     ======================================================== */
+  --cq-bg: #f9f8f6;                  /* Warm-neutral off-white page background */
+  --cq-bg-alt: #f4f2ee;              /* Slightly deeper warm neutral for alternate sections */
+  --cq-surface: #ffffff;             /* Primary white card / table surface */
+  --cq-surface-subtle: #f7f6f2;      /* Quiet secondary surface for chips, tags & headers */
+  --cq-surface-hover: #f1efea;       /* Hover state for interactive rows and secondary buttons */
+  --cq-surface-active: #e9e6df;      /* Active / pressed state */
+  --cq-surface-elevated: #ffffff;    /* Elevated surfaces like modals and dropdown menus */
+
+  /* ========================================================
+     2. Hairline Borders (1px subtle precision)
+     ======================================================== */
+  --cq-border-subtle: #eceae4;       /* Quiet dividers and nested spec rows */
+  --cq-border-default: #dfdbd2;      /* Standard card and table borders */
+  --cq-border-strong: #c8c3b8;       /* Input borders and active boundaries */
+  --cq-border-focus: #059669;        /* Focus border matching emerald accent */
+
+  /* ========================================================
+     3. Typography Colors
+     ======================================================== */
+  --cq-text-primary: #0f172a;        /* Deep navy for headings and primary titles */
+  --cq-text-secondary: #475569;      /* Slate for descriptions and table data */
+  --cq-text-muted: #64748b;          /* Metadata, units, timestamps, subtle labels */
+  --cq-text-disabled: #94a3b8;       /* Inactive controls and disabled buttons */
+  --cq-text-inverse: #ffffff;        /* White text for filled emerald buttons */
+
+  /* ========================================================
+     4. Engineering Brand & Functional Accents
+     ======================================================== */
+  /* Emerald: Single Primary Brand Accent */
+  --cq-emerald: #059669;             /* Primary actions, active navigation, key highlights */
+  --cq-emerald-hover: #047857;       /* Darker emerald on hover */
+  --cq-emerald-soft: #ecfdf5;        /* Subtle green tint for active filters */
+  --cq-emerald-border: #a7f3d0;      /* Border for active filter chips */
+
+  /* Technical Blue: Restricted to engineering specs, pinouts, and links */
+  --cq-blue: #2563EB;                /* Monospace technical values, datasheet links */
+  --cq-blue-hover: #1d4ed8;          /* Technical link hover */
+  --cq-blue-soft: #eff6ff;           /* Subtle blue tint */
+  --cq-blue-border: #bfdbfe;
+
+  /* Status Colors */
+  --cq-error: #dc2626;               /* Form validation errors */
+  --cq-error-soft: #fef2f2;
+  --cq-error-border: #fecaca;
+  --cq-warning: #d97706;             /* Warnings / divergent matrix rows */
+  --cq-warning-soft: #fffbeb;
+  --cq-warning-border: #fde68a;
+
+  /* Backward Compatibility Aliases for Existing App Components */
+  --cq-accent: var(--cq-emerald);
+  --cq-accent-hover: var(--cq-emerald-hover);
+  --cq-accent-soft: var(--cq-emerald-soft);
+  --cq-accent-border: var(--cq-emerald-border);
+  --cq-surface-1: var(--cq-surface);
+  --cq-surface-2: var(--cq-surface-subtle);
+  --cq-signal-blue: var(--cq-blue);
+  --cq-signal-blue-soft: var(--cq-blue-soft);
+  --cq-signal-blue-border: var(--cq-blue-border);
+
+  /* ========================================================
+     5. Typography System
+     ======================================================== */
+  --cq-font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --cq-font-heading: "Inter", var(--cq-font-sans);
+  --cq-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Font Sizes */
+  --cq-text-xs: 11px;
+  --cq-text-sm: 13px;
+  --cq-text-base: 14px;
+  --cq-text-md: 15px;
+  --cq-text-lg: 18px;
+  --cq-text-xl: 22px;
+  --cq-text-2xl: 28px;
+  --cq-text-3xl: 36px;
+
+  /* Line Heights */
+  --cq-leading-tight: 1.2;
+  --cq-leading-snug: 1.35;
+  --cq-leading-normal: 1.5;
+
+  /* Letter Spacing */
+  --cq-tracking-tight: -0.02em;
+  --cq-tracking-tighter: -0.03em;
+  --cq-tracking-normal: 0;
+
+  /* ========================================================
+     6. Consistent Radii Scale (Strict 8px - 12px)
+     ======================================================== */
+  --cq-radius-sm: 8px;               /* Inputs, buttons, tags, chips */
+  --cq-radius-md: 10px;              /* Cards, dropdowns, table wrappers */
+  --cq-radius-lg: 12px;              /* Modals, slide-over panels, hero stages */
+  --cq-radius-pill: 9999px;          /* Badges and rounded search pill */
+
+  /* ========================================================
+     7. Elevation Shadows (Soft & Restrained)
+     ======================================================== */
+  --cq-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --cq-shadow-md: 0 3px 8px -1px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.03);
+  --cq-shadow-lg: 0 10px 24px -3px rgba(15, 23, 42, 0.07), 0 4px 6px -2px rgba(15, 23, 42, 0.03);
+  --cq-shadow-modal: 0 20px 40px -6px rgba(15, 23, 42, 0.12), 0 8px 16px -4px rgba(15, 23, 42, 0.06);
+
+  /* ========================================================
+     8. Spacing Scale
+     ======================================================== */
+  --cq-space-1: 4px;
+  --cq-space-2: 8px;
+  --cq-space-3: 12px;
+  --cq-space-4: 16px;
+  --cq-space-5: 20px;
+  --cq-space-6: 24px;
+  --cq-space-8: 32px;
+  --cq-space-10: 40px;
+  --cq-space-12: 48px;
+  --cq-space-16: 64px;
+
+  /* ========================================================
+     9. Transitions
+     ======================================================== */
+  --cq-transition-fast: 120ms ease;
+  --cq-transition-base: 180ms ease;
+}
+

@@ -1,20 +1,156 @@
+/* ========================================================
+   CIRQON — Global Styles & Accessible Resets
+   Imports Design Tokens from tokens.css
+   ======================================================== */
 
-:root {
-  color-scheme: dark;
+@import "./tokens.css";
+
+/* Box sizing rules for all elements */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 html {
   min-width: 320px;
   min-height: 100%;
-  background: #0b1018;
+  background: var(--cq-bg);
+  color-scheme: light;
 }
 
 body {
-  margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  background: var(--cq-bg);
+  color: var(--cq-text-primary);
+  font-family: var(--cq-font-sans);
+  font-size: var(--cq-text-base);
+  line-height: var(--cq-leading-normal);
+  font-variant-numeric: tabular-nums;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
-#root {
-  min-height: 100vh;
+/* Headings: Tight letter spacing, clear hierarchy */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--cq-text-primary);
+  font-family: var(--cq-font-heading);
+  letter-spacing: var(--cq-tracking-tight);
+  margin-top: 0;
+}
+
+h1 {
+  font-size: var(--cq-text-3xl);
+  line-height: var(--cq-leading-tight);
+  font-weight: 700;
+}
+
+h2 {
+  font-size: var(--cq-text-2xl);
+  line-height: var(--cq-leading-tight);
+  font-weight: 600;
+}
+
+h3 {
+  font-size: var(--cq-text-lg);
+  line-height: var(--cq-leading-snug);
+  font-weight: 600;
+}
+
+/* Sentence-case default for labels and UI elements (no forced uppercase tracking) */
+label,
+button,
+nav,
+select,
+option {
+  font-family: var(--cq-font-sans);
+  font-size: var(--cq-text-sm);
+  text-transform: none;
+  letter-spacing: var(--cq-tracking-normal);
+}
+
+/* Monospace restricted specifically to part numbers and numeric technical specs */
+code,
+pre,
+kbd,
+samp,
+.font-mono,
+.part-number,
+.spec-numeric-val {
+  font-family: var(--cq-font-mono);
+  font-size: 0.92em;
+  letter-spacing: -0.01em;
+}
+
+/* Accessible interactive elements */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+input,
+select,
+textarea {
+  color: var(--cq-text-primary);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--cq-text-muted);
+}
+
+a {
+  color: var(--cq-blue);
+  text-decoration: none;
+  transition: color var(--cq-transition-fast);
+}
+
+a:hover {
+  color: var(--cq-blue-hover);
+  text-decoration: underline;
+}
+
+/* High-contrast text selection */
+::selection {
+  color: #ffffff;
+  background: var(--cq-emerald);
+}
+
+/* Accessible focus ring (WCAG AA compliant) */
+:focus-visible {
+  outline: 2px solid var(--cq-emerald);
+  outline-offset: 2px;
+}
+
+/* Accessible scrollbars with warm neutral track */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--cq-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--cq-border-strong);
+  border-radius: var(--cq-radius-pill);
+  border: 2px solid var(--cq-bg);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cq-text-muted);
 }

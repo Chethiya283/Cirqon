@@ -1,0 +1,191 @@
+/* ========================================================
+   CIRQON — Component Product Image Styles
+   Precision White System
+   ======================================================== */
+
+.component-thumb-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+/* Sizing Variants */
+.component-thumb-container.size-sm {
+  width: 40px;
+  height: 40px;
+}
+
+.component-thumb-container.size-md {
+  width: 56px;
+  height: 56px;
+}
+
+.component-thumb-container.size-lg {
+  width: 130px;
+  height: 130px;
+}
+
+/* Base Thumbnail Box */
+.component-thumb-box {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+  border: 1px solid var(--cq-border-default);
+  border-radius: var(--cq-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(23, 43, 77, 0.04);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.component-thumb-container:hover .component-thumb-box {
+  border-color: var(--cq-accent-border);
+  box-shadow: 0 2px 6px rgba(20, 125, 100, 0.1);
+}
+
+/* Image Contained Scaling */
+.thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 3px;
+  display: block;
+  transition: opacity 160ms ease;
+}
+
+.thumb-img.loading {
+  opacity: 0;
+}
+
+.thumb-img.loaded {
+  opacity: 1;
+}
+
+/* Loading Shimmer Placeholder */
+.thumb-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    #f8fafc 0%,
+    #edf2f7 50%,
+    #f8fafc 100%
+  );
+  background-size: 200% 100%;
+  animation: thumb-shimmer 1.4s infinite;
+}
+
+@keyframes thumb-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Vector Illustration Wrap */
+.thumb-vector-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 2px;
+  background: #f8fafc;
+}
+
+.package-svg {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+}
+
+/* Provenance Indicator Badge */
+.provenance-badge {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  padding: 1px 4px;
+  border-radius: 2px;
+  font-family: var(--cq-font-mono);
+  font-size: 7.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  border: 1px solid transparent;
+  pointer-events: none;
+}
+
+.provenance-badge.verified {
+  background: var(--cq-accent-soft);
+  color: var(--cq-accent);
+  border-color: var(--cq-accent-border);
+}
+
+.provenance-badge.spec {
+  background: var(--cq-signal-blue-soft);
+  color: var(--cq-signal-blue);
+  border-color: var(--cq-signal-blue-border);
+}
+
+/* Modal Hero Layout Integration */
+.modal-product-identity {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding: 14px;
+  background: var(--cq-surface-2);
+  border: 1px solid var(--cq-border-default);
+  border-radius: var(--cq-radius-sm);
+}
+
+.modal-product-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modal-photo-provenance-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--cq-text-muted);
+}
+
+.photo-indicator-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-family: var(--cq-font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.photo-indicator-tag.verified {
+  background: var(--cq-accent-soft);
+  color: var(--cq-accent);
+  border: 1px solid var(--cq-accent-border);
+}
+
+.photo-indicator-tag.spec {
+  background: var(--cq-signal-blue-soft);
+  color: var(--cq-signal-blue);
+  border: 1px solid var(--cq-signal-blue-border);
+}
+

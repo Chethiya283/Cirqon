@@ -66,6 +66,25 @@ const componentSchema = new mongoose.Schema(
         trim: true,
       },
 
+      mountingType: {
+        type: String,
+        enum: ["Through-Hole", "Surface-Mount"],
+      },
+
+      bodyDimensions: {
+        lengthMm: Number,
+        widthMm: Number,
+        heightMm: Number,
+        seatedHeightMm: Number,
+      },
+
+      pcbLayout: {
+        leadPitchMm: Number,
+        rowSpacingMm: Number,
+        drillDiameterMm: Number,
+        padDiameterMm: Number,
+      },
+
       footprintDimensions: {
         lengthMm: Number,
         widthMm: Number,
