@@ -134,7 +134,8 @@
 }
 
 .copyright-text,
-.footer-system-tag {
+.footer-system-tag,
+.footer-photo-credit {
   font-size: var(--cq-text-xs);
   color: var(--cq-text-muted);
 }

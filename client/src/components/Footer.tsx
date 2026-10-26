@@ -128,6 +128,9 @@ export const Footer: React.FC = () => {
           <span className="copyright-text">
             © 2026 Cirqon. Built for academic viva demonstration.
           </span>
+          <span className="footer-photo-credit">
+            Hero photo by [PHOTOGRAPHER] on [Unsplash/Pexels]
+          </span>
           <span className="footer-system-tag">
             Precision Light Theme · High Contrast WCAG AA
           </span>
