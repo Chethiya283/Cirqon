@@ -14,6 +14,7 @@ if (!process.env.JWT_SECRET) {
 
 const componentRoutes = require("./routes/componentRoutes");
 const authRoutes = require("./routes/authRoutes");
+const savedPartRoutes = require("./routes/savedPartRoutes");
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use(cors());
 app.use(express.json());
 app.use("/api/components", componentRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/saved-parts", savedPartRoutes);
 
 // Test route
 app.get("/", (req, res) => {
