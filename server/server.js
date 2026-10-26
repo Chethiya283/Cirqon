@@ -7,6 +7,7 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 
 const componentRoutes = require("./routes/componentRoutes");
+const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 
@@ -16,6 +17,7 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 app.use("/api/components", componentRoutes);
+app.use("/api/auth", authRoutes);
 
 // Test route
 app.get("/", (req, res) => {

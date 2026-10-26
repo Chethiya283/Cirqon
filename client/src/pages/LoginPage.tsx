@@ -9,8 +9,9 @@ import "./AuthPage.css";
  * LoginPage Component
  * 
  * VIVA EXPLANATION:
- * 1. Client-Side Validation: Validates email format and password length requirements
- *    immediately upon submission without transmitting data to any server.
+ * 1. Client-Side Validation: Validates email syntax and ensures required fields are filled.
+ *    (Password minimum length enforcement is intentionally kept on registration only,
+ *    avoiding credential leakage during authentication attempts).
  * 2. Privacy & Security: Under academic viva constraints, passwords are NEVER stored
  *    in local storage, session storage, or sent over network sockets.
  * 3. Accessibility: Form fields use explicit label associations (`htmlFor`), `aria-invalid`,
@@ -47,11 +48,9 @@ export const LoginPage: React.FC = () => {
       newErrors.email = "Please enter a valid email address (e.g., engineer@cirqon.org).";
     }
 
-    // 2. Password validation
+    // 2. Password validation (required only on login; length policy is enforced on registration)
     if (!password) {
       newErrors.password = "Password is required.";
-    } else if (password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters.";
     }
 
     setErrors(newErrors);
@@ -136,7 +135,7 @@ export const LoginPage: React.FC = () => {
                 id="login-password"
                 type={showPassword ? "text" : "password"}
                 className={`form-input form-input-has-toggle ${errors.password ? "input-error" : ""}`}
-                placeholder="Enter password (min. 8 characters)"
+                placeholder="Enter your password"
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
