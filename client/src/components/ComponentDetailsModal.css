@@ -1,0 +1,312 @@
+/* Component Details Modal Styling */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(23, 43, 77, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.component-modal {
+  display: flex;
+  flex-direction: column;
+  width: min(760px, 100%);
+  max-height: 88vh;
+  overflow: hidden;
+  border: 1px solid var(--cq-border-strong);
+  border-radius: var(--cq-radius-lg);
+  background: var(--cq-surface-1);
+  box-shadow: var(--cq-shadow-modal);
+  animation: modal-appear 120ms ease-out;
+}
+
+@keyframes modal-appear {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--cq-border-default);
+  background: var(--cq-surface-2);
+}
+
+.modal-header h2 {
+  margin: 2px 0 0;
+  color: var(--cq-text-primary);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+.modal-part-number {
+  margin: 3px 0 0;
+  color: var(--cq-accent);
+  font-family: var(--cq-font-mono);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.modal-close {
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--cq-border-default);
+  border-radius: var(--cq-radius-sm);
+  background: #ffffff;
+  color: var(--cq-text-secondary);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.modal-close:hover {
+  color: var(--cq-text-primary);
+  border-color: var(--cq-border-strong);
+  background: var(--cq-surface-hover);
+}
+
+.modal-content {
+  padding: 18px 20px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.modal-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.modal-category {
+  padding: 2px 8px;
+  border: 1px solid var(--cq-border-default);
+  border-radius: var(--cq-radius-sm);
+  background: var(--cq-surface-2);
+  color: var(--cq-text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.modal-section {
+  margin-top: 18px;
+}
+
+.modal-section:first-of-type {
+  margin-top: 0;
+}
+
+.modal-section h3 {
+  margin: 0 0 8px;
+  color: var(--cq-text-primary);
+  font-family: var(--cq-font-heading);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.modal-section > p {
+  margin: 0;
+  color: var(--cq-text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.modal-info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.modal-info-grid > div {
+  padding: 8px 10px;
+  border: 1px solid var(--cq-border-subtle);
+  border-radius: var(--cq-radius-sm);
+  background: var(--cq-surface-2);
+}
+
+.modal-info-grid span {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--cq-text-muted);
+  font-size: 9.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.modal-info-grid strong {
+  display: block;
+  color: var(--cq-text-primary);
+  font-family: var(--cq-font-mono);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+/* Modal CAD Footprint Preview Layout */
+.modal-footprint-grid {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.modal-footprint-preview {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 10px;
+  background: var(--cq-surface-2);
+  border: 1px solid var(--cq-border-default);
+  border-radius: var(--cq-radius-sm);
+  min-height: 130px;
+}
+
+.specification-list {
+  border: 1px solid var(--cq-border-default);
+  border-radius: var(--cq-radius-sm);
+  overflow: hidden;
+}
+
+.specification-row {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.85fr) minmax(0, 1.15fr);
+  gap: 12px;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--cq-border-subtle);
+  font-size: 11.5px;
+}
+
+.specification-row:last-child {
+  border-bottom: 0;
+}
+
+.specification-row:nth-child(odd) {
+  background: var(--cq-surface-2);
+}
+
+.specification-row > span {
+  color: var(--cq-text-secondary);
+}
+
+.specification-row > strong {
+  color: var(--cq-text-primary);
+  font-family: var(--cq-font-mono);
+  font-weight: 600;
+}
+
+.modal-muted {
+  color: var(--cq-text-muted);
+  font-size: 11.5px;
+}
+
+.pin-count-badge {
+  margin-left: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cq-accent);
+  font-family: var(--cq-font-mono);
+}
+
+.pin-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--cq-border-default);
+  border-radius: var(--cq-radius-sm);
+}
+
+.pin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 11.5px;
+}
+
+.pin-table th {
+  padding: 8px 12px;
+  background: var(--cq-surface-2);
+  border-bottom: 1px solid var(--cq-border-default);
+  color: var(--cq-text-secondary);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.pin-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--cq-border-subtle);
+  color: var(--cq-text-primary);
+}
+
+.pin-table tbody tr:nth-child(even) {
+  background: var(--cq-surface-2);
+}
+
+.pin-table td:first-child {
+  font-family: var(--cq-font-mono);
+  font-weight: 600;
+}
+
+.modal-links {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.modal-links a {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border: 1px solid var(--cq-accent-border);
+  border-radius: var(--cq-radius-sm);
+  background: var(--cq-accent-soft);
+  color: var(--cq-accent);
+  font-size: 11.5px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 120ms ease;
+}
+
+.modal-links a:hover {
+  background: #d5ede3;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 20px;
+  border-top: 1px solid var(--cq-border-default);
+  background: var(--cq-surface-2);
+}
+
+@media (max-width: 900px) {
+  .modal-info-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .modal-footprint-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
