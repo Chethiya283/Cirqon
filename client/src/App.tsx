@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, Routes, Route, Navigate } from "react-router-dom";
+import { Bookmark } from "lucide-react";
 import "./App.css";
 import "./ComponentImage.css";
 import { ComponentThumbnail } from "./ComponentImage";
@@ -10,6 +11,10 @@ import { CompareTray } from "./components/CompareTray";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
+import { MyPartsPage } from "./pages/MyPartsPage";
+import { useAuth } from "./auth/AuthContext";
+import { useSavedParts } from "./auth/SavedPartsContext";
+import { ProtectedRoute } from "./auth/ProtectedRoute";
 import type { ComponentData, SortField } from "./types";
 import {
   isValidHttpUrl,
@@ -104,11 +109,28 @@ function App() {
   // Instead, `activeView` is derived directly from React Router's `location.pathname`.
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { isSaved, toggleSave } = useSavedParts();
 
   const isHomeView = location.pathname === "/";
   const isAuthView = location.pathname === "/login" || location.pathname === "/register";
+  const isMyPartsView = location.pathname === "/my-parts";
   const isLibraryView = location.pathname === "/library";
-  const showSidebar = !isHomeView && !isAuthView;
+  const showSidebar = !isHomeView && !isAuthView && !isMyPartsView;
+
+  /**
+   * Handle bookmark save click.
+   * If logged out, directs engineer to /login.
+   * If logged in, toggles bookmark status.
+   */
+  const handleToggleSave = (e: React.MouseEvent, component: ComponentData) => {
+    e.stopPropagation();
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    toggleSave(component);
+  };
 
   const [catalogLayout, setCatalogLayout] = useState<"grid" | "table">("grid");
   const [selectedForCompare, setSelectedForCompare] = useState<ComponentData[]>(
@@ -749,9 +771,41 @@ function App() {
                                   <span className="card-compare-text">Compare</span>
                                 </label>
 
-                                <span className="card-cat-badge">
-                                  {component.category}
-                                </span>
+                                <div className="card-top-actions">
+                                  <button
+                                    type="button"
+                                    className={`card-bookmark-btn ${
+                                      isSaved(component._id) ? "saved" : ""
+                                    }`}
+                                    onClick={(e) =>
+                                      handleToggleSave(e, component)
+                                    }
+                                    aria-label={
+                                      isSaved(component._id)
+                                        ? `Remove ${component.partNumber} from saved parts`
+                                        : `Save ${component.partNumber} to workspace`
+                                    }
+                                    title={
+                                      isSaved(component._id)
+                                        ? "Saved in workspace (click to remove)"
+                                        : "Save component to workspace"
+                                    }
+                                  >
+                                    <Bookmark
+                                      size={15}
+                                      fill={
+                                        isSaved(component._id)
+                                          ? "currentColor"
+                                          : "none"
+                                      }
+                                      aria-hidden="true"
+                                    />
+                                  </button>
+
+                                  <span className="card-cat-badge">
+                                    {component.category}
+                                  </span>
+                                </div>
                               </div>
 
                               <div
@@ -1169,14 +1223,48 @@ function App() {
                                   className="td-actions"
                                   onClick={(e) => e.stopPropagation()}
                                 >
-                                  <button
-                                    className="table-action-btn"
-                                    type="button"
-                                    onClick={() => setSelectedComponent(component)}
-                                    title="View component technical details and pinout"
-                                  >
-                                    Details <span>→</span>
-                                  </button>
+                                  <div className="table-actions-group">
+                                    <button
+                                      type="button"
+                                      className={`table-bookmark-btn ${
+                                        isSaved(component._id) ? "saved" : ""
+                                      }`}
+                                      onClick={(e) =>
+                                        handleToggleSave(e, component)
+                                      }
+                                      aria-label={
+                                        isSaved(component._id)
+                                          ? `Remove ${component.partNumber} from saved parts`
+                                          : `Save ${component.partNumber} to workspace`
+                                      }
+                                      title={
+                                        isSaved(component._id)
+                                          ? "Saved in workspace (click to remove)"
+                                          : "Save component to workspace"
+                                      }
+                                    >
+                                      <Bookmark
+                                        size={14}
+                                        fill={
+                                          isSaved(component._id)
+                                            ? "currentColor"
+                                            : "none"
+                                        }
+                                        aria-hidden="true"
+                                      />
+                                    </button>
+
+                                    <button
+                                      className="table-action-btn"
+                                      type="button"
+                                      onClick={() =>
+                                        setSelectedComponent(component)
+                                      }
+                                      title="View component technical details and pinout"
+                                    >
+                                      Details <span>→</span>
+                                    </button>
+                                  </div>
                                 </td>
                               </tr>
                             );
@@ -1680,6 +1768,18 @@ function App() {
                 </div>
               )}
             </section>
+                }
+              />
+
+              {/* Route 5: Authenticated Engineer Saved Parts Workspace */}
+              <Route
+                path="/my-parts"
+                element={
+                  <ProtectedRoute>
+                    <MyPartsPage
+                      onSelectComponent={setSelectedComponent}
+                    />
+                  </ProtectedRoute>
                 }
               />
 

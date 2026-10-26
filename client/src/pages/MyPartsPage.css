@@ -1,0 +1,144 @@
+/* My Saved Parts Page Styling — Pure Design Tokens Only */
+
+.my-parts-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.my-parts-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--cq-border-default);
+  flex-wrap: wrap;
+}
+
+.my-parts-title-group h1 {
+  margin: 4px 0 6px;
+  font-size: var(--cq-text-2xl);
+  font-weight: 700;
+  color: var(--cq-text-primary);
+  letter-spacing: -0.4px;
+}
+
+.my-parts-subtitle {
+  margin: 0;
+  font-size: var(--cq-text-sm);
+  color: var(--cq-text-secondary);
+  max-width: 680px;
+  line-height: var(--cq-leading-normal);
+}
+
+.my-parts-actions-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  align-self: flex-end;
+}
+
+.my-parts-browse-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  font-size: var(--cq-text-sm);
+  font-weight: 500;
+  color: var(--cq-text-secondary);
+  background: var(--cq-surface);
+  border: 1px solid var(--cq-border-default);
+  border-radius: var(--cq-radius-md);
+  text-decoration: none;
+  transition: all 120ms ease;
+}
+
+.my-parts-browse-btn:hover {
+  color: var(--cq-emerald);
+  border-color: var(--cq-emerald-border);
+  background: var(--cq-surface-hover);
+}
+
+/* Empty State Container */
+.my-parts-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 64px 24px;
+  border: 1px dashed var(--cq-border-default);
+  border-radius: var(--cq-radius-lg);
+  background: var(--cq-surface);
+  margin: 16px 0;
+}
+
+.my-parts-empty-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--cq-radius-full);
+  background: var(--cq-emerald-soft);
+  color: var(--cq-emerald);
+  margin-bottom: 18px;
+  border: 1px solid var(--cq-emerald-border);
+}
+
+.my-parts-empty-state h2 {
+  margin: 0 0 8px;
+  font-size: var(--cq-text-lg);
+  font-weight: 600;
+  color: var(--cq-text-primary);
+}
+
+.my-parts-empty-state p {
+  margin: 0 0 24px;
+  font-size: var(--cq-text-sm);
+  color: var(--cq-text-secondary);
+  max-width: 480px;
+  line-height: var(--cq-leading-normal);
+}
+
+.my-parts-empty-cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 20px;
+  font-size: var(--cq-text-sm);
+  font-weight: 600;
+  color: var(--cq-text-inverse);
+  background: var(--cq-emerald);
+  border-radius: var(--cq-radius-md);
+  text-decoration: none;
+  transition: background-color 120ms ease;
+  box-shadow: var(--cq-shadow-sm);
+}
+
+.my-parts-empty-cta:hover {
+  background: var(--cq-emerald-hover);
+}
+
+/* Card Remove Button in My Parts Grid */
+.my-parts-card-remove-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  font-size: var(--cq-text-xs);
+  font-weight: 500;
+  color: var(--cq-text-muted);
+  background: var(--cq-surface);
+  border: 1px solid var(--cq-border-default);
+  border-radius: var(--cq-radius-sm);
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.my-parts-card-remove-btn:hover {
+  color: var(--cq-error);
+  border-color: var(--cq-error-border);
+  background: var(--cq-error-soft);
+}
+

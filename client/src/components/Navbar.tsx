@@ -7,6 +7,7 @@ import {
   Layers,
   GitCompare,
   Cpu,
+  Bookmark,
   LogIn,
   UserPlus,
   User,
@@ -104,6 +105,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Cpu size={16} aria-hidden="true" />
             <span>PCB Assistant</span>
           </NavLink>
+
+          {user && (
+            <NavLink
+              to="/my-parts"
+              className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
+            >
+              <Bookmark size={16} aria-hidden="true" />
+              <span>My Parts</span>
+            </NavLink>
+          )}
         </nav>
 
         {/* Prominent Quick-Search Bar */}
@@ -230,6 +241,17 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Cpu size={18} aria-hidden="true" />
               <span>PCB Design Assistant</span>
             </NavLink>
+
+            {user && (
+              <NavLink
+                to="/my-parts"
+                className={({ isActive }) => `mobile-nav-link ${isActive ? "active" : ""}`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <Bookmark size={18} aria-hidden="true" />
+                <span>My Saved Parts</span>
+              </NavLink>
+            )}
           </div>
 
           <div className="mobile-auth-group">

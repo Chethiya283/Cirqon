@@ -763,7 +763,37 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px 6px;
-  background: #ffffff;
+  background: var(--cq-surface);
+}
+
+.card-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.card-bookmark-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--cq-text-muted);
+  cursor: pointer;
+  border-radius: var(--cq-radius-sm);
+  transition: all 120ms ease;
+}
+
+.card-bookmark-btn:hover {
+  color: var(--cq-emerald);
+  background: var(--cq-surface-hover);
+}
+
+.card-bookmark-btn.saved {
+  color: var(--cq-emerald);
 }
 
 .card-compare-label {
@@ -1477,6 +1507,39 @@
 .table-datasheet-link:hover {
   background: #dbe9f8;
   color: #1e4b85;
+}
+
+.table-actions-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.table-bookmark-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--cq-border-default);
+  border-radius: var(--cq-radius-sm);
+  background: var(--cq-surface);
+  color: var(--cq-text-muted);
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.table-bookmark-btn:hover {
+  color: var(--cq-emerald);
+  border-color: var(--cq-emerald-border);
+  background: var(--cq-surface-hover);
+}
+
+.table-bookmark-btn.saved {
+  color: var(--cq-emerald);
+  background: var(--cq-emerald-soft);
+  border-color: var(--cq-emerald-border);
 }
 
 .table-action-btn {

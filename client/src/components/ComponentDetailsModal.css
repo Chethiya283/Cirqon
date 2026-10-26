@@ -47,6 +47,41 @@
   background: var(--cq-surface-2);
 }
 
+.modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid var(--cq-border-default);
+  border-radius: var(--cq-radius-sm);
+  background: var(--cq-surface);
+  color: var(--cq-text-secondary);
+  font-family: var(--cq-font-sans);
+  font-size: var(--cq-text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.modal-save-btn:hover {
+  color: var(--cq-emerald);
+  border-color: var(--cq-emerald-border);
+  background: var(--cq-surface-hover);
+}
+
+.modal-save-btn.saved {
+  color: var(--cq-emerald);
+  background: var(--cq-emerald-soft);
+  border-color: var(--cq-emerald-border);
+  font-weight: 600;
+}
+
 .modal-header h2 {
   margin: 2px 0 0;
   color: var(--cq-text-primary);
@@ -68,7 +103,7 @@
   height: 26px;
   border: 1px solid var(--cq-border-default);
   border-radius: var(--cq-radius-sm);
-  background: #ffffff;
+  background: var(--cq-surface);
   color: var(--cq-text-secondary);
   font-size: 16px;
   line-height: 1;

@@ -57,3 +57,10 @@ export type AuthUser = {
   createdAt: string;
 };
 
+export type SavedPartItem = {
+  _id: string;
+  user: string;
+  component: ComponentData;
+  createdAt: string;
+};
+

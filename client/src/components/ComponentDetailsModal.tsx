@@ -1,7 +1,11 @@
 // Modal dialog presenting complete component specifications, CAD footprint, pinout table, and documentation links.
 
 import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Bookmark } from "lucide-react";
 import type { ComponentData } from "../types";
+import { useAuth } from "../auth/AuthContext";
+import { useSavedParts } from "../auth/SavedPartsContext";
 import { ComponentThumbnail } from "../ComponentImage";
 import { getComponentImageInfo } from "../componentImageUtils";
 import { renderFootprintSvg } from "../utils/footprint";
@@ -26,6 +30,10 @@ export const ComponentDetailsModal: React.FC<ComponentDetailsModalProps> = ({
   component,
   onClose,
 }) => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { isSaved, toggleSave } = useSavedParts();
+
   // Close the component details modal with the Escape key.
   useEffect(() => {
     if (!component) return;
@@ -43,6 +51,21 @@ export const ComponentDetailsModal: React.FC<ComponentDetailsModalProps> = ({
   }, [component, onClose]);
 
   if (!component) return null;
+
+  const saved = isSaved(component._id);
+
+  /**
+   * Handle bookmark click.
+   * If not logged in, redirects user to /login.
+   * If logged in, toggles save state via SavedPartsContext.
+   */
+  const handleToggleSave = () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    toggleSave(component);
+  };
 
   return (
     <div
@@ -70,14 +93,39 @@ export const ComponentDetailsModal: React.FC<ComponentDetailsModalProps> = ({
             </p>
           </div>
 
-          <button
-            className="modal-close"
-            type="button"
-            aria-label="Close component details"
-            onClick={onClose}
-          >
-             × 
-          </button>
+          <div className="modal-header-actions">
+            <button
+              type="button"
+              className={`modal-save-btn ${saved ? "saved" : ""}`}
+              onClick={handleToggleSave}
+              aria-label={
+                saved
+                  ? `Remove ${component.partNumber} from saved parts`
+                  : `Save ${component.partNumber} to workspace`
+              }
+              title={
+                saved
+                  ? "Saved in workspace (click to remove)"
+                  : "Save component to workspace"
+              }
+            >
+              <Bookmark
+                size={15}
+                fill={saved ? "currentColor" : "none"}
+                aria-hidden="true"
+              />
+              <span>{saved ? "Saved" : "Save Part"}</span>
+            </button>
+
+            <button
+              className="modal-close"
+              type="button"
+              aria-label="Close component details"
+              onClick={onClose}
+            >
+              ×
+            </button>
+          </div>
         </header>
 
         <div className="modal-content">
