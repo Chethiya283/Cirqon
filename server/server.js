@@ -6,6 +6,12 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 require("dotenv").config();
 
+// Fail fast at startup if required cryptographic secrets are missing
+if (!process.env.JWT_SECRET) {
+  console.error("FATAL ERROR: JWT_SECRET environment variable is missing. Server cannot sign authentication tokens safely.");
+  process.exit(1);
+}
+
 const componentRoutes = require("./routes/componentRoutes");
 const authRoutes = require("./routes/authRoutes");
 

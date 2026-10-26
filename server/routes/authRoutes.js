@@ -1,6 +1,8 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const { requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
 
@@ -97,5 +99,104 @@ router.post("/register", async (req, res) => {
   }
 });
 
-module.exports = router;
+/**
+ * POST /api/auth/login
+ * 
+ * Public endpoint to authenticate an engineer and receive a signed JWT.
+ * 
+ * VIVA EXPLANATION:
+ * 1. Mitigation of User Enumeration Attacks:
+ *    Whether an email is nonexistent or the password is incorrect, the server returns
+ *    the exact same generic HTTP 401 error: "Invalid email or password."
+ *    This prevents attackers from probing the system to build lists of registered emails.
+ * 
+ * 2. Bcrypt Password Verification:
+ *    The plaintext password submitted by the user is compared against the stored hash
+ *    using `bcrypt.compare()`. Bcrypt extracts the salt embedded in the stored hash,
+ *    hashes the candidate password, and performs a constant-time comparison to avoid
+ *    timing side-channel attacks.
+ * 
+ * 3. JWT Stateless Issuance:
+ *    On successful verification, a signed JSON Web Token is minted with:
+ *    - Payload: `{ id, role }` only (minimal surface area, no sensitive data like passwords).
+ *    - Expiry: 7 days (`expiresIn: "7d"`).
+ *    - Signature: Signed with `process.env.JWT_SECRET`.
+ */
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
+    // Validate presence of credentials
+    if (!email || !password || typeof email !== "string" || typeof password !== "string") {
+      return res.status(401).json({
+        message: "Invalid email or password.",
+      });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // 1. Find user by normalized lowercase email
+    const user = await User.findOne({ email: normalizedEmail });
+    if (!user) {
+      // Generic error message: prevents email enumeration
+      return res.status(401).json({
+        message: "Invalid email or password.",
+      });
+    }
+
+    // 2. Verify candidate password against stored bcrypt hash
+    const isMatch = await bcrypt.compare(password, user.passwordHash);
+    if (!isMatch) {
+      // Generic error message: prevents credential discovery
+      return res.status(401).json({
+        message: "Invalid email or password.",
+      });
+    }
+
+    // 3. Sign JWT with minimal claims (user id and role only)
+    const token = jwt.sign(
+      {
+        id: user._id,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "7d",
+      }
+    );
+
+    // 4. Return token and sanitized user representation (no passwordHash)
+    res.json({
+      message: "Login successful.",
+      token,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        createdAt: user.createdAt,
+      },
+    });
+  } catch (error) {
+    console.error("Error during user login:", error.message);
+    res.status(500).json({
+      message: "Server error occurred during authentication.",
+    });
+  }
+});
+
+/**
+ * GET /api/auth/me
+ * 
+ * Protected endpoint returning the profile of the currently authenticated user.
+ * 
+ * VIVA EXPLANATION:
+ * Protected by the `requireAuth` middleware. If the incoming request has a valid
+ * Bearer token, the middleware attaches the resolved user document to `req.user`
+ * (with `passwordHash` omitted). This endpoint simply outputs `req.user`.
+ */
+router.get("/me", requireAuth, (req, res) => {
+  res.json(req.user);
+});
+
+module.exports = router;
