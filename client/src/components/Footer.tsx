@@ -56,7 +56,7 @@ export const Footer: React.FC = () => {
               </Link>
             </li>
             <li>
-              <Link to="/library" className="footer-link-btn">
+              <Link to="/" className="footer-link-btn">
                 Catalogue Overview
               </Link>
             </li>

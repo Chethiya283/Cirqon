@@ -334,6 +334,15 @@
   min-height: calc(100vh - 52px);
 }
 
+.workspace-body.home-layout {
+  display: block;
+}
+
+.workspace-body.home-layout .page-content {
+  padding: 0;
+  max-width: none;
+}
+
 /* Refined Light Filter Sidebar */
 .sidebar {
   position: sticky;

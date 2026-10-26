@@ -7,6 +7,7 @@ import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
 import { ComponentDetailsModal } from "./components/ComponentDetailsModal";
 import { CompareTray } from "./components/CompareTray";
+import { HomePage } from "./pages/HomePage";
 import type { ComponentData, SortField } from "./types";
 import {
   isValidHttpUrl,
@@ -102,9 +103,8 @@ function App() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const isCompareView = location.pathname === "/compare";
-  const isPcbView = location.pathname === "/pcb";
-  const isLibraryView = !isCompareView && !isPcbView;
+  const isHomeView = location.pathname === "/";
+  const isLibraryView = location.pathname === "/library";
 
   const [catalogLayout, setCatalogLayout] = useState<"grid" | "table">("grid");
   const [selectedForCompare, setSelectedForCompare] = useState<ComponentData[]>(
@@ -391,100 +391,118 @@ function App() {
         compareCount={selectedForCompare.length}
       />
 
-      <div className="workspace-body">
-        <aside className="sidebar" aria-label="Parametric and category filters">
-          <div className="sidebar-section">
-            <div className="sidebar-label">CATEGORIES</div>
+      <div className={`workspace-body ${isHomeView ? "home-layout" : ""}`}>
+        {!isHomeView && (
+          <aside className="sidebar" aria-label="Parametric and category filters">
+            <div className="sidebar-section">
+              <div className="sidebar-label">CATEGORIES</div>
 
-            <nav className="category-list">
-              {categories.map((category) => (
-                <button
-                  className={
-                    selectedCategory === category.name
-                      ? "category-item selected"
-                      : "category-item"
-                  }
-                  key={category.name}
-                  type="button"
-                  onClick={() => {
-                    setSelectedCategory(category.name);
-                    if (!isLibraryView) {
-                      navigate("/library");
+              <nav className="category-list">
+                {categories.map((category) => (
+                  <button
+                    className={
+                      selectedCategory === category.name
+                        ? "category-item selected"
+                        : "category-item"
                     }
-                  }}
+                    key={category.name}
+                    type="button"
+                    onClick={() => {
+                      setSelectedCategory(category.name);
+                      if (!isLibraryView) {
+                        navigate("/library");
+                      }
+                    }}
+                  >
+                    <span className="category-icon">{category.icon}</span>
+                    <span>{category.name}</span>
+
+                    {categoryCounts[category.name] != null && (
+                      <span className="category-count">
+                        {categoryCounts[category.name]}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </nav>
+            </div>
+
+            <div className="sidebar-section sidebar-filters">
+              <div className="sidebar-label">PARAMETRIC FILTERS</div>
+
+              <div className="filter-field">
+                <label htmlFor="manufacturer-filter">Manufacturer</label>
+                <select
+                  id="manufacturer-filter"
+                  value={selectedManufacturer}
+                  onChange={(event) =>
+                    setSelectedManufacturer(event.target.value)
+                  }
                 >
-                  <span className="category-icon">{category.icon}</span>
-                  <span>{category.name}</span>
+                  <option value="">All manufacturers ({manufacturers.length})</option>
+                  {manufacturers.map((manufacturer) => (
+                    <option key={manufacturer} value={manufacturer}>
+                      {manufacturer}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-                  {categoryCounts[category.name] != null && (
-                    <span className="category-count">
-                      {categoryCounts[category.name]}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </nav>
-          </div>
+              <div className="filter-field">
+                <label htmlFor="package-filter">Package / Case</label>
+                <select
+                  id="package-filter"
+                  value={selectedPackage}
+                  onChange={(event) => setSelectedPackage(event.target.value)}
+                >
+                  <option value="">All packages ({packages.length})</option>
+                  {packages.map((packageName) => (
+                    <option key={packageName} value={packageName}>
+                      {packageName}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-          <div className="sidebar-section sidebar-filters">
-            <div className="sidebar-label">PARAMETRIC FILTERS</div>
-
-            <div className="filter-field">
-              <label htmlFor="manufacturer-filter">Manufacturer</label>
-              <select
-                id="manufacturer-filter"
-                value={selectedManufacturer}
-                onChange={(event) =>
-                  setSelectedManufacturer(event.target.value)
-                }
+              <button
+                className="filter-button reset-filters-button"
+                type="button"
+                onClick={clearFilters}
               >
-                <option value="">All manufacturers ({manufacturers.length})</option>
-                {manufacturers.map((manufacturer) => (
-                  <option key={manufacturer} value={manufacturer}>
-                    {manufacturer}
-                  </option>
-                ))}
-              </select>
+                Reset all filters
+              </button>
             </div>
 
-            <div className="filter-field">
-              <label htmlFor="package-filter">Package / Case</label>
-              <select
-                id="package-filter"
-                value={selectedPackage}
-                onChange={(event) => setSelectedPackage(event.target.value)}
-              >
-                <option value="">All packages ({packages.length})</option>
-                {packages.map((packageName) => (
-                  <option key={packageName} value={packageName}>
-                    {packageName}
-                  </option>
-                ))}
-              </select>
+            <div className="sidebar-footer">
+              <span className="status-dot" />
+              MongoDB Catalog
+              <span className="version">v0.2</span>
             </div>
-
-            <button
-              className="filter-button reset-filters-button"
-              type="button"
-              onClick={clearFilters}
-            >
-              Reset all filters
-            </button>
-          </div>
-
-          <div className="sidebar-footer">
-            <span className="status-dot" />
-            MongoDB Catalog
-            <span className="version">v0.2</span>
-          </div>
-        </aside>
+          </aside>
+        )}
 
         <main className="main-content">
           <section className="page-content">
             {/* VIVA EXPLANATION: React Router Routes map each URL pathname to a view */}
             <Routes>
-              {/* Route 1: Root path redirects to /library */}
-              <Route path="/" element={<Navigate to="/library" replace />} />
+              {/* Route 1: Public Home Page */}
+              <Route
+                path="/"
+                element={
+                  <HomePage
+                    categoryCounts={categoryCounts}
+                    categories={categories}
+                    onSearch={(query) => {
+                      setSearch(query);
+                      navigate("/library");
+                    }}
+                    onSelectCategory={(categoryName) => {
+                      setSelectedCategory(categoryName);
+                      navigate("/library");
+                    }}
+                  />
+                }
+              />
 
               {/* Route 2: Component Library Catalog Workspace */}
               <Route
@@ -1657,8 +1675,8 @@ function App() {
                 }
               />
 
-              {/* Catch-all: Redirect unknown URLs to /library */}
-              <Route path="*" element={<Navigate to="/library" replace />} />
+              {/* Catch-all: Redirect unknown URLs to / */}
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </section>
         </main>

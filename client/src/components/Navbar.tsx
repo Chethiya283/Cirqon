@@ -53,7 +53,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="site-header-container">
         {/* Brand Logo & Title Link */}
         <Link
-          to="/library"
+          to="/"
           className="brand-identity"
           title="Cirqon — Engineering Parts Discovery Home"
           onClick={() => setIsMobileMenuOpen(false)}
