@@ -8,6 +8,8 @@ import { Footer } from "./components/Footer";
 import { ComponentDetailsModal } from "./components/ComponentDetailsModal";
 import { CompareTray } from "./components/CompareTray";
 import { HomePage } from "./pages/HomePage";
+import { LoginPage } from "./pages/LoginPage";
+import { RegisterPage } from "./pages/RegisterPage";
 import type { ComponentData, SortField } from "./types";
 import {
   isValidHttpUrl,
@@ -104,7 +106,9 @@ function App() {
   const navigate = useNavigate();
 
   const isHomeView = location.pathname === "/";
+  const isAuthView = location.pathname === "/login" || location.pathname === "/register";
   const isLibraryView = location.pathname === "/library";
+  const showSidebar = !isHomeView && !isAuthView;
 
   const [catalogLayout, setCatalogLayout] = useState<"grid" | "table">("grid");
   const [selectedForCompare, setSelectedForCompare] = useState<ComponentData[]>(
@@ -391,8 +395,8 @@ function App() {
         compareCount={selectedForCompare.length}
       />
 
-      <div className={`workspace-body ${isHomeView ? "home-layout" : ""}`}>
-        {!isHomeView && (
+      <div className={`workspace-body ${!showSidebar ? "home-layout" : ""}`}>
+        {showSidebar && (
           <aside className="sidebar" aria-label="Parametric and category filters">
             <div className="sidebar-section">
               <div className="sidebar-label">CATEGORIES</div>
@@ -503,6 +507,10 @@ function App() {
                   />
                 }
               />
+
+              {/* Route 2: Authentication Views (UI Only) */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
 
               {/* Route 2: Component Library Catalog Workspace */}
               <Route

@@ -186,6 +186,7 @@
   color: var(--cq-text-primary);
   font-size: var(--cq-text-sm);
   font-weight: 500;
+  text-decoration: none;
   transition: all var(--cq-transition-fast);
 }
 
@@ -206,6 +207,7 @@
   color: var(--cq-text-inverse);
   font-size: var(--cq-text-sm);
   font-weight: 600;
+  text-decoration: none;
   transition: background var(--cq-transition-fast);
 }
 

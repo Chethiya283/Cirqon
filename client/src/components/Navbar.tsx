@@ -127,25 +127,25 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
 
-        {/* Authentication Buttons (UI Only until Step 5) */}
+        {/* Authentication Navigation Links */}
         <div className="header-auth-group">
-          <button
-            type="button"
+          <Link
+            to="/login"
             className="btn-auth-text"
-            title="Log in to Cirqon (Coming in Step 5)"
+            title="Log in to Cirqon"
           >
             <LogIn size={15} aria-hidden="true" />
             <span>Log in</span>
-          </button>
+          </Link>
 
-          <button
-            type="button"
+          <Link
+            to="/register"
             className="btn-auth-primary"
-            title="Create an account (Coming in Step 5)"
+            title="Create an account"
           >
             <UserPlus size={15} aria-hidden="true" />
             <span>Sign up</span>
-          </button>
+          </Link>
         </div>
 
         {/* Mobile Hamburger Toggle Button */}
@@ -209,23 +209,23 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           <div className="mobile-auth-group">
-            <button
-              type="button"
+            <Link
+              to="/login"
               className="btn-auth-text mobile-auth-btn"
-              title="Coming in Step 5"
+              onClick={() => setIsMobileMenuOpen(false)}
             >
               <LogIn size={16} aria-hidden="true" />
               <span>Log in</span>
-            </button>
+            </Link>
 
-            <button
-              type="button"
+            <Link
+              to="/register"
               className="btn-auth-primary mobile-auth-btn"
-              title="Coming in Step 5"
+              onClick={() => setIsMobileMenuOpen(false)}
             >
               <UserPlus size={16} aria-hidden="true" />
               <span>Sign up</span>
-            </button>
+            </Link>
           </div>
         </div>
       )}
