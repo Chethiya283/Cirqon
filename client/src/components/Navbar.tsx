@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import {
   Search,
   Menu,
@@ -11,17 +12,7 @@ import {
 } from "lucide-react";
 import "./Navbar.css";
 
-/**
- * Navigation View Type
- * Defines the main reachable destinations within Cirqon.
- */
-export type NavView = "home" | "library" | "compare" | "pcb" | "login" | "register";
-
 interface NavbarProps {
-  /** Current active view/tab in the application */
-  activeView: string;
-  /** Callback triggered when a user selects a navigation destination */
-  onNavigate: (view: NavView) => void;
   /** Current global search query string */
   searchQuery: string;
   /** Callback when search query changes */
@@ -34,45 +25,40 @@ interface NavbarProps {
  * Navbar Component
  * 
  * Shared top navigation bar for Cirqon.
- * Responsibilities:
- * 1. Brand identity (logo + name).
- * 2. Primary section navigation (Library, Compare, PCB Assistant).
- * 3. Global quick-search input.
- * 4. Auth action triggers (Log in / Sign up).
- * 5. Responsive mobile menu toggle & drawer for small screens (< 768px).
+ * 
+ * VIVA EXPLANATION:
+ * - Uses React Router's `NavLink` for navigation links. `NavLink` automatically
+ *   detects if its destination matches the current browser URL (`isActive`)
+ *   and applies the `.active` CSS class without requiring manual state tracking.
+ * - The URL is the single source of truth for the active page.
  */
 export const Navbar: React.FC<NavbarProps> = ({
-  activeView,
-  onNavigate,
   searchQuery,
   onSearchChange,
   compareCount = 0,
 }) => {
-  // Local state controlling the mobile slide-down menu
+  const navigate = useNavigate();
+  // Local state controlling the mobile slide-down menu drawer
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Helper to handle navigation and close mobile menu simultaneously
-  const handleNavClick = (view: NavView) => {
-    onNavigate(view);
-    setIsMobileMenuOpen(false);
+  // When user interacts with search on another page, navigate to library
+  const handleSearchFocus = () => {
+    if (window.location.pathname !== "/library") {
+      navigate("/library");
+    }
   };
 
   return (
     <header className="site-header">
       <div className="site-header-container">
-        {/* Brand Logo & Title */}
-        <div
+        {/* Brand Logo & Title Link */}
+        <Link
+          to="/library"
           className="brand-identity"
-          onClick={() => handleNavClick("home")}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") handleNavClick("home");
-          }}
           title="Cirqon — Engineering Parts Discovery Home"
+          onClick={() => setIsMobileMenuOpen(false)}
         >
           <div className="brand-logo-icon">
-            {/* Minimal PCB trace mark */}
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <circle cx="12" cy="12" r="9" stroke="var(--cq-emerald)" strokeWidth="2" />
               <path d="M12 7V12L15 15" stroke="var(--cq-emerald)" strokeWidth="2" strokeLinecap="round" />
@@ -82,23 +68,21 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
           <span className="brand-title">Cirqon</span>
           <span className="brand-tag">Engineering</span>
-        </div>
+        </Link>
 
-        {/* Primary Desktop Navigation Links */}
+        {/* Primary Desktop Navigation (Uses NavLink for automated active state) */}
         <nav className="desktop-nav" aria-label="Main Navigation">
-          <button
-            type="button"
-            className={`nav-link ${activeView === "library" ? "active" : ""}`}
-            onClick={() => handleNavClick("library")}
+          <NavLink
+            to="/library"
+            className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
           >
             <Layers size={16} aria-hidden="true" />
             <span>Library</span>
-          </button>
+          </NavLink>
 
-          <button
-            type="button"
-            className={`nav-link ${activeView === "compare" ? "active" : ""}`}
-            onClick={() => handleNavClick("compare")}
+          <NavLink
+            to="/compare"
+            className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
           >
             <GitCompare size={16} aria-hidden="true" />
             <span>Compare</span>
@@ -107,16 +91,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {compareCount}
               </span>
             )}
-          </button>
+          </NavLink>
 
-          <button
-            type="button"
-            className={`nav-link ${activeView === "pcb" ? "active" : ""}`}
-            onClick={() => handleNavClick("pcb")}
+          <NavLink
+            to="/pcb"
+            className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
           >
             <Cpu size={16} aria-hidden="true" />
             <span>PCB Assistant</span>
-          </button>
+          </NavLink>
         </nav>
 
         {/* Prominent Quick-Search Bar */}
@@ -128,12 +111,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             placeholder="Search by part number or keyword..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            onFocus={() => {
-              // If user focuses search and is on home or compare, switch to library
-              if (activeView !== "library") {
-                onNavigate("library");
-              }
-            }}
+            onFocus={handleSearchFocus}
             aria-label="Search components by part number or keyword"
           />
           {searchQuery && (
@@ -149,13 +127,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
 
-        {/* Authentication Buttons (UI Only in this task) */}
+        {/* Authentication Buttons (UI Only until Step 5) */}
         <div className="header-auth-group">
           <button
             type="button"
             className="btn-auth-text"
-            onClick={() => handleNavClick("login")}
-            title="Log in to Cirqon"
+            title="Log in to Cirqon (Coming in Step 5)"
           >
             <LogIn size={15} aria-hidden="true" />
             <span>Log in</span>
@@ -164,8 +141,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             type="button"
             className="btn-auth-primary"
-            onClick={() => handleNavClick("register")}
-            title="Create an account"
+            title="Create an account (Coming in Step 5)"
           >
             <UserPlus size={15} aria-hidden="true" />
             <span>Sign up</span>
@@ -195,47 +171,48 @@ export const Navbar: React.FC<NavbarProps> = ({
               placeholder="Search components or MPN..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
+              onFocus={handleSearchFocus}
               aria-label="Search components in mobile menu"
             />
           </div>
 
           <div className="mobile-links">
-            <button
-              type="button"
-              className={`mobile-nav-link ${activeView === "library" ? "active" : ""}`}
-              onClick={() => handleNavClick("library")}
+            <NavLink
+              to="/library"
+              className={({ isActive }) => `mobile-nav-link ${isActive ? "active" : ""}`}
+              onClick={() => setIsMobileMenuOpen(false)}
             >
               <Layers size={18} aria-hidden="true" />
               <span>Component Library</span>
-            </button>
+            </NavLink>
 
-            <button
-              type="button"
-              className={`mobile-nav-link ${activeView === "compare" ? "active" : ""}`}
-              onClick={() => handleNavClick("compare")}
+            <NavLink
+              to="/compare"
+              className={({ isActive }) => `mobile-nav-link ${isActive ? "active" : ""}`}
+              onClick={() => setIsMobileMenuOpen(false)}
             >
               <GitCompare size={18} aria-hidden="true" />
               <span>Component Compare</span>
               {compareCount > 0 && (
                 <span className="nav-compare-count">{compareCount}</span>
               )}
-            </button>
+            </NavLink>
 
-            <button
-              type="button"
-              className={`mobile-nav-link ${activeView === "pcb" ? "active" : ""}`}
-              onClick={() => handleNavClick("pcb")}
+            <NavLink
+              to="/pcb"
+              className={({ isActive }) => `mobile-nav-link ${isActive ? "active" : ""}`}
+              onClick={() => setIsMobileMenuOpen(false)}
             >
               <Cpu size={18} aria-hidden="true" />
               <span>PCB Design Assistant</span>
-            </button>
+            </NavLink>
           </div>
 
           <div className="mobile-auth-group">
             <button
               type="button"
               className="btn-auth-text mobile-auth-btn"
-              onClick={() => handleNavClick("login")}
+              title="Coming in Step 5"
             >
               <LogIn size={16} aria-hidden="true" />
               <span>Log in</span>
@@ -244,7 +221,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               type="button"
               className="btn-auth-primary mobile-auth-btn"
-              onClick={() => handleNavClick("register")}
+              title="Coming in Step 5"
             >
               <UserPlus size={16} aria-hidden="true" />
               <span>Sign up</span>
@@ -255,4 +232,3 @@ export const Navbar: React.FC<NavbarProps> = ({
     </header>
   );
 };
-

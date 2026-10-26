@@ -1,22 +1,18 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { Cpu, ExternalLink } from "lucide-react";
 import "./Footer.css";
-
-interface FooterProps {
-  /** Optional callback to navigate to a specific view when clicking footer links */
-  onNavigate?: (view: "home" | "library" | "compare" | "pcb") => void;
-}
 
 /**
  * Footer Component
  * 
  * Shared public website footer providing:
  * 1. Brand summary & engineering platform context.
- * 2. Quick navigation links to core workspaces.
+ * 2. Quick navigation links to core workspaces using React Router `Link`.
  * 3. Component category references matching database taxonomy.
  * 4. Technical metadata and academic project attribution.
  */
-export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
+export const Footer: React.FC = () => {
   return (
     <footer className="site-footer">
       <div className="site-footer-container">
@@ -45,40 +41,24 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           <h4 className="footer-heading">Workspaces</h4>
           <ul className="footer-links-list">
             <li>
-              <button
-                type="button"
-                className="footer-link-btn"
-                onClick={() => onNavigate?.("library")}
-              >
+              <Link to="/library" className="footer-link-btn">
                 Component Library
-              </button>
+              </Link>
             </li>
             <li>
-              <button
-                type="button"
-                className="footer-link-btn"
-                onClick={() => onNavigate?.("compare")}
-              >
+              <Link to="/compare" className="footer-link-btn">
                 Component Compare
-              </button>
+              </Link>
             </li>
             <li>
-              <button
-                type="button"
-                className="footer-link-btn"
-                onClick={() => onNavigate?.("pcb")}
-              >
+              <Link to="/pcb" className="footer-link-btn">
                 PCB Footprint Assistant
-              </button>
+              </Link>
             </li>
             <li>
-              <button
-                type="button"
-                className="footer-link-btn"
-                onClick={() => onNavigate?.("home")}
-              >
+              <Link to="/library" className="footer-link-btn">
                 Catalogue Overview
-              </button>
+              </Link>
             </li>
           </ul>
         </div>
@@ -88,40 +68,24 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           <h4 className="footer-heading">Component Families</h4>
           <ul className="footer-links-list">
             <li>
-              <button
-                type="button"
-                className="footer-link-btn"
-                onClick={() => onNavigate?.("library")}
-              >
+              <Link to="/library" className="footer-link-btn">
                 Integrated Circuits & Op-Amps
-              </button>
+              </Link>
             </li>
             <li>
-              <button
-                type="button"
-                className="footer-link-btn"
-                onClick={() => onNavigate?.("library")}
-              >
+              <Link to="/library" className="footer-link-btn">
                 Voltage Regulators (TO-220)
-              </button>
+              </Link>
             </li>
             <li>
-              <button
-                type="button"
-                className="footer-link-btn"
-                onClick={() => onNavigate?.("library")}
-              >
+              <Link to="/library" className="footer-link-btn">
                 Diodes & BJT Transistors
-              </button>
+              </Link>
             </li>
             <li>
-              <button
-                type="button"
-                className="footer-link-btn"
-                onClick={() => onNavigate?.("library")}
-              >
+              <Link to="/library" className="footer-link-btn">
                 Passives: R, C & L
-              </button>
+              </Link>
             </li>
           </ul>
         </div>
@@ -172,4 +136,3 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
     </footer>
   );
 };
-
