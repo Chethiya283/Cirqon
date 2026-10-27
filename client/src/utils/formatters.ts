@@ -16,13 +16,13 @@ export function formatDimensions(pkg?: ComponentData["package"]): string {
       pkg.bodyDimensions.heightMm != null)
       ? pkg.bodyDimensions
       : pkg?.footprintDimensions;
-  if (!dims) return "—";
+  if (!dims) return "Not available";
   const { lengthMm, widthMm, heightMm } = dims;
   const parts: string[] = [];
   if (lengthMm != null) parts.push(`${lengthMm} mm L`);
   if (widthMm != null) parts.push(`${widthMm} mm W`);
   if (heightMm != null) parts.push(`${heightMm} mm H`);
-  return parts.length > 0 ? parts.join(" × ") : "—";
+  return parts.length > 0 ? parts.join(" × ") : "Not available";
 }
 
 export function findUnitForSpecKey(
@@ -42,7 +42,7 @@ export function findUnitForSpecKey(
 
 export function formatSpecValue(val: unknown, unit?: string): string {
   if (val === undefined || val === null || val === "") {
-    return "—";
+    return "Not available";
   }
   let display: string;
   if (typeof val === "boolean") {
@@ -61,8 +61,8 @@ export function formatSpecValue(val: unknown, unit?: string): string {
     display = String(val).trim();
   }
 
-  if (!display) {
-    return "—";
+  if (!display || display === "—" || display === "null" || display === "undefined") {
+    return "Not available";
   }
 
   if (unit && unit.trim()) {
@@ -113,7 +113,16 @@ export function getSpecPairs(
 export function isRowDivergent(values: (string | undefined | null)[]): boolean {
   const valid = values
     .map((v) => (v ?? "").trim())
-    .filter((v) => v !== "" && v !== "—" && v !== "Not available");
+    .filter(
+      (v) =>
+        v !== "" &&
+        v !== "—" &&
+        v !== "-" &&
+        v !== "Not available" &&
+        v !== "N/A" &&
+        v !== "None" &&
+        v !== "Not specified"
+    );
   if (valid.length <= 1) return false;
   return new Set(valid).size > 1;
 }

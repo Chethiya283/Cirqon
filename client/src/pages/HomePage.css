@@ -81,15 +81,16 @@
 
 .home-section-title {
   margin: 0 0 var(--cq-space-2);
-  font-size: var(--cq-text-2xl);
-  font-weight: 700;
+  font-size: var(--cq-text-xl);
+  font-weight: var(--cq-weight-semibold);
+  line-height: var(--cq-leading-tight);
   color: var(--cq-text-primary);
   letter-spacing: var(--cq-tracking-tight);
 }
 
 .home-section-desc {
   margin: 0;
-  font-size: var(--cq-text-sm);
+  font-size: var(--cq-text-base);
   color: var(--cq-text-secondary);
   max-width: 680px;
   line-height: var(--cq-leading-normal);
@@ -177,7 +178,7 @@
   color: var(--cq-text-primary);
   font-family: var(--cq-font-heading);
   font-size: var(--cq-text-3xl);
-  font-weight: 800;
+  font-weight: var(--cq-weight-bold);
   line-height: var(--cq-leading-tight);
   letter-spacing: var(--cq-tracking-tighter);
   max-width: 780px;
@@ -237,7 +238,7 @@
   background: var(--cq-surface);
   color: var(--cq-text-primary);
   font-family: var(--cq-font-sans);
-  font-size: var(--cq-text-sm);
+  font-size: var(--cq-text-base);
   outline: none;
   transition: border-color var(--cq-transition-fast), box-shadow var(--cq-transition-fast);
 }
@@ -276,8 +277,8 @@
   background: var(--cq-emerald);
   color: var(--cq-text-inverse);
   font-family: var(--cq-font-sans);
-  font-size: var(--cq-text-sm);
-  font-weight: 600;
+  font-size: var(--cq-text-base);
+  font-weight: var(--cq-weight-semibold);
   white-space: nowrap;
   cursor: pointer;
   transition: background-color var(--cq-transition-fast), transform var(--cq-transition-fast);
@@ -312,8 +313,8 @@
   background: var(--cq-emerald);
   color: var(--cq-text-inverse);
   font-family: var(--cq-font-sans);
-  font-size: var(--cq-text-sm);
-  font-weight: 600;
+  font-size: var(--cq-text-base);
+  font-weight: var(--cq-weight-semibold);
   cursor: pointer;
   transition: background-color var(--cq-transition-fast), border-color var(--cq-transition-fast);
 }
@@ -339,8 +340,8 @@
   background: var(--cq-surface);
   color: var(--cq-text-secondary);
   font-family: var(--cq-font-sans);
-  font-size: var(--cq-text-sm);
-  font-weight: 600;
+  font-size: var(--cq-text-base);
+  font-weight: var(--cq-weight-semibold);
   cursor: pointer;
   transition: all var(--cq-transition-fast);
 }

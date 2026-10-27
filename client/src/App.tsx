@@ -1,19 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, Routes, Route, Navigate } from "react-router-dom";
 import {
+  ArrowLeft,
+  ArrowLeftRight,
+  ArrowRight,
   Bookmark,
   Layers,
-  Activity,
-  BatteryCharging,
-  Radio,
-  Sun,
-  Cpu,
-  Grid,
-  Zap,
-  Plug,
-  Shield,
+  Plus,
   RotateCcw,
   SlidersHorizontal,
+  Trash2,
+  X,
 } from "lucide-react";
 import "./App.css";
 import "./ComponentImage.css";
@@ -22,6 +19,10 @@ import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
 import { ComponentDetailsModal } from "./components/ComponentDetailsModal";
 import { CompareTray } from "./components/CompareTray";
+import {
+  CategoryCardsSection,
+  CategoryIcon,
+} from "./components/CategoryCardsSection";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
@@ -44,7 +45,10 @@ import {
   getProvenanceBadgeClass,
   renderValueWithMonoNumbers,
 } from "./utils/footprint";
-import { InteractiveFootprintViewer } from "./components/InteractiveFootprintViewer";
+import {
+  InteractiveFootprintViewer,
+  PcbComponentPhotoPanel,
+} from "./components/InteractiveFootprintViewer";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
@@ -63,36 +67,6 @@ const categories = [
   { name: "Connectors", icon: "⌁" },
   { name: "Switches and protection components", icon: "⛨" },
 ];
-
-/**
- * Return an accessible Lucide icon for each electronic component category card.
- */
-function getCategoryIcon(categoryName: string) {
-  switch (categoryName) {
-    case "All Components":
-      return <Layers size={18} aria-hidden="true" />;
-    case "Resistors":
-      return <Activity size={18} aria-hidden="true" />;
-    case "Capacitors":
-      return <BatteryCharging size={18} aria-hidden="true" />;
-    case "Inductors":
-      return <Radio size={18} aria-hidden="true" />;
-    case "Diodes and LEDs":
-      return <Sun size={18} aria-hidden="true" />;
-    case "BJTs and MOSFETs":
-      return <Cpu size={18} aria-hidden="true" />;
-    case "Integrated circuits (ICs)":
-      return <Grid size={18} aria-hidden="true" />;
-    case "Voltage regulators":
-      return <Zap size={18} aria-hidden="true" />;
-    case "Connectors":
-      return <Plug size={18} aria-hidden="true" />;
-    case "Switches and protection components":
-      return <Shield size={18} aria-hidden="true" />;
-    default:
-      return <Layers size={18} aria-hidden="true" />;
-  }
-}
 
 function App() {
   const [components, setComponents] = useState<ComponentData[]>([]);
@@ -165,8 +139,10 @@ function App() {
   const isAuthView = location.pathname === "/login" || location.pathname === "/register";
   const isMyPartsView = location.pathname === "/my-parts";
   const isLibraryView = location.pathname === "/library";
-  // VIVA EXPLANATION: The Library page is full width with an ergonomic horizontal category strip and toolbar.
-  // Sidebar is only shown for /compare and /pcb, while /, /library, /my-parts, and auth routes are full-width.
+  const isPcbView = location.pathname === "/pcb";
+  const isCompareView = location.pathname === "/compare";
+  // VIVA EXPLANATION: The Library page is full width with its own two-column sticky sidebar.
+  // Shared workspace sidebar is shown for /compare and /pcb, while /, /library, /my-parts, and auth routes are full-width.
   const showSidebar = !isHomeView && !isAuthView && !isMyPartsView && !isLibraryView;
 
   /**
@@ -268,12 +244,38 @@ function App() {
       clearTimeout(timer);
     };
   }, [search]);
+  // Per-page category and parametric filter states so selecting a category on one page
+  // does not unexpectedly alter another page's active category or filters.
   const [selectedCategory, setSelectedCategory] =
     useState("All Components");
   const [selectedManufacturer, setSelectedManufacturer] = useState("");
   const [selectedPackage, setSelectedPackage] = useState("");
 
-  // Indicates whether any keyword search, category, or parametric filter is currently active
+  const [pcbCategory, setPcbCategory] = useState("All Components");
+  const [pcbManufacturer, setPcbManufacturer] = useState("");
+  const [pcbPackage, setPcbPackage] = useState("");
+
+  const [compareCategory, setCompareCategory] = useState("All Components");
+  const [compareManufacturer, setCompareManufacturer] = useState("");
+  const [comparePackage, setComparePackage] = useState("");
+
+  const activeCategory = isPcbView
+    ? pcbCategory
+    : isCompareView
+    ? compareCategory
+    : selectedCategory;
+  const activeManufacturer = isPcbView
+    ? pcbManufacturer
+    : isCompareView
+    ? compareManufacturer
+    : selectedManufacturer;
+  const activePackage = isPcbView
+    ? pcbPackage
+    : isCompareView
+    ? comparePackage
+    : selectedPackage;
+
+  // Indicates whether any keyword search, category, or parametric filter is currently active on the Library page
   const hasActiveFilters = Boolean(
     selectedCategory !== "All Components" ||
     selectedManufacturer ||
@@ -313,7 +315,7 @@ function App() {
     };
   }, []);
 
-  // Fetch components whenever a search or filter changes.
+  // Fetch components whenever the active page's search or filter changes.
   useEffect(() => {
     let cancelled = false;
 
@@ -328,16 +330,16 @@ function App() {
           params.set("search", debouncedSearch.trim());
         }
 
-        if (selectedCategory !== "All Components") {
-          params.set("category", selectedCategory);
+        if (activeCategory !== "All Components") {
+          params.set("category", activeCategory);
         }
 
-        if (selectedManufacturer) {
-          params.set("manufacturer", selectedManufacturer);
+        if (activeManufacturer) {
+          params.set("manufacturer", activeManufacturer);
         }
 
-        if (selectedPackage) {
-          params.set("package", selectedPackage);
+        if (activePackage) {
+          params.set("package", activePackage);
         }
 
         const queryString = params.toString();
@@ -379,12 +381,12 @@ function App() {
     };
   }, [
     debouncedSearch,
-    selectedCategory,
-    selectedManufacturer,
-    selectedPackage,
+    activeCategory,
+    activeManufacturer,
+    activePackage,
   ]);
 
-  // Calculate manufacturer options using the other active filters.
+  // Calculate manufacturer options using the other active filters on the current page.
   const manufacturers = useMemo(() => {
     return [
       ...new Set(
@@ -398,12 +400,12 @@ function App() {
                 .includes(search.trim().toLowerCase());
 
             const matchesCategory =
-              selectedCategory === "All Components" ||
-              component.category === selectedCategory;
+              activeCategory === "All Components" ||
+              component.category === activeCategory;
 
             const matchesPackage =
-              !selectedPackage ||
-              component.package?.name === selectedPackage;
+              !activePackage ||
+              component.package?.name === activePackage;
 
             return matchesSearch && matchesCategory && matchesPackage;
           })
@@ -411,9 +413,9 @@ function App() {
           .filter(Boolean)
       ),
     ].sort((a, b) => a.localeCompare(b));
-  }, [filterOptions, search, selectedCategory, selectedPackage]);
+  }, [filterOptions, search, activeCategory, activePackage]);
 
-  // Calculate package options using the other active filters.
+  // Calculate package options using the other active filters on the current page.
   const packages = useMemo(() => {
     return [
       ...new Set(
@@ -429,12 +431,12 @@ function App() {
                 .includes(search.trim().toLowerCase());
 
             const matchesCategory =
-              selectedCategory === "All Components" ||
-              component.category === selectedCategory;
+              activeCategory === "All Components" ||
+              component.category === activeCategory;
 
             const matchesManufacturer =
-              !selectedManufacturer ||
-              component.manufacturer === selectedManufacturer;
+              !activeManufacturer ||
+              component.manufacturer === activeManufacturer;
 
             return matchesSearch && matchesCategory && matchesManufacturer;
           })
@@ -442,7 +444,7 @@ function App() {
           .filter((name): name is string => Boolean(name))
       ),
     ].sort((a, b) => a.localeCompare(b));
-  }, [filterOptions, search, selectedCategory, selectedManufacturer]);
+  }, [filterOptions, search, activeCategory, activeManufacturer]);
 
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {
@@ -453,14 +455,22 @@ function App() {
     }
     return counts;
   }, [filterOptions, components.length]);
-  
-
 
   function clearFilters() {
-    setSearch("");
-    setSelectedCategory("All Components");
-    setSelectedManufacturer("");
-    setSelectedPackage("");
+    if (isPcbView) {
+      setPcbCategory("All Components");
+      setPcbManufacturer("");
+      setPcbPackage("");
+    } else if (isCompareView) {
+      setCompareCategory("All Components");
+      setCompareManufacturer("");
+      setComparePackage("");
+    } else {
+      setSearch("");
+      setSelectedCategory("All Components");
+      setSelectedManufacturer("");
+      setSelectedPackage("");
+    }
   }
 
   return (
@@ -480,38 +490,21 @@ function App() {
       <div className={`workspace-body ${!showSidebar ? "home-layout" : ""}`}>
         {showSidebar && (
           <aside className="sidebar" aria-label="Parametric and category filters">
-            <div className="sidebar-section">
-              <div className="sidebar-label">CATEGORIES</div>
-
-              <nav className="category-list">
-                {categories.map((category) => (
-                  <button
-                    className={
-                      selectedCategory === category.name
-                        ? "category-item selected"
-                        : "category-item"
-                    }
-                    key={category.name}
-                    type="button"
-                    onClick={() => {
-                      setSelectedCategory(category.name);
-                      if (!isLibraryView) {
-                        navigate("/library");
-                      }
-                    }}
-                  >
-                    <span className="category-icon">{category.icon}</span>
-                    <span>{category.name}</span>
-
-                    {categoryCounts[category.name] != null && (
-                      <span className="category-count">
-                        {categoryCounts[category.name]}
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </nav>
-            </div>
+            {/* Shared Library-design Category Cards Section */}
+            <CategoryCardsSection
+              categories={categories}
+              categoryCounts={categoryCounts}
+              selectedCategory={activeCategory}
+              onSelectCategory={(catName) => {
+                if (isPcbView) {
+                  setPcbCategory(catName);
+                } else if (isCompareView) {
+                  setCompareCategory(catName);
+                } else {
+                  setSelectedCategory(catName);
+                }
+              }}
+            />
 
             <div className="sidebar-section sidebar-filters">
               <div className="sidebar-label">PARAMETRIC FILTERS</div>
@@ -520,10 +513,17 @@ function App() {
                 <label htmlFor="manufacturer-filter">Manufacturer</label>
                 <select
                   id="manufacturer-filter"
-                  value={selectedManufacturer}
-                  onChange={(event) =>
-                    setSelectedManufacturer(event.target.value)
-                  }
+                  value={activeManufacturer}
+                  onChange={(event) => {
+                    const val = event.target.value;
+                    if (isPcbView) {
+                      setPcbManufacturer(val);
+                    } else if (isCompareView) {
+                      setCompareManufacturer(val);
+                    } else {
+                      setSelectedManufacturer(val);
+                    }
+                  }}
                 >
                   <option value="">All manufacturers ({manufacturers.length})</option>
                   {manufacturers.map((manufacturer) => (
@@ -538,8 +538,17 @@ function App() {
                 <label htmlFor="package-filter">Package / Case</label>
                 <select
                   id="package-filter"
-                  value={selectedPackage}
-                  onChange={(event) => setSelectedPackage(event.target.value)}
+                  value={activePackage}
+                  onChange={(event) => {
+                    const val = event.target.value;
+                    if (isPcbView) {
+                      setPcbPackage(val);
+                    } else if (isCompareView) {
+                      setComparePackage(val);
+                    } else {
+                      setSelectedPackage(val);
+                    }
+                  }}
                 >
                   <option value="">All packages ({packages.length})</option>
                   {packages.map((packageName) => (
@@ -641,43 +650,12 @@ function App() {
                         aria-label="Component categories and parametric filters"
                       >
                         {/* Category Cards Section */}
-                        <div className="library-sidebar-categories">
-                          <div className="library-sidebar-heading">Categories</div>
-                          <div
-                            className="library-sidebar-cat-list"
-                            role="tablist"
-                            aria-label="Component categories"
-                          >
-                            {categories.map((category) => {
-                              const isSelected = selectedCategory === category.name;
-                              const count = categoryCounts[category.name] ?? 0;
-                              return (
-                                <button
-                                  key={category.name}
-                                  type="button"
-                                  className={`library-sidebar-cat-card ${
-                                    isSelected ? "active" : ""
-                                  }`}
-                                  onClick={() => setSelectedCategory(category.name)}
-                                  title={`Filter by ${category.name} (${count} parts)`}
-                                  aria-pressed={isSelected}
-                                >
-                                  <div className="library-sidebar-cat-icon">
-                                    {getCategoryIcon(category.name)}
-                                  </div>
-                                  <div className="library-sidebar-cat-info">
-                                    <span className="library-sidebar-cat-name">
-                                      {category.name}
-                                    </span>
-                                    <span className="library-sidebar-cat-count mono-num">
-                                      {count} {count === 1 ? "part" : "parts"}
-                                    </span>
-                                  </div>
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
+                        <CategoryCardsSection
+                          categories={categories}
+                          categoryCounts={categoryCounts}
+                          selectedCategory={selectedCategory}
+                          onSelectCategory={setSelectedCategory}
+                        />
 
                         {/* Mobile Collapsible Filters Toggle Button (<900px only) */}
                         <button
@@ -1122,7 +1100,7 @@ function App() {
                                   fallbackIcon={
                                     <div className="card-category-placeholder">
                                       <div className="card-category-placeholder-icon">
-                                        {getCategoryIcon(component.category)}
+                                        <CategoryIcon categoryName={component.category} />
                                       </div>
                                       <span className="card-category-placeholder-label">
                                         {component.category}
@@ -1630,6 +1608,8 @@ function App() {
                   {components.map((component) => {
                     const audit = auditComponentFootprint(component);
                     const isVerified = component.dataStatus === "verified";
+                    const isCardSelected =
+                      selectedComponent?._id === component._id;
                     const sourceFields = [
                       audit.fields.package,
                       audit.fields.pinCount,
@@ -1644,11 +1624,12 @@ function App() {
                       <article
                         className={`pcb-card cad-grid-overlay ${
                           audit.canDrawFootprint ? "pcb-card-interactive" : ""
-                        }`}
+                        } ${isCardSelected ? "pcb-card-selected" : ""}`}
                         key={component._id}
                       >
+                        {/* 1. Card Identity Header */}
                         <div className="pcb-card-header">
-                          <div>
+                          <div className="pcb-card-title-group">
                             <span className="part-number">
                               {component.partNumber}
                             </span>
@@ -1672,78 +1653,101 @@ function App() {
                           </div>
                         </div>
 
-                        {audit.canDrawFootprint ? (
-                          <InteractiveFootprintViewer
-                            key={component._id}
-                            component={component}
-                            missingFields={audit.missingFields}
-                          />
-                        ) : (
-                          <div
-                            className="pcb-footprint-empty-state"
-                            role="region"
-                            aria-label={`Footprint unavailable for ${component.partNumber}`}
-                          >
-                            <div className="pcb-empty-state-title">
-                              Footprint Not Drawn
-                            </div>
-                            <p className="pcb-empty-state-reason">
-                              {renderValueWithMonoNumbers(audit.emptyStateReason)}
-                            </p>
-                            <div className="pcb-missing-banner">
-                              <strong>Missing:</strong> {audit.missingFields.join(", ")}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Viva Note: Data Sources panel explicitly shows the value and provenance
-                            for each of the 7 footprint parameters plus official technical links. */}
-                        <div className="pcb-data-sources-panel">
-                          <div className="pcb-data-sources-header">
-                            <h4>Data sources</h4>
-                            <span
-                              className={`pcb-datastatus-inline ${
-                                isVerified ? "status-verified" : "status-incomplete"
-                              }`}
-                            >
-                              {isVerified ? "Verified" : "Incomplete"}
-                            </span>
-                          </div>
-
-                          <dl className="pcb-sources-list">
-                            {sourceFields.map((field) => (
-                              <div className="pcb-source-row" key={field.key}>
-                                <dt className="pcb-source-label">{field.label}</dt>
-                                <dd className="pcb-source-value-group">
-                                  {field.key === "pinout" &&
-                                  component.pins &&
-                                  component.pins.length > 0 ? (
-                                    <div className="pcb-pinout-chips">
-                                      {component.pins.map((pin, idx) => (
-                                        <span
-                                          className="pcb-pin-chip"
-                                          key={`${pin.number ?? idx}-${pin.name ?? ""}`}
-                                        >
-                                          <span className="pcb-mono-num">
-                                            {pin.number}
-                                          </span>
-                                          <span>: {pin.name}</span>
-                                        </span>
-                                      ))}
-                                    </div>
-                                  ) : (
-                                    <span className="pcb-source-value">
-                                      {renderValueWithMonoNumbers(field.value)}
-                                    </span>
-                                  )}
-                                  <span className={getProvenanceBadgeClass(field.provenance)}>
-                                    {field.provenance}
-                                  </span>
-                                </dd>
+                        {/* 2. Footprint Drawing & Interactive Inspection Area */}
+                        <div className="pcb-card-footprint-section">
+                          {audit.canDrawFootprint ? (
+                            <InteractiveFootprintViewer
+                              key={component._id}
+                              component={component}
+                              missingFields={audit.missingFields}
+                            />
+                          ) : (
+                            <div className="pcb-empty-workspace">
+                              <div
+                                className="pcb-footprint-empty-state"
+                                role="region"
+                                aria-label={`Footprint unavailable for ${component.partNumber}`}
+                              >
+                                <div className="pcb-empty-state-title">
+                                  Footprint Not Drawn
+                                </div>
+                                <p className="pcb-empty-state-reason">
+                                  {renderValueWithMonoNumbers(audit.emptyStateReason)}
+                                </p>
+                                <div className="pcb-missing-banner">
+                                  <strong>Missing:</strong> {audit.missingFields.join(", ")}
+                                </div>
                               </div>
-                            ))}
-                          </dl>
+                              <div className="pcb-side-column">
+                                <PcbComponentPhotoPanel component={component} />
+                              </div>
+                            </div>
+                          )}
+                        </div>
 
+                        {/* 3. Specifications, Provenance Data Sources & Layout Notes */}
+                        <div className="pcb-card-specs-section">
+                          <div className="pcb-data-sources-panel">
+                            <div className="pcb-data-sources-header">
+                              <h4>Data sources</h4>
+                              <span
+                                className={`pcb-datastatus-inline ${
+                                  isVerified ? "status-verified" : "status-incomplete"
+                                }`}
+                              >
+                                {isVerified ? "Verified" : "Incomplete"}
+                              </span>
+                            </div>
+
+                            <dl className="pcb-sources-list">
+                              {sourceFields.map((field) => (
+                                <div className="pcb-source-row" key={field.key}>
+                                  <dt className="pcb-source-label">{field.label}</dt>
+                                  <dd className="pcb-source-value-group">
+                                    {field.key === "pinout" &&
+                                    component.pins &&
+                                    component.pins.length > 0 ? (
+                                      <div className="pcb-pinout-chips">
+                                        {component.pins.map((pin, idx) => (
+                                          <span
+                                            className="pcb-pin-chip"
+                                            key={`${pin.number ?? idx}-${pin.name ?? ""}`}
+                                          >
+                                            <span className="pcb-mono-num">
+                                              {pin.number}
+                                            </span>
+                                            <span>: {pin.name}</span>
+                                          </span>
+                                        ))}
+                                      </div>
+                                    ) : (
+                                      <span className="pcb-source-value">
+                                        {renderValueWithMonoNumbers(field.value)}
+                                      </span>
+                                    )}
+                                    <span className={getProvenanceBadgeClass(field.provenance)}>
+                                      {field.provenance}
+                                    </span>
+                                  </dd>
+                                </div>
+                              ))}
+                            </dl>
+                          </div>
+
+                          {component.package?.padLayout ? (
+                            <p className="pcb-pad-note">
+                              <strong>Layout Reference:</strong>{" "}
+                              {renderValueWithMonoNumbers(component.package.padLayout)}
+                            </p>
+                          ) : (
+                            <p className="pcb-pad-note muted">
+                              No layout notes in database. Consult manufacturer land pattern.
+                            </p>
+                          )}
+                        </div>
+
+                        {/* 4. Action Links & Modal Trigger Footer */}
+                        <div className="pcb-card-footer">
                           <div className="pcb-sources-links">
                             {isValidHttpUrl(component.datasheetUrl) ? (
                               <a
@@ -1774,35 +1778,24 @@ function App() {
                                 Manufacturer link: Not available
                               </span>
                             )}
-
-                            <button
-                              className="details-button"
-                              type="button"
-                              onClick={() => setSelectedComponent(component)}
-                            >
-                              {component.pins && component.pins.length > 0 ? (
-                                <>
-                                  Pinout (<span className="pcb-mono-num">{component.pins.length}</span> Pins) <span>→</span>
-                                </>
-                              ) : (
-                                <>
-                                  View Details <span>→</span>
-                                </>
-                              )}
-                            </button>
                           </div>
-                        </div>
 
-                        {component.package?.padLayout ? (
-                          <p className="pcb-pad-note">
-                            <strong>Layout Reference:</strong>{" "}
-                            {renderValueWithMonoNumbers(component.package.padLayout)}
-                          </p>
-                        ) : (
-                          <p className="pcb-pad-note muted">
-                            No layout notes in database. Consult manufacturer land pattern.
-                          </p>
-                        )}
+                          <button
+                            className="details-button"
+                            type="button"
+                            onClick={() => setSelectedComponent(component)}
+                          >
+                            {component.pins && component.pins.length > 0 ? (
+                              <>
+                                Pinout (<span className="pcb-mono-num">{component.pins.length}</span> Pins) <span>→</span>
+                              </>
+                            ) : (
+                              <>
+                                View Details <span>→</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
                       </article>
                     );
                   })}
@@ -1816,53 +1809,119 @@ function App() {
                 path="/compare"
                 element={
                   <section className="compare-view">
-                    <div className="compare-top-row">
-                      <div>
-                        <div className="eyebrow">COMPONENT MATRIX</div>
-                        <h1>Component Comparison</h1>
-                        <p className="subtitle">
-                          Comparing {selectedForCompare.length} components side-by-side
-                          across general attributes, packaging, and technical
-                          specifications.
-                        </p>
-                      </div>
-
-                      <div className="compare-view-buttons">
+                    <div className="compare-header-container">
+                      <nav className="compare-breadcrumb" aria-label="Breadcrumb">
                         <button
-                          className="filter-button"
                           type="button"
+                          className="compare-breadcrumb-link"
                           onClick={() => navigate("/library")}
                         >
-                          ← Back to Library
+                          Library
                         </button>
+                        <span className="compare-breadcrumb-separator">/</span>
+                        <span className="compare-breadcrumb-active">Component Comparison</span>
+                      </nav>
 
-                        <button
-                          className="filter-button reset-filters-button"
-                          type="button"
-                          onClick={() => setSelectedForCompare([])}
-                        >
-                          Clear comparison
-                        </button>
+                      <div className="compare-top-row">
+                        <div className="compare-heading-group">
+                          <div className="eyebrow">ENGINEERING COMPARISON MATRIX</div>
+                          <h1>Component Comparison</h1>
+                          <p className="subtitle">
+                            {selectedForCompare.length === 0
+                              ? "Compare up to 4 components side by side across physical packaging, technical specifications, and pinout attributes."
+                              : `Comparing ${selectedForCompare.length} of 4 components side by side across physical packaging, technical specifications, and pinout attributes.`}
+                          </p>
+                        </div>
+
+                        <div className="compare-view-buttons">
+                          <button
+                            className="filter-button"
+                            type="button"
+                            onClick={() => navigate("/library")}
+                          >
+                            <ArrowLeft size={14} /> Back to Library
+                          </button>
+
+                          {selectedForCompare.length > 0 && (
+                            <button
+                              className="filter-button reset-filters-button"
+                              type="button"
+                              onClick={() => setSelectedForCompare([])}
+                              title="Clear all components from comparison"
+                            >
+                              <Trash2 size={14} /> Clear comparison
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
 
                     {selectedForCompare.length < 2 ? (
                       <div className="compare-empty-container">
                         <div className="compare-empty-card">
-                          <span className="compare-empty-icon">⇄</span>
+                          <div className="compare-empty-icon-wrap">
+                            <ArrowLeftRight size={24} />
+                          </div>
                           <h2>Select at least 2 components to compare</h2>
                           <p>
                             {selectedForCompare.length === 1
-                              ? `You have selected 1 component (${selectedForCompare[0].partNumber}). Select at least 1 more component from the library to compare side by side.`
-                              : "You haven't selected any components yet. Choose 2 to 4 components from the component library to compare their technical specifications and physical dimensions."}
+                              ? `You have selected 1 component (${selectedForCompare[0].partNumber} — ${selectedForCompare[0].name}). Add at least 1 more component from the library to compare specifications side by side.`
+                              : "You haven't selected any components yet. Choose 2 to 4 components from the component library or PCB assistant to compare their technical parameters, physical dimensions, and pin configurations."}
                           </p>
-                          <button
-                            className="filter-button primary-accent"
-                            type="button"
-                            onClick={() => navigate("/library")}
-                          >
-                            ← Go to Component Library
-                          </button>
+
+                          <div className="compare-slot-indicators">
+                            {[0, 1, 2, 3].map((idx) => {
+                              const comp = selectedForCompare[idx];
+                              return comp ? (
+                                <div key={comp._id} className="compare-slot-pill filled">
+                                  <span className="slot-idx">{idx + 1}</span>
+                                  <span className="slot-part" title={comp.partNumber}>
+                                    {comp.partNumber}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    className="slot-remove"
+                                    onClick={() => toggleCompare(comp)}
+                                    title={`Remove ${comp.partNumber}`}
+                                    aria-label={`Remove ${comp.partNumber}`}
+                                  >
+                                    <X size={12} />
+                                  </button>
+                                </div>
+                              ) : (
+                                <div
+                                  key={idx}
+                                  className={`compare-slot-pill empty ${idx === selectedForCompare.length ? "next-slot" : ""}`}
+                                  onClick={() => navigate("/library")}
+                                  role="button"
+                                  tabIndex={0}
+                                  title="Add component to this slot"
+                                >
+                                  <span className="slot-idx">{idx + 1}</span>
+                                  <span className="slot-label">Empty Slot</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          <div className="compare-empty-actions">
+                            <button
+                              className="filter-button primary-accent"
+                              type="button"
+                              onClick={() => navigate("/library")}
+                            >
+                              Browse Component Library <ArrowRight size={14} />
+                            </button>
+                            {selectedForCompare.length === 1 && (
+                              <button
+                                className="filter-button"
+                                type="button"
+                                onClick={() => setSelectedForCompare([])}
+                              >
+                                Clear selection
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ) : (
@@ -1875,15 +1934,17 @@ function App() {
                                 <th className="component-col-header" key={c._id}>
                                   <div className="th-card">
                                     <div className="th-header">
-                                      <span className="th-part">{c.partNumber}</span>
+                                      <span className="th-part" title={c.partNumber}>
+                                        {c.partNumber}
+                                      </span>
                                       <button
-                                        className="th-eject-btn"
+                                        className="th-remove-btn"
                                         type="button"
                                         onClick={() => toggleCompare(c)}
-                                        title={`Eject ${c.partNumber} from matrix`}
-                                        aria-label={`Eject ${c.partNumber}`}
+                                        title={`Remove ${c.partNumber} from matrix`}
+                                        aria-label={`Remove ${c.partNumber}`}
                                       >
-                                        [× Eject]
+                                        <X size={14} />
                                       </button>
                                     </div>
                                     <div className="compare-thumb-wrap">
@@ -1893,13 +1954,23 @@ function App() {
                                         showProvenanceBadge
                                       />
                                     </div>
-                                    <div className="th-name">{c.name}</div>
+                                    <div className="th-name" title={c.name}>
+                                      {c.name}
+                                    </div>
+                                    <div className="th-meta">
+                                      <span className="th-manufacturer" title={c.manufacturer}>
+                                        {c.manufacturer || "Manufacturer"}
+                                      </span>
+                                      <span className="th-package" title={c.package?.name}>
+                                        {c.package?.name || "Standard"}
+                                      </span>
+                                    </div>
                                     <button
-                                      className="th-details-link"
+                                      className="th-details-button"
                                       type="button"
                                       onClick={() => setSelectedComponent(c)}
                                     >
-                                      View details ↗
+                                      View full specs ↗
                                     </button>
                                   </div>
                                 </th>
@@ -1907,263 +1978,321 @@ function App() {
                               {selectedForCompare.length < 4 && (
                                 <th className="component-col-header add-slot-col">
                                   <button
-                                    className="th-card add-slot-card"
+                                    className="add-slot-card"
                                     type="button"
                                     onClick={() => navigate("/library")}
-                                    title="Select another component from catalog to compare"
+                                    title="Add another component from catalogue to compare"
                                   >
-                                    <span className="add-slot-plus">+</span>
-                                    <span className="add-slot-text">Add Part Slot</span>
-                                    <span className="add-slot-count">({selectedForCompare.length}/4)</span>
+                                    <div className="add-slot-icon-box">
+                                      <Plus size={18} />
+                                    </div>
+                                    <span className="add-slot-text">Add Component</span>
+                                    <span className="add-slot-count">
+                                      ({selectedForCompare.length}/4 selected)
+                                    </span>
                                   </button>
                                 </th>
                               )}
                             </tr>
-                    </thead>
-                    <tbody>
-                      <tr className="section-row">
-                        <td colSpan={selectedForCompare.length + (selectedForCompare.length < 4 ? 2 : 1)}>
-                          General Identification
-                        </td>
-                      </tr>
+                          </thead>
+                          <tbody>
+                            <tr className="section-row">
+                              <td colSpan={selectedForCompare.length + (selectedForCompare.length < 4 ? 2 : 1)}>
+                                General Identification
+                              </td>
+                            </tr>
 
-                      <tr className="row-divergent">
-                        <td className="row-label">
-                          <span>Part Number</span>
-                          <span className="diff-badge">DIFF</span>
-                        </td>
-                        {selectedForCompare.map((c) => (
-                          <td key={c._id} className="mono-val">
-                            {c.partNumber || "—"}
-                          </td>
-                        ))}
-                        {selectedForCompare.length < 4 && <td className="add-slot-cell" />}
-                      </tr>
-
-                      <tr className={isRowDivergent(selectedForCompare.map((c) => c.name)) ? "row-divergent" : ""}>
-                        <td className="row-label">
-                          <span>Name</span>
-                          {isRowDivergent(selectedForCompare.map((c) => c.name)) && (
-                            <span className="diff-badge">DIFF</span>
-                          )}
-                        </td>
-                        {selectedForCompare.map((c) => (
-                          <td key={c._id}>{c.name || "—"}</td>
-                        ))}
-                        {selectedForCompare.length < 4 && <td className="add-slot-cell" />}
-                      </tr>
-
-                      <tr className={isRowDivergent(selectedForCompare.map((c) => c.category)) ? "row-divergent" : ""}>
-                        <td className="row-label">
-                          <span>Category</span>
-                          {isRowDivergent(selectedForCompare.map((c) => c.category)) && (
-                            <span className="diff-badge">DIFF</span>
-                          )}
-                        </td>
-                        {selectedForCompare.map((c) => (
-                          <td key={c._id}>{c.category || "—"}</td>
-                        ))}
-                        {selectedForCompare.length < 4 && <td className="add-slot-cell" />}
-                      </tr>
-
-                      <tr className={isRowDivergent(selectedForCompare.map((c) => c.manufacturer)) ? "row-divergent" : ""}>
-                        <td className="row-label">
-                          <span>Manufacturer</span>
-                          {isRowDivergent(selectedForCompare.map((c) => c.manufacturer)) && (
-                            <span className="diff-badge">DIFF</span>
-                          )}
-                        </td>
-                        {selectedForCompare.map((c) => (
-                          <td key={c._id}>
-                            {c.manufacturer || "—"}
-                          </td>
-                        ))}
-                        {selectedForCompare.length < 4 && <td className="add-slot-cell" />}
-                      </tr>
-
-                      <tr>
-                        <td className="row-label">
-                          <span>Datasheet</span>
-                        </td>
-                        {selectedForCompare.map((c) => (
-                          <td key={c._id}>
-                            {isValidHttpUrl(c.datasheetUrl) ? (
-                              <a
-                                className="table-link"
-                                href={c.datasheetUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                Open PDF ↗
-                              </a>
-                            ) : (
-                              "—"
-                            )}
-                          </td>
-                        ))}
-                        {selectedForCompare.length < 4 && <td className="add-slot-cell" />}
-                      </tr>
-
-                      <tr className="section-row">
-                        <td colSpan={selectedForCompare.length + (selectedForCompare.length < 4 ? 2 : 1)}>
-                          Package & Physical Footprint
-                        </td>
-                      </tr>
-
-                      <tr className={isRowDivergent(selectedForCompare.map((c) => c.package?.name)) ? "row-divergent" : ""}>
-                        <td className="row-label">
-                          <span>Package Name</span>
-                          {isRowDivergent(selectedForCompare.map((c) => c.package?.name)) && (
-                            <span className="diff-badge">DIFF</span>
-                          )}
-                        </td>
-                        {selectedForCompare.map((c) => (
-                          <td key={c._id}>
-                            {c.package?.name || "—"}
-                          </td>
-                        ))}
-                        {selectedForCompare.length < 4 && <td className="add-slot-cell" />}
-                      </tr>
-
-                      <tr className={isRowDivergent(selectedForCompare.map((c) => c.package?.mountingType)) ? "row-divergent" : ""}>
-                        <td className="row-label">
-                          <span>Mounting Type</span>
-                          {isRowDivergent(selectedForCompare.map((c) => c.package?.mountingType)) && (
-                            <span className="diff-badge">DIFF</span>
-                          )}
-                        </td>
-                        {selectedForCompare.map((c) => (
-                          <td key={c._id}>
-                            {c.package?.mountingType || "—"}
-                          </td>
-                        ))}
-                        {selectedForCompare.length < 4 && <td className="add-slot-cell" />}
-                      </tr>
-
-                      <tr className={isRowDivergent(selectedForCompare.map((c) => formatDimensions(c.package))) ? "row-divergent" : ""}>
-                        <td className="row-label">
-                          <span>Body Dimensions</span>
-                          {isRowDivergent(selectedForCompare.map((c) => formatDimensions(c.package))) && (
-                            <span className="diff-badge">DIFF</span>
-                          )}
-                        </td>
-                        {selectedForCompare.map((c) => (
-                          <td key={c._id}>{formatDimensions(c.package)}</td>
-                        ))}
-                        {selectedForCompare.length < 4 && <td className="add-slot-cell" />}
-                      </tr>
-
-                      <tr className={isRowDivergent(selectedForCompare.map((c) => c.package?.pcbLayout?.leadPitchMm != null ? `${c.package.pcbLayout.leadPitchMm} mm` : "—")) ? "row-divergent" : ""}>
-                        <td className="row-label">
-                          <span>Lead Pitch</span>
-                          {isRowDivergent(selectedForCompare.map((c) => c.package?.pcbLayout?.leadPitchMm != null ? `${c.package.pcbLayout.leadPitchMm} mm` : "—")) && (
-                            <span className="diff-badge">DIFF</span>
-                          )}
-                        </td>
-                        {selectedForCompare.map((c) => (
-                          <td key={c._id}>
-                            {c.package?.pcbLayout?.leadPitchMm != null
-                              ? `${c.package.pcbLayout.leadPitchMm} mm`
-                              : "—"}
-                          </td>
-                        ))}
-                        {selectedForCompare.length < 4 && <td className="add-slot-cell" />}
-                      </tr>
-
-                      <tr className={isRowDivergent(selectedForCompare.map((c) => c.pins && c.pins.length > 0 ? `${c.pins.length} pins` : "—")) ? "row-divergent" : ""}>
-                        <td className="row-label">
-                          <span>Pin Count</span>
-                          {isRowDivergent(selectedForCompare.map((c) => c.pins && c.pins.length > 0 ? `${c.pins.length} pins` : "—")) && (
-                            <span className="diff-badge">DIFF</span>
-                          )}
-                        </td>
-                        {selectedForCompare.map((c) => (
-                          <td key={c._id}>
-                            {c.pins && c.pins.length > 0
-                              ? `${c.pins.length} pins`
-                              : "—"}
-                          </td>
-                        ))}
-                        {selectedForCompare.length < 4 && <td className="add-slot-cell" />}
-                      </tr>
-
-                      <tr className={isRowDivergent(selectedForCompare.map((c) => c.package?.padLayout)) ? "row-divergent" : ""}>
-                        <td className="row-label">
-                          <span>Pad Layout Reference</span>
-                          {isRowDivergent(selectedForCompare.map((c) => c.package?.padLayout)) && (
-                            <span className="diff-badge">DIFF</span>
-                          )}
-                        </td>
-                        {selectedForCompare.map((c) => (
-                          <td key={c._id}>
-                            {c.package?.padLayout || "—"}
-                          </td>
-                        ))}
-                        {selectedForCompare.length < 4 && <td className="add-slot-cell" />}
-                      </tr>
-
-                      <tr className="section-row">
-                        <td colSpan={selectedForCompare.length + (selectedForCompare.length < 4 ? 2 : 1)}>
-                          Technical Specifications
-                        </td>
-                      </tr>
-
-                      {specKeysToDisplay.length === 0 ? (
-                        <tr>
-                          <td className="row-label">Specifications</td>
-                          <td
-                            colSpan={selectedForCompare.length + (selectedForCompare.length < 4 ? 1 : 0)}
-                            className="muted-cell"
-                          >
-                            No technical specifications recorded for these
-                            components.
-                          </td>
-                        </tr>
-                      ) : (
-                        specKeysToDisplay.map((specKey) => {
-                          const valList = selectedForCompare.map((c) => {
-                            const val = c.specifications?.[specKey];
-                            const unit = findUnitForSpecKey(specKey, c.specifications);
-                            return formatSpecValue(val, unit);
-                          });
-                          const rowDivergent = isRowDivergent(valList);
-
-                          return (
-                            <tr key={specKey} className={rowDivergent ? "row-divergent" : ""}>
+                            <tr className={isRowDivergent(selectedForCompare.map((c) => c.partNumber)) ? "row-divergent" : ""}>
                               <td className="row-label">
-                                <span>{formatSpecKeyLabel(specKey)}</span>
-                                {rowDivergent && <span className="diff-badge">DIFF</span>}
+                                <span>Part Number</span>
+                                {isRowDivergent(selectedForCompare.map((c) => c.partNumber)) && (
+                                  <span className="diff-badge">DIFF</span>
+                                )}
+                              </td>
+                              {selectedForCompare.map((c) => (
+                                <td key={c._id} className="mono-val">
+                                  {c.partNumber || <span className="muted-cell">Not available</span>}
+                                </td>
+                              ))}
+                              {selectedForCompare.length < 4 && <td className="add-slot-cell" />}
+                            </tr>
+
+                            <tr className={isRowDivergent(selectedForCompare.map((c) => c.name)) ? "row-divergent" : ""}>
+                              <td className="row-label">
+                                <span>Name</span>
+                                {isRowDivergent(selectedForCompare.map((c) => c.name)) && (
+                                  <span className="diff-badge">DIFF</span>
+                                )}
+                              </td>
+                              {selectedForCompare.map((c) => (
+                                <td key={c._id}>
+                                  {c.name || <span className="muted-cell">Not available</span>}
+                                </td>
+                              ))}
+                              {selectedForCompare.length < 4 && <td className="add-slot-cell" />}
+                            </tr>
+
+                            <tr className={isRowDivergent(selectedForCompare.map((c) => c.category)) ? "row-divergent" : ""}>
+                              <td className="row-label">
+                                <span>Category</span>
+                                {isRowDivergent(selectedForCompare.map((c) => c.category)) && (
+                                  <span className="diff-badge">DIFF</span>
+                                )}
+                              </td>
+                              {selectedForCompare.map((c) => (
+                                <td key={c._id}>
+                                  {c.category || <span className="muted-cell">Not available</span>}
+                                </td>
+                              ))}
+                              {selectedForCompare.length < 4 && <td className="add-slot-cell" />}
+                            </tr>
+
+                            <tr className={isRowDivergent(selectedForCompare.map((c) => c.manufacturer)) ? "row-divergent" : ""}>
+                              <td className="row-label">
+                                <span>Manufacturer</span>
+                                {isRowDivergent(selectedForCompare.map((c) => c.manufacturer)) && (
+                                  <span className="diff-badge">DIFF</span>
+                                )}
+                              </td>
+                              {selectedForCompare.map((c) => (
+                                <td key={c._id}>
+                                  {c.manufacturer || <span className="muted-cell">Not available</span>}
+                                </td>
+                              ))}
+                              {selectedForCompare.length < 4 && <td className="add-slot-cell" />}
+                            </tr>
+
+                            <tr>
+                              <td className="row-label">
+                                <span>Datasheet</span>
+                              </td>
+                              {selectedForCompare.map((c) => (
+                                <td key={c._id}>
+                                  {isValidHttpUrl(c.datasheetUrl) ? (
+                                    <a
+                                      className="table-link"
+                                      href={c.datasheetUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
+                                      Open PDF ↗
+                                    </a>
+                                  ) : (
+                                    <span className="muted-cell">Not available</span>
+                                  )}
+                                </td>
+                              ))}
+                              {selectedForCompare.length < 4 && <td className="add-slot-cell" />}
+                            </tr>
+
+                            <tr className="section-row">
+                              <td colSpan={selectedForCompare.length + (selectedForCompare.length < 4 ? 2 : 1)}>
+                                Package & Physical Footprint
+                              </td>
+                            </tr>
+
+                            <tr className={isRowDivergent(selectedForCompare.map((c) => c.package?.name)) ? "row-divergent" : ""}>
+                              <td className="row-label">
+                                <span>Package Name</span>
+                                {isRowDivergent(selectedForCompare.map((c) => c.package?.name)) && (
+                                  <span className="diff-badge">DIFF</span>
+                                )}
+                              </td>
+                              {selectedForCompare.map((c) => (
+                                <td key={c._id}>
+                                  {c.package?.name || <span className="muted-cell">Not available</span>}
+                                </td>
+                              ))}
+                              {selectedForCompare.length < 4 && <td className="add-slot-cell" />}
+                            </tr>
+
+                            <tr className={isRowDivergent(selectedForCompare.map((c) => c.package?.mountingType)) ? "row-divergent" : ""}>
+                              <td className="row-label">
+                                <span>Mounting Type</span>
+                                {isRowDivergent(selectedForCompare.map((c) => c.package?.mountingType)) && (
+                                  <span className="diff-badge">DIFF</span>
+                                )}
+                              </td>
+                              {selectedForCompare.map((c) => (
+                                <td key={c._id}>
+                                  {c.package?.mountingType || <span className="muted-cell">Not available</span>}
+                                </td>
+                              ))}
+                              {selectedForCompare.length < 4 && <td className="add-slot-cell" />}
+                            </tr>
+
+                            <tr className={isRowDivergent(selectedForCompare.map((c) => formatDimensions(c.package))) ? "row-divergent" : ""}>
+                              <td className="row-label">
+                                <span>Body Dimensions</span>
+                                {isRowDivergent(selectedForCompare.map((c) => formatDimensions(c.package))) && (
+                                  <span className="diff-badge">DIFF</span>
+                                )}
                               </td>
                               {selectedForCompare.map((c) => {
-                                const val = c.specifications?.[specKey];
-                                const unit = findUnitForSpecKey(
-                                  specKey,
-                                  c.specifications
-                                );
-                                const display = formatSpecValue(val, unit);
+                                const dims = formatDimensions(c.package);
                                 return (
-                                  <td
-                                    key={c._id}
-                                    className={
-                                      display === "—"
-                                        ? "muted-cell"
-                                        : ""
-                                    }
-                                  >
-                                    {display}
+                                  <td key={c._id}>
+                                    {dims !== "Not available" ? (
+                                      dims
+                                    ) : (
+                                      <span className="muted-cell">Not available</span>
+                                    )}
                                   </td>
                                 );
                               })}
                               {selectedForCompare.length < 4 && <td className="add-slot-cell" />}
                             </tr>
-                          );
-                        })
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </section>
+
+                            <tr
+                              className={
+                                isRowDivergent(
+                                  selectedForCompare.map((c) =>
+                                    c.package?.pcbLayout?.leadPitchMm != null
+                                      ? `${c.package.pcbLayout.leadPitchMm} mm`
+                                      : null
+                                  )
+                                )
+                                  ? "row-divergent"
+                                  : ""
+                              }
+                            >
+                              <td className="row-label">
+                                <span>Lead Pitch</span>
+                                {isRowDivergent(
+                                  selectedForCompare.map((c) =>
+                                    c.package?.pcbLayout?.leadPitchMm != null
+                                      ? `${c.package.pcbLayout.leadPitchMm} mm`
+                                      : null
+                                  )
+                                ) && <span className="diff-badge">DIFF</span>}
+                              </td>
+                              {selectedForCompare.map((c) => (
+                                <td key={c._id}>
+                                  {c.package?.pcbLayout?.leadPitchMm != null ? (
+                                    `${c.package.pcbLayout.leadPitchMm} mm`
+                                  ) : (
+                                    <span className="muted-cell">Not available</span>
+                                  )}
+                                </td>
+                              ))}
+                              {selectedForCompare.length < 4 && <td className="add-slot-cell" />}
+                            </tr>
+
+                            <tr
+                              className={
+                                isRowDivergent(
+                                  selectedForCompare.map((c) =>
+                                    c.pins && c.pins.length > 0
+                                      ? `${c.pins.length} pins`
+                                      : null
+                                  )
+                                )
+                                  ? "row-divergent"
+                                  : ""
+                              }
+                            >
+                              <td className="row-label">
+                                <span>Pin Count</span>
+                                {isRowDivergent(
+                                  selectedForCompare.map((c) =>
+                                    c.pins && c.pins.length > 0
+                                      ? `${c.pins.length} pins`
+                                      : null
+                                  )
+                                ) && <span className="diff-badge">DIFF</span>}
+                              </td>
+                              {selectedForCompare.map((c) => (
+                                <td key={c._id}>
+                                  {c.pins && c.pins.length > 0 ? (
+                                    `${c.pins.length} pins`
+                                  ) : (
+                                    <span className="muted-cell">Not available</span>
+                                  )}
+                                </td>
+                              ))}
+                              {selectedForCompare.length < 4 && <td className="add-slot-cell" />}
+                            </tr>
+
+                            <tr className={isRowDivergent(selectedForCompare.map((c) => c.package?.padLayout)) ? "row-divergent" : ""}>
+                              <td className="row-label">
+                                <span>Pad Layout Reference</span>
+                                {isRowDivergent(selectedForCompare.map((c) => c.package?.padLayout)) && (
+                                  <span className="diff-badge">DIFF</span>
+                                )}
+                              </td>
+                              {selectedForCompare.map((c) => (
+                                <td key={c._id}>
+                                  {c.package?.padLayout || <span className="muted-cell">Not available</span>}
+                                </td>
+                              ))}
+                              {selectedForCompare.length < 4 && <td className="add-slot-cell" />}
+                            </tr>
+
+                            <tr className="section-row">
+                              <td colSpan={selectedForCompare.length + (selectedForCompare.length < 4 ? 2 : 1)}>
+                                Technical Specifications
+                              </td>
+                            </tr>
+
+                            {specKeysToDisplay.length === 0 ? (
+                              <tr>
+                                <td className="row-label">Specifications</td>
+                                <td
+                                  colSpan={selectedForCompare.length + (selectedForCompare.length < 4 ? 1 : 0)}
+                                  className="muted-cell"
+                                >
+                                  No technical specifications recorded for these components.
+                                </td>
+                              </tr>
+                            ) : (
+                              specKeysToDisplay.map((specKey) => {
+                                const valList = selectedForCompare.map((c) => {
+                                  const val = c.specifications?.[specKey];
+                                  const unit = findUnitForSpecKey(specKey, c.specifications);
+                                  return formatSpecValue(val, unit);
+                                });
+                                const rowDivergent = isRowDivergent(valList);
+
+                                return (
+                                  <tr key={specKey} className={rowDivergent ? "row-divergent" : ""}>
+                                    <td className="row-label">
+                                      <span>{formatSpecKeyLabel(specKey)}</span>
+                                      {rowDivergent && <span className="diff-badge">DIFF</span>}
+                                    </td>
+                                    {selectedForCompare.map((c) => {
+                                      const val = c.specifications?.[specKey];
+                                      const unit = findUnitForSpecKey(
+                                        specKey,
+                                        c.specifications
+                                      );
+                                      const display = formatSpecValue(val, unit);
+                                      const isMissing =
+                                        !display ||
+                                        display === "Not available" ||
+                                        display === "—";
+                                      return (
+                                        <td
+                                          key={c._id}
+                                          className={isMissing ? "muted-cell" : ""}
+                                        >
+                                          {isMissing ? (
+                                            <span className="muted-cell">Not available</span>
+                                          ) : (
+                                            display
+                                          )}
+                                        </td>
+                                      );
+                                    })}
+                                    {selectedForCompare.length < 4 && <td className="add-slot-cell" />}
+                                  </tr>
+                                );
+                              })
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </section>
                 }
               />
 

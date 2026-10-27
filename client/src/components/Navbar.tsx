@@ -56,70 +56,77 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header className="site-header">
       <div className="site-header-container">
-        {/* Brand Logo & Title Link */}
-        <Link
-          to="/"
-          className="brand-identity"
-          title="Cirqon — Engineering Parts Discovery Home"
-          onClick={() => setIsMobileMenuOpen(false)}
-        >
-          <div className="brand-logo-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <circle cx="12" cy="12" r="9" stroke="var(--cq-emerald)" strokeWidth="2" />
-              <path d="M12 7V12L15 15" stroke="var(--cq-emerald)" strokeWidth="2" strokeLinecap="round" />
-              <circle cx="12" cy="7" r="1.5" fill="var(--cq-emerald)" />
-              <circle cx="15" cy="15" r="1.5" fill="var(--cq-emerald)" />
-            </svg>
-          </div>
-          <span className="brand-title">Cirqon</span>
-          <span className="brand-tag">Engineering</span>
-        </Link>
-
-        {/* Primary Desktop Navigation (Uses NavLink for automated active state) */}
-        <nav className="desktop-nav" aria-label="Main Navigation">
-          <NavLink
-            to="/library"
-            className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
+        {/* Left Zone: Brand Identity + Primary Desktop Navigation */}
+        <div className="site-header-left">
+          {/* Brand Logo & Title Link */}
+          <Link
+            to="/"
+            className="brand-identity"
+            title="Cirqon — Engineering Parts Discovery Home"
+            onClick={() => setIsMobileMenuOpen(false)}
           >
-            <Layers size={16} aria-hidden="true" />
-            <span>Library</span>
-          </NavLink>
+            <div className="brand-logo-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" stroke="var(--cq-emerald)" strokeWidth="2" />
+                <path d="M12 7V12L15 15" stroke="var(--cq-emerald)" strokeWidth="2" strokeLinecap="round" />
+                <circle cx="12" cy="7" r="1.5" fill="var(--cq-emerald)" />
+                <circle cx="15" cy="15" r="1.5" fill="var(--cq-emerald)" />
+              </svg>
+            </div>
+            <div className="brand-wordmark">
+              <span className="brand-title">Cirqon</span>
+              <span className="brand-tag">Engineering</span>
+            </div>
+          </Link>
 
-          <NavLink
-            to="/compare"
-            className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
-          >
-            <GitCompare size={16} aria-hidden="true" />
-            <span>Compare</span>
-            {compareCount > 0 && (
-              <span className="nav-compare-count" title={`${compareCount} components selected`}>
-                {compareCount}
-              </span>
-            )}
-          </NavLink>
+          <span className="header-brand-divider" aria-hidden="true" />
 
-          <NavLink
-            to="/pcb"
-            className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
-          >
-            <Cpu size={16} aria-hidden="true" />
-            <span>PCB Assistant</span>
-          </NavLink>
-
-          {user && (
+          {/* Primary Desktop Navigation (Uses NavLink for automated active state) */}
+          <nav className="desktop-nav" aria-label="Main Navigation">
             <NavLink
-              to="/my-parts"
+              to="/library"
               className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
             >
-              <Bookmark size={16} aria-hidden="true" />
-              <span>My Parts</span>
+              <Layers size={16} strokeWidth={1.75} className="nav-link-icon" aria-hidden="true" />
+              <span>Library</span>
             </NavLink>
-          )}
-        </nav>
 
-        {/* Prominent Quick-Search Bar */}
+            <NavLink
+              to="/compare"
+              className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
+            >
+              <GitCompare size={16} strokeWidth={1.75} className="nav-link-icon" aria-hidden="true" />
+              <span>Compare</span>
+              {compareCount > 0 && (
+                <span className="nav-compare-count" title={`${compareCount} components selected`}>
+                  {compareCount}
+                </span>
+              )}
+            </NavLink>
+
+            <NavLink
+              to="/pcb"
+              className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
+            >
+              <Cpu size={16} strokeWidth={1.75} className="nav-link-icon" aria-hidden="true" />
+              <span>PCB Assistant</span>
+            </NavLink>
+
+            {user && (
+              <NavLink
+                to="/my-parts"
+                className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
+              >
+                <Bookmark size={16} strokeWidth={1.75} className="nav-link-icon" aria-hidden="true" />
+                <span>My Parts</span>
+              </NavLink>
+            )}
+          </nav>
+        </div>
+
+        {/* Center Zone: Prominent Quick-Search Bar */}
         <div className="header-search-wrapper">
-          <Search size={16} className="header-search-icon" aria-hidden="true" />
+          <Search size={16} strokeWidth={1.75} className="header-search-icon" aria-hidden="true" />
           <input
             type="text"
             className="header-search-input"
@@ -142,12 +149,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
 
-        {/* Authentication Navigation Controls */}
+        {/* Right Zone: Authentication Navigation Controls */}
         <div className="header-auth-group">
           {user ? (
             <>
               <div className="nav-user-identity" title={`Signed in as ${user.email}`}>
-                <User size={15} aria-hidden="true" />
+                <User size={16} strokeWidth={1.75} aria-hidden="true" />
                 <span className="nav-user-name">{user.name}</span>
               </div>
               <button
@@ -156,7 +163,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={logout}
                 title="Log out of Cirqon"
               >
-                <LogOut size={15} aria-hidden="true" />
+                <LogOut size={16} strokeWidth={1.75} aria-hidden="true" />
                 <span>Log out</span>
               </button>
             </>
@@ -167,7 +174,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="btn-auth-text"
                 title="Log in to Cirqon"
               >
-                <LogIn size={15} aria-hidden="true" />
+                <LogIn size={16} strokeWidth={1.75} aria-hidden="true" />
                 <span>Log in</span>
               </Link>
 
@@ -176,7 +183,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="btn-auth-primary"
                 title="Create an account"
               >
-                <UserPlus size={15} aria-hidden="true" />
+                <UserPlus size={16} strokeWidth={1.75} aria-hidden="true" />
                 <span>Sign up</span>
               </Link>
             </>
@@ -191,7 +198,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
           aria-expanded={isMobileMenuOpen}
         >
-          {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          {isMobileMenuOpen ? <X size={20} strokeWidth={1.75} /> : <Menu size={20} strokeWidth={1.75} />}
         </button>
       </div>
 

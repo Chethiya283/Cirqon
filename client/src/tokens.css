@@ -63,6 +63,8 @@
   --cq-warning: #d97706;             /* Warnings / divergent matrix rows */
   --cq-warning-soft: #fffbeb;
   --cq-warning-border: #fde68a;
+  --cq-success: var(--cq-emerald);
+  --cq-success-soft: var(--cq-emerald-soft);
 
   /* Backward Compatibility Aliases for Existing App Components */
   --cq-accent: var(--cq-emerald);
@@ -78,29 +80,37 @@
   /* ========================================================
      5. Typography System
      ======================================================== */
-  --cq-font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --cq-font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --cq-font-heading: "Inter", var(--cq-font-sans);
-  --cq-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --cq-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
-  /* Font Sizes */
-  --cq-text-xs: 11px;
-  --cq-text-sm: 13px;
-  --cq-text-base: 14px;
-  --cq-text-md: 15px;
-  --cq-text-lg: 18px;
-  --cq-text-xl: 22px;
-  --cq-text-2xl: 28px;
-  --cq-text-3xl: 36px;
+  /* Font Sizes (Engineering SaaS Typography Scale) */
+  --cq-text-xs: 12px;                /* Technical metadata, badges, secondary labels, helper text */
+  --cq-text-sm: 13px;                /* Secondary labels, compact table cells, subcaptions */
+  --cq-text-base: 14px;              /* Body text, navigation labels, buttons, form controls */
+  --cq-text-md: 16px;                /* Card titles, component names, lead body text */
+  --cq-text-lg: 18px;                /* Prominent card titles, subheadings */
+  --cq-text-xl: 20px;                /* Section headings */
+  --cq-text-2xl: 28px;               /* Main page headings */
+  --cq-text-3xl: 32px;               /* Hero display headings */
 
-  /* Line Heights */
-  --cq-leading-tight: 1.2;
+  /* Font Weights */
+  --cq-weight-regular: 400;
+  --cq-weight-medium: 500;
+  --cq-weight-semibold: 600;
+  --cq-weight-bold: 700;
+
+  /* Line Heights (1.2-1.3 for headings, 1.4-1.6 for body text) */
+  --cq-leading-tight: 1.25;
   --cq-leading-snug: 1.35;
   --cq-leading-normal: 1.5;
+  --cq-leading-relaxed: 1.6;
 
   /* Letter Spacing */
   --cq-tracking-tight: -0.02em;
-  --cq-tracking-tighter: -0.03em;
+  --cq-tracking-tighter: -0.025em;
   --cq-tracking-normal: 0;
+  --cq-tracking-wide: 0.04em;
 
   /* ========================================================
      6. Consistent Radii Scale (Strict 8px - 12px)

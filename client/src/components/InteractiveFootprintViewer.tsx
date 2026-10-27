@@ -7,6 +7,7 @@ import {
   Ruler,
 } from "lucide-react";
 import type { ComponentData } from "../types";
+import { ComponentThumbnail } from "../ComponentImage";
 import {
   getDefaultAxialSpanMm,
   getFootprintGeometry,
@@ -19,6 +20,45 @@ interface InteractiveFootprintViewerProps {
   component: ComponentData;
   missingFields: string[];
 }
+
+export const PcbComponentPhotoPanel: React.FC<{
+  component: ComponentData;
+}> = ({ component }) => {
+  return (
+    <div
+      className="pcb-component-photo-panel"
+      role="region"
+      aria-label={`Physical component image for ${component.name} (${component.partNumber})`}
+    >
+      <div className="pcb-component-photo-header">
+        <span className="pcb-component-photo-title">Physical Component</span>
+        <span className="pcb-component-photo-pkg">
+          {component.package?.name || "Package"}
+        </span>
+      </div>
+      <div className="pcb-component-photo-stage">
+        <ComponentThumbnail
+          key={`${component._id}-${component.partNumber}-${component.imageUrl || ""}`}
+          component={component}
+          size="fluid"
+          showProvenanceBadge={false}
+          className="pcb-component-photo-thumb"
+          fallbackIcon={
+            <div
+              className="pcb-image-unavailable"
+              role="img"
+              aria-label={`Image unavailable for ${component.name} (${component.partNumber})`}
+            >
+              <span className="pcb-image-unavailable-text">
+                Image unavailable
+              </span>
+            </div>
+          }
+        />
+      </div>
+    </div>
+  );
+};
 
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 4.0;
@@ -637,74 +677,78 @@ export const InteractiveFootprintViewer: React.FC<
           </div>
         </div>
 
-        {/* Side-by-Side Interactive Pad Table */}
-        <div className="pcb-pad-table-wrapper">
-          <div className="pcb-pad-table-title">
-            Pad Table (<span className="pcb-mono-num">{sortedPads.length}</span> Pads)
-          </div>
-          <div className="pcb-pad-table-scroll">
-            <table className="pcb-pad-table" aria-label={`Pads for ${component.partNumber}`}>
-              <thead>
-                <tr>
-                  <th>Pad</th>
-                  <th>Pin name</th>
-                  <th>Shape</th>
-                  <th>Size (W×H)</th>
-                  <th>Drill</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedPads.map((pad) => {
-                  const isRowSelected = selectedPadNumber === pad.number;
-                  const isRowHovered = hoveredPadNumber === pad.number;
-                  return (
-                    <tr
-                      key={pad.number}
-                      className={`pcb-pad-row ${isRowSelected ? "row-selected" : ""} ${
-                        isRowHovered ? "row-hovered" : ""
-                      }`}
-                      tabIndex={0}
-                      aria-selected={isRowSelected}
-                      onClick={() => setSelectedPadNumber(pad.number)}
-                      onMouseEnter={() => setHoveredPadNumber(pad.number)}
-                      onMouseLeave={() => setHoveredPadNumber(null)}
-                      onFocus={() => setHoveredPadNumber(pad.number)}
-                      onBlur={() => setHoveredPadNumber(null)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          setSelectedPadNumber(pad.number);
-                        }
-                      }}
-                    >
-                      <td>
-                        <span className="pcb-mono-num">{pad.number}</span>
-                      </td>
-                      <td>
-                        <strong>{pad.name}</strong>
-                      </td>
-                      <td>{pad.shape}</td>
-                      <td>
-                        {pad.widthProvenance === "Catalogue" ? (
-                          <span className="pcb-mono-num">
-                            {pad.width}×{pad.height} mm
-                          </span>
-                        ) : (
-                          <span className="pcb-na-cell">Not available</span>
-                        )}
-                      </td>
-                      <td>
-                        {pad.drill != null ? (
-                          <span className="pcb-mono-num">{pad.drill} mm</span>
-                        ) : (
-                          <span className="pcb-na-cell">Not available</span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+        {/* Side-by-Side Physical Component Image & Interactive Pad Table */}
+        <div className="pcb-side-column">
+          <PcbComponentPhotoPanel component={component} />
+
+          <div className="pcb-pad-table-wrapper">
+            <div className="pcb-pad-table-title">
+              Pad Table (<span className="pcb-mono-num">{sortedPads.length}</span> Pads)
+            </div>
+            <div className="pcb-pad-table-scroll">
+              <table className="pcb-pad-table" aria-label={`Pads for ${component.partNumber}`}>
+                <thead>
+                  <tr>
+                    <th>Pad</th>
+                    <th>Pin name</th>
+                    <th>Shape</th>
+                    <th>Size (W×H)</th>
+                    <th>Drill</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedPads.map((pad) => {
+                    const isRowSelected = selectedPadNumber === pad.number;
+                    const isRowHovered = hoveredPadNumber === pad.number;
+                    return (
+                      <tr
+                        key={pad.number}
+                        className={`pcb-pad-row ${isRowSelected ? "row-selected" : ""} ${
+                          isRowHovered ? "row-hovered" : ""
+                        }`}
+                        tabIndex={0}
+                        aria-selected={isRowSelected}
+                        onClick={() => setSelectedPadNumber(pad.number)}
+                        onMouseEnter={() => setHoveredPadNumber(pad.number)}
+                        onMouseLeave={() => setHoveredPadNumber(null)}
+                        onFocus={() => setHoveredPadNumber(pad.number)}
+                        onBlur={() => setHoveredPadNumber(null)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            setSelectedPadNumber(pad.number);
+                          }
+                        }}
+                      >
+                        <td>
+                          <span className="pcb-mono-num">{pad.number}</span>
+                        </td>
+                        <td>
+                          <strong>{pad.name}</strong>
+                        </td>
+                        <td>{pad.shape}</td>
+                        <td>
+                          {pad.widthProvenance === "Catalogue" ? (
+                            <span className="pcb-mono-num">
+                              {pad.width}×{pad.height} mm
+                            </span>
+                          ) : (
+                            <span className="pcb-na-cell">Not available</span>
+                          )}
+                        </td>
+                        <td>
+                          {pad.drill != null ? (
+                            <span className="pcb-mono-num">{pad.drill} mm</span>
+                          ) : (
+                            <span className="pcb-na-cell">Not available</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>

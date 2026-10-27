@@ -52,21 +52,21 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 h1 {
-  font-size: var(--cq-text-3xl);
+  font-size: var(--cq-text-2xl);
   line-height: var(--cq-leading-tight);
-  font-weight: 700;
+  font-weight: var(--cq-weight-bold);
 }
 
 h2 {
-  font-size: var(--cq-text-2xl);
+  font-size: var(--cq-text-xl);
   line-height: var(--cq-leading-tight);
-  font-weight: 600;
+  font-weight: var(--cq-weight-semibold);
 }
 
 h3 {
-  font-size: var(--cq-text-lg);
+  font-size: var(--cq-text-md);
   line-height: var(--cq-leading-snug);
-  font-weight: 600;
+  font-weight: var(--cq-weight-semibold);
 }
 
 /* Sentence-case default for labels and UI elements (no forced uppercase tracking) */
@@ -76,7 +76,7 @@ nav,
 select,
 option {
   font-family: var(--cq-font-sans);
-  font-size: var(--cq-text-sm);
+  font-size: var(--cq-text-base);
   text-transform: none;
   letter-spacing: var(--cq-tracking-normal);
 }

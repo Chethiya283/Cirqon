@@ -156,8 +156,8 @@
   background: var(--cq-emerald);
   color: var(--cq-text-inverse);
   font-family: var(--cq-font-sans);
-  font-size: var(--cq-text-xs);
-  font-weight: 600;
+  font-size: var(--cq-text-base);
+  font-weight: var(--cq-weight-semibold);
   cursor: pointer;
   transition: background var(--cq-transition-fast), opacity var(--cq-transition-fast);
   white-space: nowrap;

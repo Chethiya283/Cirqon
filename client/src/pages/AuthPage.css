@@ -75,8 +75,8 @@
 
 .form-label {
   color: var(--cq-text-primary);
-  font-size: var(--cq-text-sm);
-  font-weight: 600;
+  font-size: var(--cq-text-base);
+  font-weight: var(--cq-weight-semibold);
 }
 
 .form-input-wrap {
@@ -94,7 +94,7 @@
   background: var(--cq-surface-subtle);
   color: var(--cq-text-primary);
   font-family: var(--cq-font-sans);
-  font-size: var(--cq-text-sm);
+  font-size: var(--cq-text-base);
   transition: all var(--cq-transition-fast);
 }
 
@@ -199,8 +199,8 @@
   background: var(--cq-emerald);
   color: var(--cq-text-inverse);
   font-family: var(--cq-font-sans);
-  font-size: var(--cq-text-sm);
-  font-weight: 600;
+  font-size: var(--cq-text-base);
+  font-weight: var(--cq-weight-semibold);
   cursor: pointer;
   transition: all var(--cq-transition-fast);
 }

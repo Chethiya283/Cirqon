@@ -27,7 +27,7 @@
 
 .my-parts-subtitle {
   margin: 0;
-  font-size: var(--cq-text-sm);
+  font-size: var(--cq-text-base);
   color: var(--cq-text-secondary);
   max-width: 680px;
   line-height: var(--cq-leading-normal);
@@ -44,8 +44,8 @@
   display: inline-flex;
   align-items: center;
   padding: 8px 14px;
-  font-size: var(--cq-text-sm);
-  font-weight: 500;
+  font-size: var(--cq-text-base);
+  font-weight: var(--cq-weight-medium);
   color: var(--cq-text-secondary);
   background: var(--cq-surface);
   border: 1px solid var(--cq-border-default);
@@ -89,14 +89,14 @@
 
 .my-parts-empty-state h2 {
   margin: 0 0 8px;
-  font-size: var(--cq-text-lg);
-  font-weight: 600;
+  font-size: var(--cq-text-xl);
+  font-weight: var(--cq-weight-semibold);
   color: var(--cq-text-primary);
 }
 
 .my-parts-empty-state p {
   margin: 0 0 24px;
-  font-size: var(--cq-text-sm);
+  font-size: var(--cq-text-base);
   color: var(--cq-text-secondary);
   max-width: 480px;
   line-height: var(--cq-leading-normal);
@@ -106,8 +106,8 @@
   display: inline-flex;
   align-items: center;
   padding: 10px 20px;
-  font-size: var(--cq-text-sm);
-  font-weight: 600;
+  font-size: var(--cq-text-base);
+  font-weight: var(--cq-weight-semibold);
   color: var(--cq-text-inverse);
   background: var(--cq-emerald);
   border-radius: var(--cq-radius-md);
