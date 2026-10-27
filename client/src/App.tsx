@@ -39,7 +39,12 @@ import {
   getSpecPairs,
   isRowDivergent,
 } from "./utils/formatters";
-import { renderFootprintSvg } from "./utils/footprint";
+import {
+  renderFootprintSvg,
+  auditComponentFootprint,
+  getProvenanceBadgeClass,
+  renderValueWithMonoNumbers,
+} from "./utils/footprint";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
@@ -1584,7 +1589,7 @@ function App() {
                         </div>
                         <h1>PCB Footprint & Dimension Inspector</h1>
                         <p className="subtitle">
-                          Inspect component physical dimensions, lead pitch, and layout guidelines sourced from manufacturer specifications.
+                          Inspect component physical dimensions, lead pitch, and layout guidelines with explicit provenance tracking.
                         </p>
                       </div>
 
@@ -1597,27 +1602,43 @@ function App() {
                       </button>
                     </div>
 
+                    {/* Viva Note: Legend explaining the 4 provenance categories so users know
+                        whether a number is stored in the database, derived, a placeholder fallback, or missing. */}
+                    <div className="pcb-provenance-legend" aria-label="Data provenance legend">
+                      <span className="pcb-legend-title">Provenance legend:</span>
+                      <div className="pcb-legend-items">
+                        <span className="pcb-legend-item">
+                          <span className="prov-badge prov-catalogue">Catalogue</span>
+                          <span>Stored in the database (only called Datasheet if status is Verified)</span>
+                        </span>
+                        <span className="pcb-legend-item">
+                          <span className="prov-badge prov-derived">Derived</span>
+                          <span>Calculated from stored values (e.g. row span from pin count and pitch)</span>
+                        </span>
+                        <span className="pcb-legend-item">
+                          <span className="prov-badge prov-placeholder">Placeholder</span>
+                          <span>Code fallback when no value is stored (never drawn as real geometry)</span>
+                        </span>
+                        <span className="pcb-legend-item">
+                          <span className="prov-badge prov-na">Not available</span>
+                          <span>Missing in the database</span>
+                        </span>
+                      </div>
+                    </div>
+
                 <div className="pcb-grid">
                   {components.map((component) => {
-                    const dims = formatDimensions(component.package);
-                    const pitch =
-                      component.package?.pcbLayout?.leadPitchMm != null
-                        ? `${component.package.pcbLayout.leadPitchMm} mm`
-                        : "—";
-                    const rowSpacing =
-                      component.package?.pcbLayout?.rowSpacingMm != null
-                        ? `${component.package.pcbLayout.rowSpacingMm} mm`
-                        : null;
-                    const drill =
-                      component.package?.pcbLayout?.drillDiameterMm != null
-                        ? `${component.package.pcbLayout.drillDiameterMm} mm`
-                        : null;
-                    const spacingOrDrill =
-                      rowSpacing != null
-                        ? `Row: ${rowSpacing}`
-                        : drill != null
-                        ? `Drill: ${drill}`
-                        : "—";
+                    const audit = auditComponentFootprint(component);
+                    const isVerified = component.dataStatus === "verified";
+                    const sourceFields = [
+                      audit.fields.package,
+                      audit.fields.pinCount,
+                      audit.fields.leadPitch,
+                      audit.fields.bodySize,
+                      audit.fields.padSize,
+                      audit.fields.drill,
+                      audit.fields.pinout,
+                    ];
 
                     return (
                       <article className="pcb-card cad-grid-overlay" key={component._id}>
@@ -1627,78 +1648,167 @@ function App() {
                               {component.partNumber}
                             </span>
                             <h3>{component.name}</h3>
+                            <span className="pcb-card-mfr">
+                              {component.manufacturer} · {component.category}
+                            </span>
                           </div>
-                          <span className="filter-pill">
-                            {component.package?.name || "Unspecified"}
-                          </span>
+                          <div className="pcb-header-badges">
+                            <span
+                              className={`pcb-datastatus-badge ${
+                                isVerified ? "status-verified" : "status-incomplete"
+                              }`}
+                              title={`Record dataStatus: ${component.dataStatus}`}
+                            >
+                              Data status: {isVerified ? "Verified" : "Incomplete"}
+                            </span>
+                            <span className="filter-pill">
+                              {component.package?.name || "Not available"}
+                            </span>
+                          </div>
                         </div>
 
-                        <div className="pcb-footprint-canvas">
-                          <div className="cad-dimension-badge">PARAMETRIC FOOTPRINT SCHEMATIC</div>
-                          {renderFootprintSvg(component)}
-                        </div>
+                        {audit.canDrawFootprint ? (
+                          <div className="pcb-drawn-wrapper">
+                            <div className="pcb-footprint-canvas">
+                              <div className="cad-dimension-badge">
+                                Catalogue Footprint Schematic
+                              </div>
+                              {renderFootprintSvg(component)}
+                            </div>
+                            <p className="pcb-fabrication-disclaimer">
+                              Generated from catalogue dimensions. Confirm against the manufacturer datasheet before fabrication.
+                            </p>
+                            {audit.missingFields.length > 0 && (
+                              <div className="pcb-missing-banner">
+                                <strong>Missing:</strong> {audit.missingFields.join(", ")}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div
+                            className="pcb-footprint-empty-state"
+                            role="region"
+                            aria-label={`Footprint unavailable for ${component.partNumber}`}
+                          >
+                            <div className="pcb-empty-state-title">
+                              Footprint Not Drawn
+                            </div>
+                            <p className="pcb-empty-state-reason">
+                              {renderValueWithMonoNumbers(audit.emptyStateReason)}
+                            </p>
+                            <div className="pcb-missing-banner">
+                              <strong>Missing:</strong> {audit.missingFields.join(", ")}
+                            </div>
+                          </div>
+                        )}
 
-                        <div className="card-spec-strip">
-                          <div className="spec-cell">
-                            <span>Mounting</span>
-                            <strong>
-                              {component.package?.mountingType || "Unspecified"}
-                            </strong>
+                        {/* Viva Note: Data Sources panel explicitly shows the value and provenance
+                            for each of the 7 footprint parameters plus official technical links. */}
+                        <div className="pcb-data-sources-panel">
+                          <div className="pcb-data-sources-header">
+                            <h4>Data sources</h4>
+                            <span
+                              className={`pcb-datastatus-inline ${
+                                isVerified ? "status-verified" : "status-incomplete"
+                              }`}
+                            >
+                              {isVerified ? "Verified" : "Incomplete"}
+                            </span>
                           </div>
-                          <div className="spec-cell">
-                            <span>Body Dimensions</span>
-                            <strong>{dims}</strong>
-                          </div>
-                          <div className="spec-cell">
-                            <span>Lead Pitch</span>
-                            <strong>{pitch}</strong>
-                          </div>
-                          <div className="spec-cell">
-                            <span>Layout Spacing</span>
-                            <strong>{spacingOrDrill}</strong>
+
+                          <dl className="pcb-sources-list">
+                            {sourceFields.map((field) => (
+                              <div className="pcb-source-row" key={field.key}>
+                                <dt className="pcb-source-label">{field.label}</dt>
+                                <dd className="pcb-source-value-group">
+                                  {field.key === "pinout" &&
+                                  component.pins &&
+                                  component.pins.length > 0 ? (
+                                    <div className="pcb-pinout-chips">
+                                      {component.pins.map((pin, idx) => (
+                                        <span
+                                          className="pcb-pin-chip"
+                                          key={`${pin.number ?? idx}-${pin.name ?? ""}`}
+                                        >
+                                          <span className="pcb-mono-num">
+                                            {pin.number}
+                                          </span>
+                                          <span>: {pin.name}</span>
+                                        </span>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <span className="pcb-source-value">
+                                      {renderValueWithMonoNumbers(field.value)}
+                                    </span>
+                                  )}
+                                  <span className={getProvenanceBadgeClass(field.provenance)}>
+                                    {field.provenance}
+                                  </span>
+                                </dd>
+                              </div>
+                            ))}
+                          </dl>
+
+                          <div className="pcb-sources-links">
+                            {isValidHttpUrl(component.datasheetUrl) ? (
+                              <a
+                                className="datasheet-card-link"
+                                href={component.datasheetUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                Datasheet PDF ↗
+                              </a>
+                            ) : (
+                              <span className="pcb-link-missing">
+                                Datasheet link: Not available
+                              </span>
+                            )}
+
+                            {isValidHttpUrl(component.manufacturerUrl) ? (
+                              <a
+                                className="datasheet-card-link pcb-mfr-link"
+                                href={component.manufacturerUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                Manufacturer Page ↗
+                              </a>
+                            ) : (
+                              <span className="pcb-link-missing">
+                                Manufacturer link: Not available
+                              </span>
+                            )}
+
+                            <button
+                              className="details-button"
+                              type="button"
+                              onClick={() => setSelectedComponent(component)}
+                            >
+                              {component.pins && component.pins.length > 0 ? (
+                                <>
+                                  Pinout (<span className="pcb-mono-num">{component.pins.length}</span> Pins) <span>→</span>
+                                </>
+                              ) : (
+                                <>
+                                  View Details <span>→</span>
+                                </>
+                              )}
+                            </button>
                           </div>
                         </div>
 
                         {component.package?.padLayout ? (
                           <p className="pcb-pad-note">
                             <strong>Layout Reference:</strong>{" "}
-                            {component.package.padLayout}
+                            {renderValueWithMonoNumbers(component.package.padLayout)}
                           </p>
                         ) : (
                           <p className="pcb-pad-note muted">
                             No layout notes in database. Consult manufacturer land pattern.
                           </p>
                         )}
-
-                        <div className="card-footer-actions">
-                          {isValidHttpUrl(component.datasheetUrl) && (
-                            <a
-                              className="datasheet-card-link"
-                              href={component.datasheetUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              Datasheet PDF ↗
-                            </a>
-                          )}
-                          {component.pins && component.pins.length > 0 ? (
-                            <button
-                              className="details-button"
-                              type="button"
-                              onClick={() => setSelectedComponent(component)}
-                            >
-                              Pinout ({component.pins.length} Pins) <span>→</span>
-                            </button>
-                          ) : (
-                            <button
-                              className="details-button"
-                              type="button"
-                              onClick={() => setSelectedComponent(component)}
-                            >
-                              View Details <span>→</span>
-                            </button>
-                          )}
-                        </div>
                       </article>
                     );
                   })}
