@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bookmark } from "lucide-react";
+import { Bookmark, Cpu } from "lucide-react";
 import type { ComponentData } from "../types";
 import { useAuth } from "../auth/AuthContext";
 import { useSavedParts } from "../auth/SavedPartsContext";
@@ -244,15 +244,30 @@ export const ComponentDetailsModal: React.FC<ComponentDetailsModalProps> = ({
             return (
               <section className="modal-section modal-mechanical-section">
                 <div className="modal-mechanical-header">
-                  <h3>Package & Mechanical Dimensions</h3>
-                  <span
-                    className={`pcb-datastatus-badge ${
-                      isVerifiedData ? "status-verified" : "status-incomplete"
-                    }`}
-                    title={`Record dataStatus: ${component.dataStatus}`}
+                  <div className="modal-mechanical-title-group">
+                    <h3>Package & Mechanical Dimensions</h3>
+                    <span
+                      className={`pcb-datastatus-badge ${
+                        isVerifiedData ? "status-verified" : "status-incomplete"
+                      }`}
+                      title={`Record dataStatus: ${component.dataStatus}`}
+                    >
+                      Data status: {isVerifiedData ? "Verified" : "Incomplete"}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    className="modal-mechanical-pcb-btn"
+                    onClick={() => {
+                      onClose();
+                      navigate(
+                        `/pcb?partNumber=${encodeURIComponent(component.partNumber)}`
+                      );
+                    }}
+                    title={`Open ${component.partNumber} in PCB Design Assistant`}
                   >
-                    Data status: {isVerifiedData ? "Verified" : "Incomplete"}
-                  </span>
+                    <Cpu size={14} /> View in PCB Assistant ↗
+                  </button>
                 </div>
 
                 <div className="modal-footprint-grid">
@@ -606,6 +621,21 @@ export const ComponentDetailsModal: React.FC<ComponentDetailsModalProps> = ({
         </div>
 
         <footer className="modal-footer">
+          <div className="modal-footer-actions">
+            <button
+              className="filter-button primary-accent modal-pcb-action-btn"
+              type="button"
+              onClick={() => {
+                onClose();
+                navigate(
+                  `/pcb?partNumber=${encodeURIComponent(component.partNumber)}`
+                );
+              }}
+              title={`Inspect ${component.partNumber} footprint in PCB Assistant`}
+            >
+              <Cpu size={15} /> View in PCB Assistant
+            </button>
+          </div>
           <button
             className="filter-button"
             type="button"

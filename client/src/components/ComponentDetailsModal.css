@@ -204,12 +204,43 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.modal-mechanical-title-group {
+  display: flex;
+  align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
+  flex-wrap: wrap;
 }
 
 .modal-mechanical-header h3 {
   margin: 0;
+}
+
+.modal-mechanical-pcb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border: 1px solid var(--cq-emerald-border);
+  border-radius: var(--cq-radius-sm);
+  background: var(--cq-emerald-soft);
+  color: var(--cq-emerald);
+  font-family: var(--cq-font-sans);
+  font-size: var(--cq-text-xs);
+  font-weight: var(--cq-weight-semibold);
+  cursor: pointer;
+  transition: all 120ms ease;
+  white-space: nowrap;
+}
+
+.modal-mechanical-pcb-btn:hover {
+  background: var(--cq-emerald);
+  color: #ffffff;
+  border-color: var(--cq-emerald);
 }
 
 .modal-footprint-grid {
@@ -373,10 +404,24 @@
 
 .modal-footer {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   padding: 12px 20px;
   border-top: 1px solid var(--cq-border-default);
   background: var(--cq-surface-2);
+}
+
+.modal-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-pcb-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 @media (max-width: 900px) {

@@ -8,6 +8,7 @@ import {
   Layers,
   Plus,
   RotateCcw,
+  Search,
   SlidersHorizontal,
   Trash2,
   X,
@@ -231,6 +232,7 @@ function App() {
 
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState(search);
+  const [refreshIndex, setRefreshIndex] = useState(0);
 
   // Debounce text search input by 300ms
   useEffect(() => {
@@ -285,6 +287,41 @@ function App() {
 
   const [selectedComponent, setSelectedComponent] =
     useState<ComponentData | null>(null);
+
+  // VIVA EXPLANATION: PCB Assistant query parameter synchronization.
+  // Supports deep linking, browser bookmarks, refreshes, and direct navigation
+  // via ?partNumber=LM358 or ?id=... without desynchronizing state.
+  const pcbQueryParam = useMemo(() => {
+    if (!isPcbView) return "";
+    const params = new URLSearchParams(location.search);
+    return (
+      params.get("partNumber") ||
+      params.get("component") ||
+      params.get("id") ||
+      ""
+    ).trim();
+  }, [isPcbView, location.search]);
+
+  const selectedPcbComponent = useMemo(() => {
+    if (!pcbQueryParam) return null;
+    const q = pcbQueryParam.toLowerCase();
+    return (
+      components.find(
+        (c) => c.partNumber?.toLowerCase() === q || c._id === pcbQueryParam
+      ) ||
+      filterOptions.find(
+        (c) => c.partNumber?.toLowerCase() === q || c._id === pcbQueryParam
+      ) ||
+      null
+    );
+  }, [pcbQueryParam, components, filterOptions]);
+
+  const displayedPcbComponents = useMemo(() => {
+    if (selectedPcbComponent) {
+      return [selectedPcbComponent];
+    }
+    return components;
+  }, [selectedPcbComponent, components]);
 
   // Load the full component list once to populate filter options.
   useEffect(() => {
@@ -384,6 +421,7 @@ function App() {
     activeCategory,
     activeManufacturer,
     activePackage,
+    refreshIndex,
   ]);
 
   // Calculate manufacturer options using the other active filters on the current page.
@@ -461,6 +499,9 @@ function App() {
       setPcbCategory("All Components");
       setPcbManufacturer("");
       setPcbPackage("");
+      if (location.search) {
+        navigate("/pcb");
+      }
     } else if (isCompareView) {
       setCompareCategory("All Components");
       setCompareManufacturer("");
@@ -498,6 +539,9 @@ function App() {
               onSelectCategory={(catName) => {
                 if (isPcbView) {
                   setPcbCategory(catName);
+                  if (location.search) {
+                    navigate("/pcb");
+                  }
                 } else if (isCompareView) {
                   setCompareCategory(catName);
                 } else {
@@ -518,6 +562,9 @@ function App() {
                     const val = event.target.value;
                     if (isPcbView) {
                       setPcbManufacturer(val);
+                      if (location.search) {
+                        navigate("/pcb");
+                      }
                     } else if (isCompareView) {
                       setCompareManufacturer(val);
                     } else {
@@ -543,6 +590,9 @@ function App() {
                     const val = event.target.value;
                     if (isPcbView) {
                       setPcbPackage(val);
+                      if (location.search) {
+                        navigate("/pcb");
+                      }
                     } else if (isCompareView) {
                       setComparePackage(val);
                     } else {
@@ -621,18 +671,60 @@ function App() {
 
                     {/* Catalog Heading Group */}
                     <div className="library-heading-group">
-                      <div className="breadcrumb">
-                        Catalog <span>/</span> <strong>{selectedCategory}</strong>
+                      <nav className="library-breadcrumb" aria-label="Breadcrumb">
+                        <span className="breadcrumb-root">Electronic Components</span>
+                        <span className="breadcrumb-separator">/</span>
+                        <strong className="breadcrumb-current">{selectedCategory}</strong>
+                      </nav>
+
+                      <div className="library-header-row">
+                        <div className="library-title-block">
+                          <div className="library-eyebrow">CATALOGUE WORKSPACE</div>
+                          <div className="library-title-row">
+                            <h1 className="library-title">Electronic Component Library</h1>
+                            <span
+                              className="library-header-count mono-num"
+                              title={`${components.length} components available`}
+                            >
+                              {loading
+                                ? "Loading..."
+                                : `${components.length} ${
+                                    components.length === 1 ? "component" : "components"
+                                  }`}
+                            </span>
+                          </div>
+                          <p className="library-subtitle">
+                            Discover, filter, and inspect electronic components with verified parametric specifications, CAD footprints, and technical documentation.
+                          </p>
+                        </div>
+
+                        {/* On-Page Quick Search Field */}
+                        <div className="library-header-search">
+                          <div className="library-search-container">
+                            <Search size={16} className="library-search-icon" aria-hidden="true" />
+                            <input
+                              type="text"
+                              id="library-page-search"
+                              className="library-search-input"
+                              placeholder="Search by part number or name..."
+                              value={search}
+                              onChange={(e) => setSearch(e.target.value)}
+                              aria-label="Search components by part number or name"
+                            />
+                            {search && (
+                              <button
+                                type="button"
+                                className="library-search-clear"
+                                onClick={() => setSearch("")}
+                                title="Clear search query"
+                                aria-label="Clear search"
+                              >
+                                <X size={14} />
+                              </button>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div className="library-title-row">
-                        <h1 className="library-title">Component library</h1>
-                        <span className="library-header-count mono-num">
-                          {loading ? "Loading..." : `${components.length} ${components.length === 1 ? "component" : "components"}`}
-                        </span>
-                      </div>
-                      <p className="library-subtitle">
-                        Browse parametric ratings, CAD footprints, and technical specifications across active components.
-                      </p>
                     </div>
 
                     {/* VIVA EXPLANATION: Two-Column Sticky Sidebar Architecture
@@ -910,6 +1002,7 @@ function App() {
                     {/* Active Filter Pills (if active) */}
                     {hasActiveFilters && (
                       <div className="active-filter-pills">
+                        <span className="active-filter-label">Active filters:</span>
                         {selectedCategory !== "All Components" && (
                           <button
                             className="filter-pill"
@@ -919,7 +1012,7 @@ function App() {
                             }
                             title="Remove category filter"
                           >
-                            {selectedCategory} <span>×</span>
+                            Category: {selectedCategory} <span>×</span>
                           </button>
                         )}
                         {selectedManufacturer && (
@@ -949,9 +1042,17 @@ function App() {
                             onClick={() => setSearch("")}
                             title="Clear search query"
                           >
-                            “{search.trim()}” <span>×</span>
+                            Search: “{search.trim()}” <span>×</span>
                           </button>
                         )}
+                        <button
+                          className="filter-pill-clear-all"
+                          type="button"
+                          onClick={clearFilters}
+                          title="Reset all search keywords and active filters"
+                        >
+                          Clear all
+                        </button>
                       </div>
                     )}
 
@@ -980,10 +1081,19 @@ function App() {
                         ))}
                       </div>
                     ) : error ? (
-                      <div className="card-empty-feedback">
-                        <span className="empty-icon">⚠</span>
-                        <strong>Unable to retrieve component data</strong>
-                        <p>{error}</p>
+                      <div className="card-empty-feedback error-feedback">
+                        <div className="empty-icon-wrap error-icon-wrap" aria-hidden="true">
+                          <span className="empty-icon">⚠</span>
+                        </div>
+                        <h3 className="empty-title">Unable to retrieve component data</h3>
+                        <p className="empty-desc">{error}</p>
+                        <button
+                          className="library-empty-reset-btn"
+                          type="button"
+                          onClick={() => setRefreshIndex((prev) => prev + 1)}
+                        >
+                          <RotateCcw size={14} /> Retry connection
+                        </button>
                       </div>
                     ) : sortedComponents.length === 0 ? (
                       <div className="card-empty-feedback">
@@ -992,14 +1102,16 @@ function App() {
                         </div>
                         <h3 className="empty-title">No components match the active criteria</h3>
                         <p className="empty-desc">
-                          Try clearing your keyword search or adjusting the selected category and filters to view available parts.
+                          {search.trim()
+                            ? `No components matched "${search.trim()}". Try checking the part number spelling, using a broader keyword, or clearing active filters.`
+                            : "Try adjusting the selected category or clearing manufacturer and package filters to view available parts."}
                         </p>
                         <button
                           className="library-empty-reset-btn"
                           type="button"
                           onClick={clearFilters}
                         >
-                          Reset filters
+                          <RotateCcw size={14} /> Reset all filters
                         </button>
                       </div>
                     ) : (
@@ -1027,7 +1139,7 @@ function App() {
                               }}
                               aria-label={`${component.name} (${component.partNumber})`}
                             >
-                              {/* Corner controls: Compare checkbox on left, Save bookmark button on right */}
+                              {/* Corner controls: Compare checkbox on left, Status & Save bookmark on right */}
                               <div className="card-top-bar">
                                 <label
                                   className="card-compare-label"
@@ -1056,35 +1168,54 @@ function App() {
                                   <span className="card-compare-text">Compare</span>
                                 </label>
 
-                                <button
-                                  type="button"
-                                  className={`card-bookmark-btn ${
-                                    isSaved(component._id) ? "saved" : ""
-                                  }`}
-                                  onClick={(e) =>
-                                    handleToggleSave(e, component)
-                                  }
-                                  aria-label={
-                                    isSaved(component._id)
-                                      ? `Remove ${component.partNumber} from saved parts`
-                                      : `Save ${component.partNumber} to workspace`
-                                  }
-                                  title={
-                                    isSaved(component._id)
-                                      ? "Saved in workspace (click to remove)"
-                                      : "Save component to workspace"
-                                  }
-                                >
-                                  <Bookmark
-                                    size={16}
-                                    fill={
-                                      isSaved(component._id)
-                                        ? "currentColor"
-                                        : "none"
+                                <div className="card-top-right">
+                                  <span
+                                    className={`card-status-badge ${
+                                      component.dataStatus === "verified"
+                                        ? "verified"
+                                        : "incomplete"
+                                    }`}
+                                    title={`Data completeness: ${
+                                      component.dataStatus === "verified"
+                                        ? "Verified against official datasheet"
+                                        : "Incomplete catalogue parameters"
+                                    }`}
+                                  >
+                                    {component.dataStatus === "verified"
+                                      ? "Verified"
+                                      : "Incomplete"}
+                                  </span>
+
+                                  <button
+                                    type="button"
+                                    className={`card-bookmark-btn ${
+                                      isSaved(component._id) ? "saved" : ""
+                                    }`}
+                                    onClick={(e) =>
+                                      handleToggleSave(e, component)
                                     }
-                                    aria-hidden="true"
-                                  />
-                                </button>
+                                    aria-label={
+                                      isSaved(component._id)
+                                        ? `Remove ${component.partNumber} from saved parts`
+                                        : `Save ${component.partNumber} to workspace`
+                                    }
+                                    title={
+                                      isSaved(component._id)
+                                        ? "Saved in workspace (click to remove)"
+                                        : "Save component to workspace"
+                                    }
+                                  >
+                                    <Bookmark
+                                      size={15}
+                                      fill={
+                                        isSaved(component._id)
+                                          ? "currentColor"
+                                          : "none"
+                                      }
+                                      aria-hidden="true"
+                                    />
+                                  </button>
+                                </div>
                               </div>
 
                               {/* Fixed 4:3 Image Stage with category-icon fallback (no PHOTO badge) */}
@@ -1156,24 +1287,42 @@ function App() {
                                 </div>
                               </div>
 
-                              {/* Card Footer: Small datasheet text link + Primary View Details button */}
+                              {/* Card Footer: Small datasheet text link + PCB Assistant quick link + Primary View Details button */}
                               <div className="card-footer">
-                                {isValidHttpUrl(component.datasheetUrl) ? (
-                                  <a
-                                    className="card-datasheet-text-link"
-                                    href={component.datasheetUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    onClick={(e) => e.stopPropagation()}
-                                    title={`Open official datasheet PDF for ${component.partNumber}`}
+                                <div className="card-footer-links">
+                                  {isValidHttpUrl(component.datasheetUrl) ? (
+                                    <a
+                                      className="card-datasheet-text-link"
+                                      href={component.datasheetUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      onClick={(e) => e.stopPropagation()}
+                                      title={`Open official datasheet PDF for ${component.partNumber}`}
+                                    >
+                                      Datasheet ↗
+                                    </a>
+                                  ) : (
+                                    <span className="card-datasheet-text-link disabled">
+                                      No PDF
+                                    </span>
+                                  )}
+
+                                  <button
+                                    type="button"
+                                    className="card-pcb-link"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      navigate(
+                                        `/pcb?partNumber=${encodeURIComponent(
+                                          component.partNumber
+                                        )}`
+                                      );
+                                    }}
+                                    title={`Inspect PCB footprint and dimensions for ${component.partNumber}`}
                                   >
-                                    Datasheet ↗
-                                  </a>
-                                ) : (
-                                  <span className="card-datasheet-text-link disabled">
-                                    No PDF
-                                  </span>
-                                )}
+                                    PCB ↗
+                                  </button>
+                                </div>
 
                                 <button
                                   type="button"
@@ -1304,6 +1453,13 @@ function App() {
                                 <span className="error-icon">⚠</span>
                                 <strong>Unable to retrieve component data</strong>
                                 <p>{error}</p>
+                                <button
+                                  className="filter-button reset-action-btn"
+                                  type="button"
+                                  onClick={() => setRefreshIndex((prev) => prev + 1)}
+                                >
+                                  <RotateCcw size={13} /> Retry Connection
+                                </button>
                               </div>
                             </td>
                           </tr>
@@ -1313,9 +1469,17 @@ function App() {
                               <div className="empty-message-wrap">
                                 <span className="empty-icon">⌕</span>
                                 <strong>No components match the active criteria</strong>
-                                <p>Try clearing your keyword search or adjusting the selected category and filters.</p>
-                                <button className="filter-button reset-action-btn" type="button" onClick={clearFilters}>
-                                   Reset All Filters
+                                <p>
+                                  {search.trim()
+                                    ? `No components matched "${search.trim()}". Try clearing search keywords or active filters.`
+                                    : "Try clearing your keyword search or adjusting the selected category and filters."}
+                                </p>
+                                <button
+                                  className="filter-button reset-action-btn"
+                                  type="button"
+                                  onClick={clearFilters}
+                                >
+                                  <RotateCcw size={13} /> Reset All Filters
                                 </button>
                               </div>
                             </td>
@@ -1528,6 +1692,21 @@ function App() {
                                     </button>
 
                                     <button
+                                      className="table-action-btn table-pcb-btn"
+                                      type="button"
+                                      onClick={() =>
+                                        navigate(
+                                          `/pcb?partNumber=${encodeURIComponent(
+                                            component.partNumber
+                                          )}`
+                                        )
+                                      }
+                                      title={`Inspect PCB footprint and dimensions for ${component.partNumber}`}
+                                    >
+                                      PCB ↗
+                                    </button>
+
+                                    <button
                                       className="table-action-btn"
                                       type="button"
                                       onClick={() =>
@@ -1563,7 +1742,21 @@ function App() {
                       <div className="catalog-heading-group">
                         <div className="breadcrumb">
                           Workspace <span>/</span>{" "}
-                          <strong>PCB Footprint & Physical Dimension Reference</strong>
+                          <button
+                            type="button"
+                            className="breadcrumb-link-btn"
+                            onClick={() => navigate("/pcb")}
+                            title="View all components in PCB Assistant"
+                          >
+                            PCB Footprint Reference
+                          </button>
+                          {selectedPcbComponent && (
+                            <>
+                              {" "}
+                              <span>/</span>{" "}
+                              <strong>{selectedPcbComponent.partNumber}</strong>
+                            </>
+                          )}
                         </div>
                         <h1>PCB Footprint & Dimension Inspector</h1>
                         <p className="subtitle">
@@ -1604,16 +1797,107 @@ function App() {
                       </div>
                     </div>
 
-                <div className="pcb-grid">
-                  {components.map((component) => {
-                    const audit = auditComponentFootprint(component);
-                    const isVerified = component.dataStatus === "verified";
-                    const isCardSelected =
-                      selectedComponent?._id === component._id;
-                    const sourceFields = [
-                      audit.fields.package,
-                      audit.fields.pinCount,
-                      audit.fields.leadPitch,
+                    {loading && pcbQueryParam && !selectedPcbComponent ? (
+                      <div className="card-empty-feedback">
+                        <div className="empty-icon-wrap" aria-hidden="true">
+                          <RotateCcw size={24} className="spinning" />
+                        </div>
+                        <h3 className="empty-title">Loading component footprint...</h3>
+                        <p className="empty-desc">
+                          Retrieving footprint parameters for &ldquo;{pcbQueryParam}&rdquo;.
+                        </p>
+                      </div>
+                    ) : pcbQueryParam && !selectedPcbComponent && !loading ? (
+                      <div className="pcb-not-found-card">
+                        <div className="pcb-not-found-icon">⚠</div>
+                        <h3>Component &ldquo;{pcbQueryParam}&rdquo; not found in catalogue</h3>
+                        <p>
+                          No electronic component matching part number or ID &ldquo;{pcbQueryParam}&rdquo; could be located in the Cirqon database.
+                        </p>
+                        <div className="pcb-not-found-actions">
+                          <button
+                            type="button"
+                            className="pcb-show-all-btn"
+                            onClick={() => navigate("/pcb")}
+                          >
+                            View all components ({filterOptions.length || components.length})
+                          </button>
+                          <button
+                            type="button"
+                            className="pcb-back-lib-btn"
+                            onClick={() => navigate("/library")}
+                          >
+                            ← Back to Library
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        {selectedPcbComponent && (
+                          <div className="pcb-focused-banner">
+                            <div className="pcb-focused-identity">
+                              <div className="pcb-focused-title-row">
+                                <span className="pcb-focused-badge">Active Part Focus</span>
+                                <span className="pcb-focused-mpn">
+                                  {selectedPcbComponent.partNumber}
+                                </span>
+                                <h2 className="pcb-focused-title">
+                                  {selectedPcbComponent.name}
+                                </h2>
+                              </div>
+                              <div className="pcb-focused-meta">
+                                <span>{selectedPcbComponent.manufacturer}</span>
+                                <span className="meta-dot">·</span>
+                                <span>{selectedPcbComponent.category}</span>
+                                <span className="meta-dot">·</span>
+                                <span>
+                                  {selectedPcbComponent.package?.name || "Unspecified Package"}
+                                </span>
+                                <span
+                                  className={`pcb-datastatus-inline ${
+                                    selectedPcbComponent.dataStatus === "verified"
+                                      ? "status-verified"
+                                      : "status-incomplete"
+                                  }`}
+                                >
+                                  {selectedPcbComponent.dataStatus === "verified"
+                                    ? "Verified Footprint Data"
+                                    : "Incomplete Footprint Data"}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="pcb-focused-actions">
+                              <button
+                                className="pcb-show-all-btn"
+                                type="button"
+                                onClick={() => navigate("/pcb")}
+                                title="Exit single component focus and view all catalogue components"
+                              >
+                                View all components ({filterOptions.length || components.length})
+                              </button>
+                              <button
+                                className="pcb-back-lib-btn"
+                                type="button"
+                                onClick={() => navigate("/library")}
+                                title="Return to component catalog"
+                              >
+                                ← Back to Library
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className={`pcb-grid ${selectedPcbComponent ? "single-focus-grid" : ""}`}>
+                          {displayedPcbComponents.map((component) => {
+                            const audit = auditComponentFootprint(component);
+                            const isVerified = component.dataStatus === "verified";
+                            const isCardSelected = selectedPcbComponent
+                              ? selectedPcbComponent._id === component._id
+                              : selectedComponent?._id === component._id;
+                            const sourceFields = [
+                              audit.fields.package,
+                              audit.fields.pinCount,
+                              audit.fields.leadPitch,
                       audit.fields.bodySize,
                       audit.fields.padSize,
                       audit.fields.drill,
@@ -1800,7 +2084,28 @@ function App() {
                     );
                   })}
                 </div>
-              </section>
+
+                {displayedPcbComponents.length === 0 && !loading && (
+                  <div className="card-empty-feedback">
+                    <div className="empty-icon-wrap" aria-hidden="true">
+                      <Layers size={36} />
+                    </div>
+                    <h3 className="empty-title">No components found</h3>
+                    <p className="empty-desc">
+                      No components match the active category or parametric filters in the PCB Assistant.
+                    </p>
+                    <button
+                      className="library-empty-reset-btn"
+                      type="button"
+                      onClick={clearFilters}
+                    >
+                      <RotateCcw size={14} /> Reset all filters
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </section>
                 }
               />
 

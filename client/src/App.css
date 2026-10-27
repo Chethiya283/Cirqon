@@ -442,12 +442,66 @@
     padding: 16px 16px 36px;
     gap: var(--cq-space-3);
   }
+
+  .library-header-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--cq-space-3);
+  }
+
+  .library-header-search {
+    width: 100%;
+  }
 }
 
 .library-heading-group {
   display: flex;
   flex-direction: column;
-  gap: var(--cq-space-2);
+  gap: var(--cq-space-3);
+  padding-bottom: var(--cq-space-4);
+  border-bottom: 1px solid var(--cq-border-default);
+}
+
+.library-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--cq-text-xs);
+  color: var(--cq-text-muted);
+  font-weight: var(--cq-weight-medium);
+}
+
+.library-breadcrumb .breadcrumb-separator {
+  color: var(--cq-border-strong);
+  user-select: none;
+}
+
+.library-breadcrumb .breadcrumb-current {
+  color: var(--cq-text-primary);
+  font-weight: var(--cq-weight-semibold);
+}
+
+.library-header-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--cq-space-4);
+  flex-wrap: wrap;
+}
+
+.library-title-block {
+  flex: 1;
+  min-width: 280px;
+}
+
+.library-eyebrow {
+  color: var(--cq-emerald);
+  font-family: var(--cq-font-heading);
+  font-size: var(--cq-text-xs);
+  font-weight: var(--cq-weight-bold);
+  letter-spacing: var(--cq-tracking-wide);
+  text-transform: uppercase;
+  margin-bottom: 4px;
 }
 
 .library-title-row {
@@ -480,11 +534,76 @@
 }
 
 .library-subtitle {
-  margin: 0;
+  margin: 6px 0 0;
   font-size: var(--cq-text-base);
   color: var(--cq-text-secondary);
   line-height: var(--cq-leading-normal);
   max-width: 760px;
+}
+
+/* Integrated On-Page Quick Search Field */
+.library-header-search {
+  width: 360px;
+  max-width: 100%;
+}
+
+.library-search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.library-search-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--cq-text-muted);
+  pointer-events: none;
+}
+
+.library-search-input {
+  width: 100%;
+  height: 38px;
+  padding: 0 34px 0 36px;
+  border: 1px solid var(--cq-border-default);
+  border-radius: var(--cq-radius-sm);
+  background: var(--cq-surface);
+  color: var(--cq-text-primary);
+  font-family: var(--cq-font-sans);
+  font-size: var(--cq-text-sm);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+  outline: none;
+}
+
+.library-search-input:focus {
+  border-color: var(--cq-emerald);
+  box-shadow: 0 0 0 2px var(--cq-emerald-soft);
+}
+
+.library-search-input::placeholder {
+  color: var(--cq-text-muted);
+}
+
+.library-search-clear {
+  position: absolute;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--cq-text-muted);
+  cursor: pointer;
+  border-radius: 50%;
+  transition: color 120ms ease, background 120ms ease;
+}
+
+.library-search-clear:hover {
+  color: var(--cq-text-primary);
+  background: var(--cq-surface-hover);
 }
 
 /* ========================================================
@@ -1019,6 +1138,15 @@
   flex-wrap: wrap;
 }
 
+.active-filter-label {
+  font-size: var(--cq-text-xs);
+  font-weight: var(--cq-weight-semibold);
+  color: var(--cq-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-right: 2px;
+}
+
 .filter-pill {
   display: inline-flex;
   align-items: center;
@@ -1043,6 +1171,30 @@
 .filter-pill span {
   font-size: var(--cq-text-xs);
   line-height: 1;
+}
+
+.filter-pill-clear-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 8px;
+  border: 1px dashed var(--cq-border-strong);
+  border-radius: var(--cq-radius-sm);
+  background: transparent;
+  color: var(--cq-text-muted);
+  font-family: var(--cq-font-sans);
+  font-size: var(--cq-text-xs);
+  font-weight: var(--cq-weight-medium);
+  cursor: pointer;
+  transition: all 120ms ease;
+  margin-left: 4px;
+}
+
+.filter-pill-clear-all:hover {
+  color: var(--cq-error);
+  border-color: var(--cq-error-border);
+  background: var(--cq-error-soft);
 }
 
 .result-count {
@@ -1279,6 +1431,36 @@
   color: var(--cq-text-secondary);
 }
 
+.card-top-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.card-status-badge {
+  font-family: var(--cq-font-mono);
+  font-size: 10px;
+  font-weight: var(--cq-weight-bold);
+  letter-spacing: 0.03em;
+  padding: 1px 6px;
+  border-radius: var(--cq-radius-xs);
+  text-transform: uppercase;
+  line-height: 1.4;
+  user-select: none;
+}
+
+.card-status-badge.verified {
+  background: var(--cq-emerald-soft);
+  color: var(--cq-emerald);
+  border: 1px solid var(--cq-emerald-border);
+}
+
+.card-status-badge.incomplete {
+  background: var(--cq-surface-subtle);
+  color: var(--cq-text-muted);
+  border: 1px solid var(--cq-border-subtle);
+}
+
 .card-bookmark-btn {
   display: inline-flex;
   align-items: center;
@@ -1510,6 +1692,40 @@
   text-decoration: none;
 }
 
+.card-footer-links {
+  display: flex;
+  align-items: center;
+  gap: var(--cq-space-3);
+  min-width: 0;
+}
+
+.card-pcb-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-family: var(--cq-font-sans);
+  font-size: var(--cq-text-xs);
+  font-weight: var(--cq-weight-medium);
+  color: var(--cq-emerald);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color var(--cq-transition-fast);
+}
+
+.card-pcb-link:hover {
+  color: var(--cq-emerald-hover);
+  text-decoration: underline;
+}
+
+.card-pcb-link:focus-visible {
+  outline: 2px solid var(--cq-border-focus);
+  outline-offset: 1px;
+}
+
 .card-view-details-btn {
   display: inline-flex;
   align-items: center;
@@ -1659,6 +1875,11 @@
   box-shadow: var(--cq-shadow-sm);
 }
 
+.card-empty-feedback.error-feedback {
+  border-color: var(--cq-error-border);
+  background: #fffafa;
+}
+
 .empty-icon-wrap {
   display: grid;
   place-items: center;
@@ -1668,6 +1889,16 @@
   background: var(--cq-surface-subtle);
   border: 1px solid var(--cq-border-default);
   color: var(--cq-text-muted);
+}
+
+.empty-icon-wrap.error-icon-wrap {
+  background: var(--cq-error-soft);
+  border-color: var(--cq-error-border);
+  color: var(--cq-error);
+}
+
+.card-empty-feedback.error-feedback .empty-title {
+  color: var(--cq-error);
 }
 
 .empty-title {
@@ -2145,6 +2376,18 @@
   border-color: var(--cq-emerald-border);
   color: var(--cq-emerald);
   background: var(--cq-emerald-soft);
+}
+
+.table-action-btn.table-pcb-btn {
+  color: var(--cq-emerald);
+  background: var(--cq-emerald-soft);
+  border-color: var(--cq-emerald-border);
+}
+
+.table-action-btn.table-pcb-btn:hover {
+  background: var(--cq-emerald);
+  color: var(--cq-text-inverse);
+  border-color: var(--cq-emerald);
 }
 
 /* Loading, Empty, and Error States */
@@ -2880,6 +3123,23 @@
 /* ========================================================
    PCB Design Assistant View
    ======================================================== */
+.breadcrumb-link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: inherit;
+  color: var(--cq-text-muted);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline;
+}
+
+.breadcrumb-link-btn:hover {
+  color: var(--cq-emerald);
+  text-decoration: underline;
+}
+
 .pcb-assistant-view {
   display: flex;
   flex-direction: column;
@@ -2887,11 +3147,180 @@
   padding-bottom: var(--cq-space-8);
 }
 
+/* Single Part Focus Hero Banner */
+.pcb-focused-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cq-space-4);
+  padding: var(--cq-space-4) var(--cq-space-5);
+  background: var(--cq-surface-1);
+  border: 1px solid var(--cq-emerald-border);
+  border-left: 4px solid var(--cq-emerald);
+  border-radius: var(--cq-radius-md);
+  box-shadow: var(--cq-shadow-sm);
+  flex-wrap: wrap;
+}
+
+.pcb-focused-identity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cq-space-1-5);
+  min-width: 0;
+}
+
+.pcb-focused-title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--cq-space-2-5);
+  flex-wrap: wrap;
+}
+
+.pcb-focused-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: var(--cq-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: var(--cq-radius-full);
+  background: var(--cq-emerald);
+  color: var(--cq-text-inverse);
+}
+
+.pcb-focused-mpn {
+  font-family: var(--cq-font-mono);
+  font-size: var(--cq-text-sm);
+  font-weight: var(--cq-weight-bold);
+  color: var(--cq-emerald-hover);
+  background: var(--cq-emerald-soft);
+  padding: 2px 8px;
+  border-radius: var(--cq-radius-sm);
+  border: 1px solid var(--cq-emerald-border);
+}
+
+.pcb-focused-title {
+  margin: 0;
+  font-family: var(--cq-font-heading);
+  font-size: var(--cq-text-lg);
+  font-weight: var(--cq-weight-semibold);
+  color: var(--cq-text-primary);
+}
+
+.pcb-focused-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--cq-space-2);
+  font-size: var(--cq-text-xs);
+  color: var(--cq-text-secondary);
+  flex-wrap: wrap;
+}
+
+.pcb-focused-meta .meta-dot {
+  color: var(--cq-text-disabled);
+}
+
+.pcb-focused-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--cq-space-2-5);
+  flex-shrink: 0;
+}
+
+.pcb-show-all-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  font-family: var(--cq-font-sans);
+  font-size: var(--cq-text-xs);
+  font-weight: var(--cq-weight-semibold);
+  color: var(--cq-emerald);
+  background: var(--cq-emerald-soft);
+  border: 1px solid var(--cq-emerald-border);
+  border-radius: var(--cq-radius-sm);
+  cursor: pointer;
+  transition: all var(--cq-transition-fast);
+}
+
+.pcb-show-all-btn:hover {
+  background: var(--cq-emerald);
+  color: var(--cq-text-inverse);
+}
+
+.pcb-back-lib-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  font-family: var(--cq-font-sans);
+  font-size: var(--cq-text-xs);
+  font-weight: var(--cq-weight-medium);
+  color: var(--cq-text-secondary);
+  background: var(--cq-surface-2);
+  border: 1px solid var(--cq-border-default);
+  border-radius: var(--cq-radius-sm);
+  cursor: pointer;
+  transition: all var(--cq-transition-fast);
+}
+
+.pcb-back-lib-btn:hover {
+  background: var(--cq-surface-hover);
+  color: var(--cq-text-primary);
+}
+
+/* PCB Not Found Card */
+.pcb-not-found-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--cq-space-8) var(--cq-space-6);
+  background: var(--cq-surface-1);
+  border: 1px dashed var(--cq-border-strong);
+  border-radius: var(--cq-radius-lg);
+  margin: var(--cq-space-4) 0;
+}
+
+.pcb-not-found-icon {
+  font-size: 28px;
+  color: var(--cq-amber, #d97706);
+  margin-bottom: var(--cq-space-2);
+}
+
+.pcb-not-found-card h3 {
+  margin: 0 0 var(--cq-space-2);
+  font-family: var(--cq-font-heading);
+  font-size: var(--cq-text-lg);
+  color: var(--cq-text-primary);
+}
+
+.pcb-not-found-card p {
+  margin: 0 0 var(--cq-space-5);
+  max-width: 480px;
+  font-size: var(--cq-text-sm);
+  color: var(--cq-text-secondary);
+  line-height: var(--cq-line-height-relaxed);
+}
+
+.pcb-not-found-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--cq-space-3);
+}
+
 .pcb-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   row-gap: var(--cq-space-8);
   column-gap: var(--cq-space-6);
+}
+
+.pcb-grid.single-focus-grid {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 980px;
 }
 
 .pcb-card {
