@@ -8,7 +8,12 @@ import { useAuth } from "../auth/AuthContext";
 import { useSavedParts } from "../auth/SavedPartsContext";
 import { ComponentThumbnail } from "../ComponentImage";
 import { getComponentImageInfo } from "../componentImageUtils";
-import { renderFootprintSvg } from "../utils/footprint";
+import {
+  auditComponentFootprint,
+  getProvenanceBadgeClass,
+  renderFootprintSvg,
+  renderValueWithMonoNumbers,
+} from "../utils/footprint";
 import {
   formatDimensions,
   getSpecPairs,
@@ -227,84 +232,292 @@ export const ComponentDetailsModal: React.FC<ComponentDetailsModalProps> = ({
             )}
           </section>
 
-          <section className="modal-section modal-mechanical-section">
-            <h3>Package & Mechanical Dimensions</h3>
+          {(() => {
+            const footprintAudit = auditComponentFootprint(component);
+            const isVerifiedData = component.dataStatus === "verified";
+            const hasStoredBodyDims =
+              (component.package?.bodyDimensions?.lengthMm != null &&
+                component.package?.bodyDimensions?.widthMm != null) ||
+              (component.package?.footprintDimensions?.lengthMm != null &&
+                component.package?.footprintDimensions?.widthMm != null);
 
-            <div className="modal-footprint-grid">
-              <div className="modal-footprint-preview cad-grid-overlay">
-                <span className="cad-dimension-badge">FOOTPRINT VECTOR GEOMETRY</span>
-                {renderFootprintSvg(component)}
-              </div>
-
-              <div className="specification-list">
-                <div className="specification-row">
-                  <span>Package Designation</span>
-                  <strong>
-                    {component.package?.name || "Unspecified"}
-                  </strong>
+            return (
+              <section className="modal-section modal-mechanical-section">
+                <div className="modal-mechanical-header">
+                  <h3>Package & Mechanical Dimensions</h3>
+                  <span
+                    className={`pcb-datastatus-badge ${
+                      isVerifiedData ? "status-verified" : "status-incomplete"
+                    }`}
+                    title={`Record dataStatus: ${component.dataStatus}`}
+                  >
+                    Data status: {isVerifiedData ? "Verified" : "Incomplete"}
+                  </span>
                 </div>
 
-                <div className="specification-row">
-                  <span>Mounting Technology</span>
-                  <strong>
-                    {component.package?.mountingType || "Unspecified"}
-                  </strong>
+                <div className="modal-footprint-grid">
+                  <div className="modal-footprint-col">
+                    {footprintAudit.canDrawFootprint ? (
+                      <>
+                        <div className="modal-footprint-preview cad-grid-overlay">
+                          <span className="cad-dimension-badge">
+                            {isVerifiedData
+                              ? "Verified Footprint"
+                              : "Illustrative Footprint (Catalogue Dimensions)"}
+                          </span>
+                          {renderFootprintSvg(component)}
+                        </div>
+                        <p className="pcb-fabrication-disclaimer modal-footprint-disclaimer">
+                          {isVerifiedData
+                            ? "Verified against the manufacturer datasheet."
+                            : "Illustrative footprint generated from stored catalogue dimensions. Confirm against the manufacturer datasheet before fabrication."}
+                        </p>
+                        {footprintAudit.missingFields.length > 0 && (
+                          <div className="pcb-missing-banner">
+                            <strong>Missing:</strong>{" "}
+                            {renderValueWithMonoNumbers(
+                              footprintAudit.missingFields.join(", ")
+                            )}
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div
+                        className="pcb-footprint-empty-state modal-footprint-empty"
+                        role="region"
+                        aria-label={`Footprint unavailable for ${component.partNumber}`}
+                      >
+                        <div className="pcb-empty-state-title">
+                          Footprint Not Drawn
+                        </div>
+                        <p className="pcb-empty-state-reason">
+                          {renderValueWithMonoNumbers(
+                            footprintAudit.emptyStateReason
+                          )}
+                        </p>
+                        <div className="pcb-missing-banner">
+                          <strong>Missing:</strong>{" "}
+                          {renderValueWithMonoNumbers(
+                            footprintAudit.missingFields.join(", ")
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="specification-list">
+                    <div className="specification-row">
+                      <span>Package Designation</span>
+                      <div className="modal-spec-val-with-prov">
+                        <strong>
+                          {component.package?.name || "Not available"}
+                        </strong>
+                        <span
+                          className={getProvenanceBadgeClass(
+                            component.package?.name
+                              ? "Catalogue"
+                              : "Not available"
+                          )}
+                        >
+                          {component.package?.name
+                            ? "Catalogue"
+                            : "Not available"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="specification-row">
+                      <span>Mounting Technology</span>
+                      <div className="modal-spec-val-with-prov">
+                        <strong>
+                          {component.package?.mountingType || "Not available"}
+                        </strong>
+                        <span
+                          className={getProvenanceBadgeClass(
+                            component.package?.mountingType
+                              ? "Catalogue"
+                              : "Not available"
+                          )}
+                        >
+                          {component.package?.mountingType
+                            ? "Catalogue"
+                            : "Not available"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="specification-row">
+                      <span>Pin Count</span>
+                      <div className="modal-spec-val-with-prov">
+                        <span className="pcb-source-value">
+                          {renderValueWithMonoNumbers(
+                            footprintAudit.fields.pinCount.value
+                          )}
+                        </span>
+                        <span
+                          className={getProvenanceBadgeClass(
+                            footprintAudit.fields.pinCount.provenance
+                          )}
+                        >
+                          {footprintAudit.fields.pinCount.provenance}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="specification-row">
+                      <span>Body Dimensions (L × W × H)</span>
+                      <div className="modal-spec-val-with-prov">
+                        <span className="pcb-source-value">
+                          {hasStoredBodyDims
+                            ? renderValueWithMonoNumbers(
+                                formatDimensions(component.package)
+                              )
+                            : "Not available"}
+                        </span>
+                        <span
+                          className={getProvenanceBadgeClass(
+                            hasStoredBodyDims ? "Catalogue" : "Not available"
+                          )}
+                        >
+                          {hasStoredBodyDims ? "Catalogue" : "Not available"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {component.package?.bodyDimensions?.seatedHeightMm !=
+                      null && (
+                      <div className="specification-row">
+                        <span>Seated Height</span>
+                        <div className="modal-spec-val-with-prov">
+                          <span className="pcb-source-value">
+                            <span className="pcb-mono-num">
+                              {component.package.bodyDimensions.seatedHeightMm}
+                            </span>{" "}
+                            mm
+                          </span>
+                          <span className={getProvenanceBadgeClass("Catalogue")}>
+                            Catalogue
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="specification-row">
+                      <span>Lead Pitch</span>
+                      <div className="modal-spec-val-with-prov">
+                        <span className="pcb-source-value">
+                          {renderValueWithMonoNumbers(
+                            footprintAudit.fields.leadPitch.value
+                          )}
+                        </span>
+                        <span
+                          className={getProvenanceBadgeClass(
+                            footprintAudit.fields.leadPitch.provenance
+                          )}
+                        >
+                          {footprintAudit.fields.leadPitch.provenance}
+                        </span>
+                      </div>
+                    </div>
+
+                    {component.package?.pcbLayout?.rowSpacingMm != null && (
+                      <div className="specification-row">
+                        <span>Row Spacing</span>
+                        <div className="modal-spec-val-with-prov">
+                          <span className="pcb-source-value">
+                            <span className="pcb-mono-num">
+                              {component.package.pcbLayout.rowSpacingMm}
+                            </span>{" "}
+                            mm
+                          </span>
+                          <span className={getProvenanceBadgeClass("Catalogue")}>
+                            Catalogue
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="specification-row">
+                      <span>Pad Size / Diameter</span>
+                      <div className="modal-spec-val-with-prov">
+                        <span className="pcb-source-value">
+                          {component.package?.pcbLayout?.padDiameterMm !=
+                          null ? (
+                            <>
+                              <span className="pcb-mono-num">
+                                {component.package.pcbLayout.padDiameterMm}
+                              </span>{" "}
+                              mm
+                            </>
+                          ) : (
+                            "Not available"
+                          )}
+                        </span>
+                        <span
+                          className={getProvenanceBadgeClass(
+                            component.package?.pcbLayout?.padDiameterMm != null
+                              ? "Catalogue"
+                              : "Not available"
+                          )}
+                        >
+                          {component.package?.pcbLayout?.padDiameterMm != null
+                            ? "Catalogue"
+                            : "Not available"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="specification-row">
+                      <span>Recommended Drill Diameter</span>
+                      <div className="modal-spec-val-with-prov">
+                        <span className="pcb-source-value">
+                          {component.package?.pcbLayout?.drillDiameterMm !=
+                          null ? (
+                            <>
+                              <span className="pcb-mono-num">
+                                {component.package.pcbLayout.drillDiameterMm}
+                              </span>{" "}
+                              mm
+                            </>
+                          ) : (
+                            "Not available"
+                          )}
+                        </span>
+                        <span
+                          className={getProvenanceBadgeClass(
+                            component.package?.pcbLayout?.drillDiameterMm !=
+                              null
+                              ? "Catalogue"
+                              : "Not available"
+                          )}
+                        >
+                          {component.package?.pcbLayout?.drillDiameterMm != null
+                            ? "Catalogue"
+                            : "Not available"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {component.package?.padLayout && (
+                      <div className="specification-row">
+                        <span>Pad Layout Reference</span>
+                        <div className="modal-spec-val-with-prov">
+                          <span className="pcb-source-value">
+                            {renderValueWithMonoNumbers(
+                              component.package.padLayout
+                            )}
+                          </span>
+                          <span className={getProvenanceBadgeClass("Catalogue")}>
+                            Catalogue
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-
-                <div className="specification-row">
-                  <span>Body Dimensions (L × W × H)</span>
-                  <strong>
-                    {formatDimensions(component.package)}
-                  </strong>
-                </div>
-
-                {component.package?.bodyDimensions?.seatedHeightMm != null && (
-                  <div className="specification-row">
-                    <span>Seated Height</span>
-                    <strong>
-                      {component.package.bodyDimensions.seatedHeightMm} mm
-                    </strong>
-                  </div>
-                )}
-
-                {component.package?.pcbLayout?.leadPitchMm != null && (
-                  <div className="specification-row">
-                    <span>Lead Pitch</span>
-                    <strong>
-                      {component.package.pcbLayout.leadPitchMm} mm
-                    </strong>
-                  </div>
-                )}
-
-                {component.package?.pcbLayout?.rowSpacingMm != null && (
-                  <div className="specification-row">
-                    <span>Row Spacing</span>
-                    <strong>
-                      {component.package.pcbLayout.rowSpacingMm} mm
-                    </strong>
-                  </div>
-                )}
-
-                {component.package?.pcbLayout?.drillDiameterMm != null && (
-                  <div className="specification-row">
-                    <span>Recommended Drill Diameter</span>
-                    <strong>
-                      {component.package.pcbLayout.drillDiameterMm} mm
-                    </strong>
-                  </div>
-                )}
-
-                {component.package?.padLayout && (
-                  <div className="specification-row">
-                    <span>Pad Layout Reference</span>
-                    <strong>
-                      {component.package.padLayout}
-                    </strong>
-                  </div>
-                )}
-              </div>
-            </div>
-          </section>
+              </section>
+            );
+          })()}
 
           <section className="modal-section">
             <h3>

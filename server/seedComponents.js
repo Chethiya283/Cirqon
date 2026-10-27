@@ -161,8 +161,17 @@ const components = [
     },
     package: {
       name: "TO-220",
+      mountingType: "Through-Hole",
+      bodyDimensions: {
+        lengthMm: 10.16,
+        widthMm: 4.57,
+        heightMm: 14.99,
+      },
+      pcbLayout: {
+        leadPitchMm: 2.54,
+      },
       footprintDimensions: {},
-      padLayout: "3-pin package",
+      padLayout: "3-pin TO-220 through-hole, 2.54 mm lead pitch",
       landPatternUrl: "",
     },
     pins: [
@@ -212,8 +221,14 @@ const components = [
     },
     package: {
       name: "DO-204AL (DO-41)",
+      mountingType: "Through-Hole",
+      bodyDimensions: {
+        lengthMm: 5.2,
+        widthMm: 2.7,
+        heightMm: 2.7,
+      },
       footprintDimensions: {},
-      padLayout: "Axial, 2 leads",
+      padLayout: "Axial, 2 leads (flexible bend span)",
       landPatternUrl: "",
     },
     pins: [
@@ -249,8 +264,14 @@ const components = [
     },
     package: {
       name: "DO-35",
+      mountingType: "Through-Hole",
+      bodyDimensions: {
+        lengthMm: 3.4,
+        widthMm: 1.75,
+        heightMm: 1.75,
+      },
       footprintDimensions: {},
-      padLayout: "Axial, 2 leads",
+      padLayout: "Axial, 2 leads (flexible bend span)",
       landPatternUrl: "",
     },
     pins: [
@@ -291,8 +312,18 @@ const components = [
     },
     package: {
       name: "TO-92",
+      mountingType: "Through-Hole",
+      bodyDimensions: {
+        lengthMm: 5.2,
+        widthMm: 4.19,
+        heightMm: 5.33,
+      },
+      pcbLayout: {
+        leadPitchMm: 1.27,
+      },
       footprintDimensions: {},
-      padLayout: "3-pin through-hole package",
+      padLayout:
+        "3-pin TO-92 through-hole, 1.27 mm adjacent lead pitch (2.54 mm outer span)",
       landPatternUrl: "",
     },
     pins: [
@@ -339,9 +370,10 @@ const components = [
       bodyDimensions: {
         lengthMm: 6.3,
         widthMm: 2.4,
+        heightMm: 2.4,
       },
       footprintDimensions: {},
-      padLayout: "Axial, 2 leads",
+      padLayout: "Axial, 2 leads (flexible bend span)",
       landPatternUrl: "",
     },
     pins: [
@@ -385,13 +417,18 @@ const components = [
     },
     package: {
       name: "Radial (GoldMax 300, C315)",
+      mountingType: "Through-Hole",
       bodyDimensions: {
         lengthMm: 3.81,
         widthMm: 2.54,
         heightMm: 3.14,
+        seatedHeightMm: 5.08,
+      },
+      pcbLayout: {
+        leadPitchMm: 2.54,
       },
       footprintDimensions: {},
-      padLayout: "Radial, 2 leads",
+      padLayout: "Radial, 2 leads, 2.54 mm lead pitch",
       landPatternUrl: "",
     },
     pins: [
@@ -429,8 +466,8 @@ const components = [
       operatingTemperatureMin: -20,
       operatingTemperatureMax: 80,
       temperatureUnit: "°C",
-      ratedCurrentCondition: "25 °C ambient, 10 °C temperature rise",
-      saturationCurrentCondition: "Inductance drops ~10 % at saturation",
+      ratedCurrentCondition: "25\u202f°C ambient, 10\u202f°C temperature rise",
+      saturationCurrentCondition: "Inductance drops ~10\u202f% at saturation",
       qFactor: 30,
       qFactorTestFrequency: 0.796,
       qFactorTestFrequencyUnit: "MHz",
@@ -439,8 +476,18 @@ const components = [
     },
     package: {
       name: "Radial (RLB0914)",
+      mountingType: "Through-Hole",
+      bodyDimensions: {
+        lengthMm: 8.7,
+        widthMm: 8.7,
+        heightMm: 12.0,
+        seatedHeightMm: 12.0,
+      },
+      pcbLayout: {
+        leadPitchMm: 5.0,
+      },
       footprintDimensions: {},
-      padLayout: "Radial, 2 leads",
+      padLayout: "Radial, 2 leads, 5.0 mm lead pitch",
       landPatternUrl: "",
     },
     pins: [
@@ -472,8 +519,20 @@ const components = [
     },
     package: {
       name: "Tactile 6x6 mm Through-Hole",
+      mountingType: "Through-Hole",
+      bodyDimensions: {
+        lengthMm: 6.0,
+        widthMm: 6.0,
+        heightMm: 3.4,
+        seatedHeightMm: 4.3,
+      },
+      pcbLayout: {
+        leadPitchMm: 4.5,
+        rowSpacingMm: 6.5,
+        drillDiameterMm: 1.0,
+      },
       footprintDimensions: {},
-      padLayout: "4-pin through-hole, 6.5 mm × 4.5 mm pitch",
+      padLayout: "4-pin through-hole, 6.5 mm × 4.5 mm pitch, 1.0 mm drill",
       landPatternUrl: "",
     },
     pins: [
@@ -522,8 +581,19 @@ const components = [
     },
     package: {
       name: "KK 254 Vertical Header (6373 Series)",
+      mountingType: "Through-Hole",
+      bodyDimensions: {
+        lengthMm: 10.16,
+        widthMm: 6.35,
+        heightMm: 8.15,
+        seatedHeightMm: 11.3,
+      },
+      pcbLayout: {
+        leadPitchMm: 2.54,
+        drillDiameterMm: 1.02,
+      },
       footprintDimensions: {},
-      padLayout: "4-pin single row, 2.54 mm pitch",
+      padLayout: "4-pin single row, 2.54 mm pitch, 1.02 mm drill",
       landPatternUrl: "",
     },
     pins: [
@@ -620,4 +690,3 @@ async function seedComponents() {
 }
 
 seedComponents();
-

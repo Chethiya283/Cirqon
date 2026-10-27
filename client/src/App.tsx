@@ -40,11 +40,11 @@ import {
   isRowDivergent,
 } from "./utils/formatters";
 import {
-  renderFootprintSvg,
   auditComponentFootprint,
   getProvenanceBadgeClass,
   renderValueWithMonoNumbers,
 } from "./utils/footprint";
+import { InteractiveFootprintViewer } from "./components/InteractiveFootprintViewer";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
@@ -1641,7 +1641,12 @@ function App() {
                     ];
 
                     return (
-                      <article className="pcb-card cad-grid-overlay" key={component._id}>
+                      <article
+                        className={`pcb-card cad-grid-overlay ${
+                          audit.canDrawFootprint ? "pcb-card-interactive" : ""
+                        }`}
+                        key={component._id}
+                      >
                         <div className="pcb-card-header">
                           <div>
                             <span className="part-number">
@@ -1668,22 +1673,11 @@ function App() {
                         </div>
 
                         {audit.canDrawFootprint ? (
-                          <div className="pcb-drawn-wrapper">
-                            <div className="pcb-footprint-canvas">
-                              <div className="cad-dimension-badge">
-                                Catalogue Footprint Schematic
-                              </div>
-                              {renderFootprintSvg(component)}
-                            </div>
-                            <p className="pcb-fabrication-disclaimer">
-                              Generated from catalogue dimensions. Confirm against the manufacturer datasheet before fabrication.
-                            </p>
-                            {audit.missingFields.length > 0 && (
-                              <div className="pcb-missing-banner">
-                                <strong>Missing:</strong> {audit.missingFields.join(", ")}
-                              </div>
-                            )}
-                          </div>
+                          <InteractiveFootprintViewer
+                            key={component._id}
+                            component={component}
+                            missingFields={audit.missingFields}
+                          />
                         ) : (
                           <div
                             className="pcb-footprint-empty-state"
