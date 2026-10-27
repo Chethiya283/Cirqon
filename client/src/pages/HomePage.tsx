@@ -1,7 +1,7 @@
-// Public home landing page featuring a two-column hero with PCB trace background art,
-// a real component photo collage, featured parts matrix, category taxonomy, and workflow pipeline.
+// Public home landing page featuring a focused single-column hero with atmospheric background photo,
+// real category taxonomy with Lucide icons, interactive search, and engineering pipeline workflow.
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Search,
@@ -21,29 +21,8 @@ import {
   Plug,
   Shield,
 } from "lucide-react";
-import type { ComponentData } from "../types";
 import { useAuth } from "../auth/AuthContext";
-import { ComponentThumbnail } from "../ComponentImage";
-import { VERIFIED_PRODUCT_PHOTOS } from "../componentImageUtils";
-import { getSpecPairs } from "../utils/formatters";
 import "./HomePage.css";
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
-
-/**
- * FEATURED_MPNS: Configurable list of Manufacturer Part Numbers to highlight on the homepage.
- * - Used for both the hero collage and the featured components grid.
- * - Real data only: if a part is missing from the database or lacks imagery, it is skipped.
- */
-const FEATURED_MPNS: string[] = [
-  "NE555",
-  "LM358",
-  "LM7805",
-  "1N4007",
-  "BC547",
-  "1N4148",
-];
 
 export interface HomePageProps {
   /** Record mapping each category name to its live count of components in MongoDB */
@@ -90,22 +69,23 @@ function getCategoryLucideIcon(categoryName: string) {
  * HomePage Component
  * 
  * VIVA EXPLANATION:
- * 1. Two-Column Hero Architecture:
- *    Desktop displays a balanced two-column hero: left column provides search and primary
- *    navigation actions; right column presents a 4:3 ratio component photo collage with
- *    subtle layering for physical depth.
+ * 1. Single Focused Hero Column:
+ *    Organized as a clean, prominent single-column layout prioritizing immediate component
+ *    search and discovery without visual clutter.
  * 
- * 2. Real Data & Authentic Imagery:
- *    Components are filtered from `FEATURED_MPNS` against real database records. Fallback
- *    to procedural vector package illustrations prevents broken UI states without fake images.
+ * 2. Decorative CSS Background & Contrast Protection:
+ *    The hero image is loaded as a CSS `background-image` rather than an <img> tag
+ *    because it is purely decorative ambiance. A flat semi-transparent overlay using the
+ *    `--cq-bg` token at ~86% opacity ensures that dark text and controls easily exceed
+ *    WCAG AA contrast requirements (4.5:1 minimum).
  * 
- * 3. Low-Contrast Decorative SVG Background:
- *    The PCB trace inline SVG uses 45°/90° routing lines, annular vias, and SMD footprints
- *    with a restrained 8% opacity tint to guarantee WCAG AA contrast for text readability.
+ * 3. Real Category Taxonomy:
+ *    Category counts reflect actual MongoDB catalog records directly passed from App.tsx,
+ *    ensuring zero mock data or hardcoded vanity statistics.
  * 
- * 4. Progressive Accessibility:
- *    Animations respect `prefers-reduced-motion` media queries, all interactive elements
- *    maintain visible focus rings, and monospace font is strictly reserved for MPNs and numbers.
+ * 4. Motion-Safe Line Art:
+ *    Procedural line-art SVG diagrams illustrate the Find-Compare-Design pipeline with
+ *    animations disabled when `prefers-reduced-motion` is active.
  */
 export const HomePage: React.FC<HomePageProps> = ({
   categoryCounts,
@@ -116,56 +96,6 @@ export const HomePage: React.FC<HomePageProps> = ({
   const navigate = useNavigate();
   const { user } = useAuth();
   const [localSearch, setLocalSearch] = useState("");
-  const [catalogComponents, setCatalogComponents] = useState<ComponentData[]>([]);
-
-  // Fetch live database components once on mount to populate real featured photos
-  useEffect(() => {
-    let isMounted = true;
-    fetch(`${API_BASE_URL}/components`)
-      .then((res) => (res.ok ? res.json() : []))
-      .then((data: ComponentData[]) => {
-        if (isMounted && Array.isArray(data)) {
-          setCatalogComponents(data);
-        }
-      })
-      .catch((err) => {
-        console.error("Failed to load components for homepage:", err);
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  /**
-   * Filter 3 to 4 real components from the database based on FEATURED_MPNS.
-   * If a listed part is missing or lacks imagery, skip it.
-   */
-  const featuredList = useMemo(() => {
-    if (catalogComponents.length === 0) return [];
-
-    // Filter parts matching FEATURED_MPNS that have a real photo or verified photo mapping
-    const matched = FEATURED_MPNS.map((mpn) =>
-      catalogComponents.find(
-        (c) => c.partNumber.toUpperCase() === mpn.toUpperCase()
-      )
-    ).filter(
-      (c): c is ComponentData =>
-        Boolean(c) && Boolean(c?.imageUrl || VERIFIED_PRODUCT_PHOTOS[c?.partNumber || ""])
-    );
-
-    // If fewer than 4 matched, supplement with any catalog parts with photos
-    if (matched.length < 4) {
-      const remaining = catalogComponents.filter(
-        (c) =>
-          !matched.some((m) => m._id === c._id) &&
-          (c.imageUrl || VERIFIED_PRODUCT_PHOTOS[c.partNumber])
-      );
-      return [...matched, ...remaining].slice(0, 4);
-    }
-
-    return matched.slice(0, 4);
-  }, [catalogComponents]);
 
   /**
    * Handle search submission: sets global search in App.tsx and navigates to /library.
@@ -184,229 +114,89 @@ export const HomePage: React.FC<HomePageProps> = ({
     navigate("/library");
   };
 
-  /**
-   * Navigate directly to a specific component search in the library.
-   */
-  const handleOpenPart = (partNumber: string) => {
-    onSearch(partNumber);
-    navigate("/library");
-  };
-
   return (
     <div className="home-page">
       {/* ========================================================
-          1. Hero Section (Two-Column on Desktop, Stacked on Mobile)
-          
-          VIVA EXPLANATION:
-          - The background photo is applied purely as a CSS background-image in HomePage.css
-            rather than an <img> tag because it is decorative ambiance. Screen readers
-            appropriately skip CSS backgrounds.
-          - A flat semi-transparent overlay using the --cq-bg token (86% opacity) is applied
-            via ::before to guarantee WCAG AA contrast (4.5:1+) for dark navy text over the image.
+          1. Hero Section (Single Column with Background Photo & Overlay)
           ======================================================== */}
       <section className="home-hero-section" aria-labelledby="hero-headline">
-        <div className="home-hero-layout">
-          {/* Left Column: Heading, Search, and Action Buttons */}
-          <div className="home-hero-left">
-            <div className="home-hero-badge">
-              <span className="home-hero-badge-dot" />
-              <span>PRECISION ELECTRONIC COMPONENT CATALOGUE</span>
-            </div>
-
-            <h1 id="hero-headline" className="home-hero-headline">
-              Engineering Parts Discovery &amp; Layout Assistant
-            </h1>
-
-            <p className="home-hero-sentence">
-              Explore verified technical specifications, parametric CAD footprints,
-              and real product imagery for electronic circuit design.
-            </p>
-
-            {/* Large Hero Search Box */}
-            <form
-              className="home-search-form"
-              onSubmit={handleSearchSubmit}
-              role="search"
-            >
-              <div className="home-search-input-wrap">
-                <Search
-                  className="home-search-icon"
-                  size={20}
-                  aria-hidden="true"
-                />
-                <input
-                  type="text"
-                  className="home-search-input"
-                  placeholder="Search by part number, manufacturer, or keyword (e.g., NE555, LM7805)..."
-                  value={localSearch}
-                  onChange={(e) => setLocalSearch(e.target.value)}
-                  aria-label="Search components by part number, manufacturer, or keyword"
-                />
-                {localSearch && (
-                  <button
-                    type="button"
-                    className="home-search-clear"
-                    onClick={() => setLocalSearch("")}
-                    aria-label="Clear search query"
-                  >
-                    <X size={16} aria-hidden="true" />
-                  </button>
-                )}
-              </div>
-              <button type="submit" className="home-search-submit">
-                Search Catalogue
-              </button>
-            </form>
-
-            {/* Hero Navigation Buttons */}
-            <div className="home-hero-actions">
-              <button
-                type="button"
-                className="btn-hero-primary"
-                onClick={() => navigate("/library")}
-              >
-                <Layers size={18} aria-hidden="true" />
-                <span>Browse Components</span>
-                <ArrowRight size={16} aria-hidden="true" />
-              </button>
-
-              <button
-                type="button"
-                className="btn-hero-secondary"
-                onClick={() => navigate("/pcb")}
-              >
-                <Cpu size={18} aria-hidden="true" />
-                <span>Open PCB Assistant</span>
-              </button>
-            </div>
+        <div className="home-hero-content">
+          <div className="home-hero-badge">
+            <span className="home-hero-badge-dot" />
+            <span>PRECISION ELECTRONIC COMPONENT CATALOGUE</span>
           </div>
 
-          {/* Right Column: Tidy Collage of 3 to 4 Real Component Photos */}
-          <div className="home-hero-right" aria-label="Featured component photos">
-            <div className="hero-collage-grid">
-              {featuredList.slice(0, 4).map((comp, idx) => (
-                <div
-                  key={comp._id || comp.partNumber}
-                  className={`hero-collage-tile tile-${idx + 1}`}
-                  onClick={() => handleOpenPart(comp.partNumber)}
-                  title={`View details for ${comp.name} (${comp.partNumber})`}
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleOpenPart(comp.partNumber);
-                  }}
+          <h1 id="hero-headline" className="home-hero-headline">
+            Engineering Parts Discovery &amp; Layout Assistant
+          </h1>
+
+          <p className="home-hero-sentence">
+            Explore verified technical specifications, parametric CAD footprints,
+            and real product imagery for electronic circuit design.
+          </p>
+
+          {/* Large Hero Search Box */}
+          <form
+            className="home-search-form"
+            onSubmit={handleSearchSubmit}
+            role="search"
+          >
+            <div className="home-search-input-wrap">
+              <Search
+                className="home-search-icon"
+                size={20}
+                aria-hidden="true"
+              />
+              <input
+                type="text"
+                className="home-search-input"
+                placeholder="Search by part number, manufacturer, or keyword (e.g., NE555, LM7805)..."
+                value={localSearch}
+                onChange={(e) => setLocalSearch(e.target.value)}
+                aria-label="Search components by part number, manufacturer, or keyword"
+              />
+              {localSearch && (
+                <button
+                  type="button"
+                  className="home-search-clear"
+                  onClick={() => setLocalSearch("")}
+                  aria-label="Clear search query"
                 >
-                  <div className="hero-collage-thumb-wrapper">
-                    <ComponentThumbnail
-                      component={comp}
-                      size="lg"
-                      showProvenanceBadge={false}
-                    />
-                  </div>
-                  <div className="hero-collage-caption">
-                    <span className="hero-collage-mpn mono-num">
-                      {comp.partNumber}
-                    </span>
-                    <span className="hero-collage-mfr">
-                      {comp.manufacturer || "Component"}
-                    </span>
-                  </div>
-                </div>
-              ))}
+                  <X size={16} aria-hidden="true" />
+                </button>
+              )}
             </div>
+            <button type="submit" className="home-search-submit">
+              Search Catalogue
+            </button>
+          </form>
+
+          {/* Hero Action Buttons */}
+          <div className="home-hero-actions">
+            <button
+              type="button"
+              className="btn-hero-primary"
+              onClick={() => navigate("/library")}
+            >
+              <Layers size={18} aria-hidden="true" />
+              <span>Browse Components</span>
+              <ArrowRight size={16} aria-hidden="true" />
+            </button>
+
+            <button
+              type="button"
+              className="btn-hero-secondary"
+              onClick={() => navigate("/pcb")}
+            >
+              <Cpu size={18} aria-hidden="true" />
+              <span>Open PCB Assistant</span>
+            </button>
           </div>
         </div>
       </section>
 
       {/* ========================================================
-          2. Featured Components Section (Under Hero)
-          ======================================================== */}
-      {featuredList.length > 0 && (
-        <section
-          className="home-featured-section"
-          aria-labelledby="featured-heading"
-        >
-          <div className="home-section-header">
-            <div className="home-eyebrow">VERIFIED CATALOGUE</div>
-            <h2 id="featured-heading" className="home-section-title">
-              Featured Components
-            </h2>
-            <p className="home-section-desc">
-              Essential integrated circuits, semiconductors, and passives with authentic photos and verified parametric specs.
-            </p>
-          </div>
-
-          <div className="home-featured-grid">
-            {featuredList.slice(0, 4).map((comp) => {
-              const specPairs = getSpecPairs(comp.specifications, 1);
-              const keySpec = specPairs[0];
-
-              return (
-                <article
-                  key={comp._id || comp.partNumber}
-                  className="home-featured-card"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleOpenPart(comp.partNumber);
-                  }}
-                  aria-label={`${comp.name} (${comp.partNumber})`}
-                >
-                  <div
-                    className="featured-card-thumb-wrap"
-                    onClick={() => handleOpenPart(comp.partNumber)}
-                  >
-                    <ComponentThumbnail
-                      component={comp}
-                      size="md"
-                      showProvenanceBadge
-                    />
-                  </div>
-
-                  <div className="featured-card-content">
-                    <span className="featured-card-mpn mono-num">
-                      {comp.partNumber}
-                    </span>
-                    <h3
-                      className="featured-card-name"
-                      onClick={() => handleOpenPart(comp.partNumber)}
-                      title={comp.name}
-                    >
-                      {comp.name}
-                    </h3>
-                    <p className="featured-card-mfr">
-                      {comp.manufacturer || "Verified Manufacturer"}
-                    </p>
-
-                    {keySpec && (
-                      <div className="featured-card-spec">
-                        <span className="featured-spec-k">
-                          {keySpec.label}:
-                        </span>{" "}
-                        <span className="featured-spec-v mono-num">
-                          {keySpec.value}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="featured-card-footer">
-                    <button
-                      type="button"
-                      className="featured-card-link-btn"
-                      onClick={() => handleOpenPart(comp.partNumber)}
-                    >
-                      <span>Inspect in Library</span>
-                      <ArrowRight size={14} aria-hidden="true" />
-                    </button>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* ========================================================
-          3. Real Category Grid (Enhanced with Lucide Icons)
+          2. Real Category Grid (Enhanced with Lucide Icons)
           ======================================================== */}
       <section
         className="home-category-section"
@@ -457,7 +247,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       </section>
 
       {/* ========================================================
-          4. Three-Step "How It Works" with Original Line-Art SVGs
+          3. Three-Step "How It Works" with Original Line-Art SVGs
           ======================================================== */}
       <section
         className="home-workflow-section"
@@ -672,7 +462,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       </section>
 
       {/* ========================================================
-          5. Call To Action Restrained Band
+          4. Call To Action Restrained Band
           ======================================================== */}
       <section className="home-cta-section" aria-labelledby="cta-heading">
         <div className="home-cta-content">

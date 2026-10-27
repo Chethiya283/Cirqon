@@ -1,79 +1,99 @@
-/* Floating Comparison Tray / Dock Styling */
+/* ========================================================
+   CIRQON — Compare Tray Dock Component Styles
+   Tokens-only, sticky bottom dock with responsive layout
+   ======================================================== */
 
+/* VIVA EXPLANATION: Sticky Bottom Docking & Layers
+ * 1. position: fixed with bottom: 16px and horizontal centering (left: 50% + translateX(-50%)).
+ * 2. z-index: 900 keeps the dock above scrollable catalog items and table rows without obscuring modals (z-index 1000).
+ * 3. Responsive width: min(880px, calc(100% - 32px)) ensures comfortable horizontal margin on 360px mobile viewports.
+ * 4. Strictly tokens-driven: uses --cq-surface, --cq-border-default, and --cq-shadow-lg for elevation.
+ */
 .compare-bar {
   position: fixed;
-  bottom: 20px;
-  right: 24px;
-  z-index: 80;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 900;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  max-width: calc(100% - 48px);
-  padding: 10px 16px;
-  border: 1px solid var(--cq-border-strong);
+  gap: var(--cq-space-4);
+  width: min(880px, calc(100% - 32px));
+  max-width: 100%;
+  padding: var(--cq-space-3) var(--cq-space-4);
+  border: 1px solid var(--cq-border-default);
   border-radius: var(--cq-radius-lg);
-  background: var(--cq-surface-1);
+  background: var(--cq-surface);
   box-shadow: var(--cq-shadow-lg);
+  backdrop-filter: blur(8px);
+  box-sizing: border-box;
 }
 
 .compare-bar-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--cq-space-3);
   flex-wrap: wrap;
+  min-width: 0;
 }
 
 .compare-bar-title {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--cq-space-2);
+  flex-shrink: 0;
 }
 
 .compare-bar-icon {
   display: grid;
   place-items: center;
-  width: 26px;
-  height: 26px;
-  border: 1px solid var(--cq-accent-border);
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--cq-emerald-border);
   border-radius: var(--cq-radius-sm);
-  background: var(--cq-accent-soft);
-  color: var(--cq-accent);
-  font-size: 13px;
+  background: var(--cq-emerald-soft);
+  color: var(--cq-emerald);
+  font-size: var(--cq-text-sm);
+  font-weight: 700;
 }
 
 .compare-bar-title strong {
   display: block;
-  font-size: 12px;
+  font-family: var(--cq-font-sans);
+  font-size: var(--cq-text-sm);
+  font-weight: 600;
   color: var(--cq-text-primary);
-  line-height: 1.2;
+  line-height: var(--cq-leading-tight);
 }
 
 .compare-bar-title small {
   display: block;
-  font-size: 10.5px;
+  font-size: var(--cq-text-xs);
   color: var(--cq-text-muted);
 }
 
 .compare-bar-chips {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--cq-space-2);
   flex-wrap: wrap;
+  min-width: 0;
 }
 
 .compare-chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 2px 7px;
+  padding: 3px 8px;
   border: 1px solid var(--cq-border-default);
   border-radius: var(--cq-radius-sm);
-  background: var(--cq-surface-2);
+  background: var(--cq-surface-subtle);
   color: var(--cq-text-primary);
   font-family: var(--cq-font-mono);
-  font-size: 11px;
+  font-size: var(--cq-text-xs);
   font-weight: 600;
+  line-height: 1.2;
 }
 
 .compare-chip button {
@@ -81,28 +101,41 @@
   border: 0;
   background: transparent;
   color: var(--cq-text-muted);
-  font-size: 13px;
+  font-size: var(--cq-text-sm);
   line-height: 1;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--cq-transition-fast);
 }
 
 .compare-chip button:hover {
   color: var(--cq-error);
 }
 
+.compare-chip button:focus-visible {
+  outline: 2px solid var(--cq-border-focus);
+  outline-offset: 1px;
+}
+
 .compare-bar-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--cq-space-3);
+  flex-shrink: 0;
 }
 
 .compare-bar-clear {
-  padding: 0 6px;
+  padding: var(--cq-space-1) var(--cq-space-2);
   border: 0;
   background: transparent;
   color: var(--cq-text-secondary);
-  font-size: 11.5px;
+  font-family: var(--cq-font-sans);
+  font-size: var(--cq-text-xs);
+  font-weight: 500;
   cursor: pointer;
+  transition: color var(--cq-transition-fast);
 }
 
 .compare-bar-clear:hover {
@@ -110,21 +143,33 @@
   text-decoration: underline;
 }
 
+.compare-bar-clear:focus-visible {
+  outline: 2px solid var(--cq-border-focus);
+  outline-offset: 1px;
+}
+
 .compare-bar-submit {
-  height: 32px;
-  padding: 0 14px;
+  height: 34px;
+  padding: 0 var(--cq-space-4);
   border: none;
   border-radius: var(--cq-radius-sm);
-  background: var(--cq-accent);
-  color: #ffffff;
-  font-size: 12px;
+  background: var(--cq-emerald);
+  color: var(--cq-text-inverse);
+  font-family: var(--cq-font-sans);
+  font-size: var(--cq-text-xs);
   font-weight: 600;
   cursor: pointer;
-  transition: all 120ms ease;
+  transition: background var(--cq-transition-fast), opacity var(--cq-transition-fast);
+  white-space: nowrap;
 }
 
 .compare-bar-submit:hover:not(:disabled) {
-  background: var(--cq-accent-hover);
+  background: var(--cq-emerald-hover);
+}
+
+.compare-bar-submit:focus-visible {
+  outline: 2px solid var(--cq-border-focus);
+  outline-offset: 2px;
 }
 
 .compare-bar-submit:disabled {
@@ -132,13 +177,27 @@
   cursor: not-allowed;
 }
 
+/* Responsive Dock layout on tablet and mobile */
 @media (max-width: 768px) {
   .compare-bar {
-    right: 12px;
-    left: 12px;
-    max-width: none;
+    bottom: 12px;
+    width: calc(100% - 24px);
     flex-direction: column;
     align-items: stretch;
+    gap: var(--cq-space-3);
+    padding: var(--cq-space-3);
+  }
+
+  .compare-bar-info {
+    justify-content: space-between;
+  }
+
+  .compare-bar-actions {
+    justify-content: flex-end;
+    width: 100%;
+  }
+
+  .compare-bar-submit {
+    flex: 1;
   }
 }
-

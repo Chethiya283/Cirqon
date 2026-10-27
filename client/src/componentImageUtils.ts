@@ -54,63 +54,66 @@ export interface ComponentImageInfo {
 /**
  * Curated product photographs from open-access scientific & engineering repositories
  * (Wikimedia Commons CC BY-SA / Public Domain) matched exactly to component part numbers.
+ *
+ * Viva Note: Migrated from legacy .jpg to modern .webp format for superior compression
+ * efficiency, reduced bandwidth, and faster image decoding in browser rendering.
  */
 export const VERIFIED_PRODUCT_PHOTOS: Record<
   string,
   { url: string; packageType: string; label: string }
 > = {
   LM358: {
-    url: "/images/components/LM358.jpg",
+    url: "/images/components/LM358.webp",
     packageType: "dip8",
     label: "Texas Instruments LM358P Dual Op-Amp (Verified Photo)",
   },
   NE555: {
-    url: "/images/components/NE555.jpg",
+    url: "/images/components/NE555.webp",
     packageType: "dip8",
     label: "NE555 Precision Timer IC DIP-8 (Verified Photo)",
   },
   LM7805: {
-    url: "/images/components/LM7805.jpg",
+    url: "/images/components/LM7805.webp",
     packageType: "to220",
     label: "LM7805 Positive 5V Regulator TO-220 (Verified Photo)",
   },
   "1N4007": {
-    url: "/images/components/1N4007.jpg",
+    url: "/images/components/1N4007.webp",
     packageType: "do41",
     label: "1N4007 1000V 1A Rectifier Diode DO-41 (Verified Photo)",
   },
   "1N4148": {
-    url: "/images/components/1N4148.jpg",
+    url: "/images/components/1N4148.webp",
     packageType: "do35",
     label: "1N4148 High-Speed Switching Diode DO-35 (Verified Photo)",
   },
   BC547: {
-    url: "/images/components/BC547.jpg",
+    url: "/images/components/BC547.webp",
     packageType: "to92",
     label: "BC547B NPN General Purpose BJT TO-92 (Verified Photo)",
   },
   "MFR-25FTE52-10K": {
-    url: "/images/components/MFR-25FTE52-10K.jpg",
+    url: "/images/components/MFR-25FTE52-10K.webp",
     packageType: "resistor",
     label: "10 kΩ 0.25W Metal Film Resistor Axial (Verified Photo)",
   },
   C315C104K5R5TA: {
-    url: "/images/components/C315C104K5R5TA.jpg",
+    url: "/images/components/C315C104K5R5TA.webp",
     packageType: "capacitor_radial",
     label: "100 nF (0.1 µF) 50V Ceramic Capacitor (Verified Photo)",
   },
   "RLB0914-101KL": {
-    url: "/images/components/RLB0914-101KL.jpg",
+    url: "/images/components/RLB0914-101KL.webp",
     packageType: "inductor_radial",
     label: "100 µH Radial Leaded Power Inductor (Verified Photo)",
   },
   "B3F-1000": {
-    url: "/images/components/B3F-1000.jpg",
+    url: "/images/components/B3F-1000.webp",
     packageType: "tactile_switch",
     label: "6×6 mm PCB Tactile Push-Button Switch (Verified Photo)",
   },
   "0022232041": {
-    url: "/images/components/0022232041.jpg",
+    url: "/images/components/0022232041.webp",
     packageType: "connector_header",
     label: "KK 254 4-Pin Vertical Solid Header (Verified Photo)",
   },
@@ -203,8 +206,9 @@ export function getComponentImageInfo(
     };
   }
 
-  // 2. Verified real product photo mapping
-  const verified = VERIFIED_PRODUCT_PHOTOS[component.partNumber];
+  // 2. Verified real product photo mapping (strictly string-keyed to preserve leading zeros in numeric MPNs like "0022232041")
+  const partKey = String(component.partNumber ?? "").trim();
+  const verified = VERIFIED_PRODUCT_PHOTOS[partKey];
   if (verified) {
     return {
       src: verified.url,

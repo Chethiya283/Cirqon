@@ -230,16 +230,17 @@ function renderPackageIllustration(packageType: string, component: ComponentData
 
 interface ComponentThumbnailProps {
   component: ComponentData;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "fluid";
   showProvenanceBadge?: boolean;
   className?: string;
+  fallbackIcon?: React.ReactNode;
 }
 
 /**
  * Robust component image container:
  * - Attempts to load real product photograph
  * - Shows subtle loading shimmer while in flight
- * - Seamlessly falls back to package vector illustration on network failure, 404, or missing URL
+ * - Seamlessly falls back to category icon or package vector illustration on network failure, 404, or missing URL
  * - Strictly prevents layout shifts with fixed aspect ratio box
  */
 export const ComponentThumbnail: React.FC<ComponentThumbnailProps> = ({
@@ -247,6 +248,7 @@ export const ComponentThumbnail: React.FC<ComponentThumbnailProps> = ({
   size = "sm",
   showProvenanceBadge = false,
   className = "",
+  fallbackIcon,
 }) => {
   const imageInfo = getComponentImageInfo(component);
   const [hasError, setHasError] = useState(false);
@@ -275,6 +277,10 @@ export const ComponentThumbnail: React.FC<ComponentThumbnailProps> = ({
               }}
             />
           </>
+        ) : fallbackIcon ? (
+          <div className="thumb-category-wrap">
+            {fallbackIcon}
+          </div>
         ) : (
           <div className="thumb-vector-wrap">
             {renderPackageIllustration(imageInfo.packageType, component)}

@@ -1,4 +1,9 @@
 // Floating comparison tray dock displaying staged components and quick navigation to comparison view.
+// VIVA EXPLANATION: Floating Comparison Tray Architecture
+// 1. Positioned with position: fixed at bottom: 16px, centered horizontally using left: 50% + translateX(-50%).
+// 2. High z-index (900) ensures it remains sticky across lengthy catalog views and table pagination.
+// 3. Constrained to width: min(880px, calc(100% - 32px)) so it never causes horizontal scrollbars on 360px mobile viewports.
+// 4. Staged component part numbers use monospace font (--cq-font-mono) for rigorous engineering presentation.
 
 import React from "react";
 import type { ComponentData } from "../types";
@@ -44,14 +49,14 @@ export const CompareTray: React.FC<CompareTrayProps> = ({
 
         <div className="compare-bar-chips">
           {selectedComponents.map((item) => (
-            <span className="compare-chip" key={item._id}>
+            <span className="compare-chip mono-num" key={item._id}>
               {item.partNumber}
               <button
                 type="button"
                 onClick={() => onRemove(item)}
                 aria-label={`Remove ${item.partNumber} from comparison`}
               >
-                 × 
+                ×
               </button>
             </span>
           ))}

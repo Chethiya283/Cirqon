@@ -17,8 +17,15 @@ html {
   min-height: 100%;
   background: var(--cq-bg);
   color-scheme: light;
+  overflow-x: clip;
 }
 
+/* VIVA EXPLANATION: overflow-x: clip vs. overflow-x: hidden for position: sticky
+ * - Traditional 'overflow-x: hidden' on <body> or <html> causes browsers to create a new scroll container
+ *   or compute overflow-y to 'auto', which breaks position: sticky on descendant elements.
+ * - 'overflow-x: clip' suppresses horizontal overflow without creating a scroll context,
+ *   preserving document-level scrolling and ensuring sticky sidebars/headers anchor reliably to the viewport.
+ */
 body {
   min-width: 320px;
   min-height: 100vh;
@@ -33,7 +40,7 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 /* Headings: Tight letter spacing, clear hierarchy */

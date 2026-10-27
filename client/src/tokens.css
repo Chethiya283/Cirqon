@@ -133,9 +133,12 @@
   --cq-space-16: 64px;
 
   /* ========================================================
-     9. Transitions
+     9. Transitions & Layout Dimensions
      ======================================================== */
   --cq-transition-fast: 120ms ease;
   --cq-transition-base: 180ms ease;
+
+  /* Global Shell Heights */
+  --cq-navbar-height: 56px;
 }
 

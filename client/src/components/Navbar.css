@@ -16,7 +16,7 @@
 .site-header-container {
   max-width: 1320px;
   margin: 0 auto;
-  height: 56px;
+  height: var(--cq-navbar-height);
   padding: 0 var(--cq-space-4);
   display: flex;
   align-items: center;

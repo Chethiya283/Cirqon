@@ -131,6 +131,9 @@ export const Footer: React.FC = () => {
           <span className="footer-photo-credit">
             Hero photo by [PHOTOGRAPHER] on [Unsplash/Pexels]
           </span>
+          <span className="footer-photo-credit">
+            Component images are AI-generated illustrations (Google Gemini), not product photographs.
+          </span>
           <span className="footer-system-tag">
             Precision Light Theme · High Contrast WCAG AA
           </span>

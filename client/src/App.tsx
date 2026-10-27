@@ -1,6 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, Routes, Route, Navigate } from "react-router-dom";
-import { Bookmark } from "lucide-react";
+import {
+  Bookmark,
+  Layers,
+  Activity,
+  BatteryCharging,
+  Radio,
+  Sun,
+  Cpu,
+  Grid,
+  Zap,
+  Plug,
+  Shield,
+  RotateCcw,
+  SlidersHorizontal,
+} from "lucide-react";
 import "./App.css";
 import "./ComponentImage.css";
 import { ComponentThumbnail } from "./ComponentImage";
@@ -44,6 +58,36 @@ const categories = [
   { name: "Connectors", icon: "⌁" },
   { name: "Switches and protection components", icon: "⛨" },
 ];
+
+/**
+ * Return an accessible Lucide icon for each electronic component category card.
+ */
+function getCategoryIcon(categoryName: string) {
+  switch (categoryName) {
+    case "All Components":
+      return <Layers size={18} aria-hidden="true" />;
+    case "Resistors":
+      return <Activity size={18} aria-hidden="true" />;
+    case "Capacitors":
+      return <BatteryCharging size={18} aria-hidden="true" />;
+    case "Inductors":
+      return <Radio size={18} aria-hidden="true" />;
+    case "Diodes and LEDs":
+      return <Sun size={18} aria-hidden="true" />;
+    case "BJTs and MOSFETs":
+      return <Cpu size={18} aria-hidden="true" />;
+    case "Integrated circuits (ICs)":
+      return <Grid size={18} aria-hidden="true" />;
+    case "Voltage regulators":
+      return <Zap size={18} aria-hidden="true" />;
+    case "Connectors":
+      return <Plug size={18} aria-hidden="true" />;
+    case "Switches and protection components":
+      return <Shield size={18} aria-hidden="true" />;
+    default:
+      return <Layers size={18} aria-hidden="true" />;
+  }
+}
 
 function App() {
   const [components, setComponents] = useState<ComponentData[]>([]);
@@ -116,7 +160,9 @@ function App() {
   const isAuthView = location.pathname === "/login" || location.pathname === "/register";
   const isMyPartsView = location.pathname === "/my-parts";
   const isLibraryView = location.pathname === "/library";
-  const showSidebar = !isHomeView && !isAuthView && !isMyPartsView;
+  // VIVA EXPLANATION: The Library page is full width with an ergonomic horizontal category strip and toolbar.
+  // Sidebar is only shown for /compare and /pcb, while /, /library, /my-parts, and auth routes are full-width.
+  const showSidebar = !isHomeView && !isAuthView && !isMyPartsView && !isLibraryView;
 
   /**
    * Handle bookmark save click.
@@ -133,6 +179,7 @@ function App() {
   };
 
   const [catalogLayout, setCatalogLayout] = useState<"grid" | "table">("grid");
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [selectedForCompare, setSelectedForCompare] = useState<ComponentData[]>(
     []
   );
@@ -220,6 +267,14 @@ function App() {
     useState("All Components");
   const [selectedManufacturer, setSelectedManufacturer] = useState("");
   const [selectedPackage, setSelectedPackage] = useState("");
+
+  // Indicates whether any keyword search, category, or parametric filter is currently active
+  const hasActiveFilters = Boolean(
+    selectedCategory !== "All Components" ||
+    selectedManufacturer ||
+    selectedPackage ||
+    search.trim()
+  );
 
   const [selectedComponent, setSelectedComponent] =
     useState<ComponentData | null>(null);
@@ -538,25 +593,339 @@ function App() {
               <Route
                 path="/library"
                 element={
-                  <>
-                <div className="catalog-control-bar">
-                  <div className="catalog-heading-group">
-                    <div className="breadcrumb">
-                      Catalog <span>/</span>{" "}
-                      <strong>{selectedCategory}</strong>
-                    </div>
-                    <h1>
-                      {selectedCategory === "All Components"
-                        ? "Electronic Component Catalog"
-                        : selectedCategory}
-                    </h1>
-                  </div>
+                  <section
+                    className="library-view-container"
+                    aria-label="Component Catalog"
+                  >
+                    {/* VIVA EXPLANATION: Library Layout & Presentation Architecture
+                      * 1. Page Header: Breadcrumb, title "Component library", short subtitle, result count.
+                      * 2. Responsive Grid: repeat(auto-fill, minmax(260px, 1fr)) dynamically adjusts columns.
+                      * 3. Card Hierarchy: Corners for Compare & Save -> 4:3 Image Stage -> Mono MPN -> 2-line Name -> Quiet Mfr/Pkg -> 3 Specs -> Datasheet text link + Primary 'View details'.
+                      * 4. Image Aspect Ratio: Fixed 4:3 container with object-fit: contain on neutral surface, zero CLS, category-icon fallback.
+                      * 5. Sticky Elements: Sticky table header (position: sticky; top: 0) and sticky bottom compare tray floating over content.
+                      */}
 
-                  <div className="catalog-toolbar-right">
-                    {(selectedCategory !== "All Components" ||
-                      selectedManufacturer ||
-                      selectedPackage ||
-                      search.trim()) && (
+                    {/* Catalog Heading Group */}
+                    <div className="library-heading-group">
+                      <div className="breadcrumb">
+                        Catalog <span>/</span> <strong>{selectedCategory}</strong>
+                      </div>
+                      <div className="library-title-row">
+                        <h1 className="library-title">Component library</h1>
+                        <span className="library-header-count mono-num">
+                          {loading ? "Loading..." : `${components.length} ${components.length === 1 ? "component" : "components"}`}
+                        </span>
+                      </div>
+                      <p className="library-subtitle">
+                        Browse parametric ratings, CAD footprints, and technical specifications across active components.
+                      </p>
+                    </div>
+
+                    {/* VIVA EXPLANATION: Two-Column Sticky Sidebar Architecture
+                      * 1. Layout: Two-column layout with 260px left sidebar and flex-1 main panel.
+                      * 2. position: sticky: Top offset is `top: calc(var(--cq-navbar-height) + 16px)`.
+                      * 3. align-self: flex-start: Prevents flex stretch from giving sidebar the same height as main content,
+                      *    which would leave 0px room for sticking.
+                      * 4. max-height + overflow-y: auto: Sidebar scrolls internally if categories + filters exceed viewport.
+                      * 5. Under 900px: Collapses into horizontal touch-swipe category strip and collapsible filters panel.
+                      */}
+                    <div className="library-two-column-layout">
+                      {/* Left Sticky Sidebar: Category Cards + Parametric Filters */}
+                      <aside
+                        className="library-sidebar"
+                        aria-label="Component categories and parametric filters"
+                      >
+                        {/* Category Cards Section */}
+                        <div className="library-sidebar-categories">
+                          <div className="library-sidebar-heading">Categories</div>
+                          <div
+                            className="library-sidebar-cat-list"
+                            role="tablist"
+                            aria-label="Component categories"
+                          >
+                            {categories.map((category) => {
+                              const isSelected = selectedCategory === category.name;
+                              const count = categoryCounts[category.name] ?? 0;
+                              return (
+                                <button
+                                  key={category.name}
+                                  type="button"
+                                  className={`library-sidebar-cat-card ${
+                                    isSelected ? "active" : ""
+                                  }`}
+                                  onClick={() => setSelectedCategory(category.name)}
+                                  title={`Filter by ${category.name} (${count} parts)`}
+                                  aria-pressed={isSelected}
+                                >
+                                  <div className="library-sidebar-cat-icon">
+                                    {getCategoryIcon(category.name)}
+                                  </div>
+                                  <div className="library-sidebar-cat-info">
+                                    <span className="library-sidebar-cat-name">
+                                      {category.name}
+                                    </span>
+                                    <span className="library-sidebar-cat-count mono-num">
+                                      {count} {count === 1 ? "part" : "parts"}
+                                    </span>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Mobile Collapsible Filters Toggle Button (<900px only) */}
+                        <button
+                          type="button"
+                          className="library-mobile-filters-toggle"
+                          onClick={() => setMobileFiltersOpen((prev) => !prev)}
+                          aria-expanded={mobileFiltersOpen}
+                          aria-label="Toggle parametric filters panel"
+                        >
+                          <div className="library-mobile-toggle-left">
+                            <SlidersHorizontal size={15} aria-hidden="true" />
+                            <span>Filters</span>
+                            {(selectedManufacturer || selectedPackage) && (
+                              <span
+                                className="library-filter-active-indicator"
+                                title="Active filters applied"
+                              />
+                            )}
+                          </div>
+                          <div className="library-mobile-toggle-right">
+                            <span className="library-mobile-filter-summary">
+                              {selectedManufacturer || selectedPackage
+                                ? [selectedManufacturer, selectedPackage]
+                                    .filter(Boolean)
+                                    .join(" · ")
+                                : "All"}
+                            </span>
+                            <span
+                              className="library-mobile-chevron"
+                              aria-hidden="true"
+                            >
+                              {mobileFiltersOpen ? "▲" : "▼"}
+                            </span>
+                          </div>
+                        </button>
+
+                        {/* Parametric Filters Section (Always visible >900px, collapsible <900px) */}
+                        <div
+                          className={`library-sidebar-filters ${
+                            mobileFiltersOpen ? "mobile-open" : ""
+                          }`}
+                        >
+                          <div className="library-sidebar-heading">Filters</div>
+
+                          {/* Manufacturer Select */}
+                          <div className="library-sidebar-field">
+                            <label
+                              htmlFor="library-sidebar-mfr"
+                              className="library-sidebar-label"
+                            >
+                              Manufacturer
+                            </label>
+                            <div className="custom-select-container">
+                              <select
+                                id="library-sidebar-mfr"
+                                className="custom-select"
+                                value={selectedManufacturer}
+                                onChange={(e) =>
+                                  setSelectedManufacturer(e.target.value)
+                                }
+                                aria-label="Filter by component manufacturer"
+                              >
+                                <option value="">
+                                  All Manufacturers ({manufacturers.length})
+                                </option>
+                                {manufacturers.map((mfr) => (
+                                  <option key={mfr} value={mfr}>
+                                    {mfr}
+                                  </option>
+                                ))}
+                              </select>
+                              <span
+                                className="custom-select-caret"
+                                aria-hidden="true"
+                              >
+                                ▾
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Package / Case Select */}
+                          <div className="library-sidebar-field">
+                            <label
+                              htmlFor="library-sidebar-pkg"
+                              className="library-sidebar-label"
+                            >
+                              Package / Case
+                            </label>
+                            <div className="custom-select-container">
+                              <select
+                                id="library-sidebar-pkg"
+                                className="custom-select"
+                                value={selectedPackage}
+                                onChange={(e) =>
+                                  setSelectedPackage(e.target.value)
+                                }
+                                aria-label="Filter by package or mounting case"
+                              >
+                                <option value="">
+                                  All Packages ({packages.length})
+                                </option>
+                                {packages.map((pkg) => (
+                                  <option key={pkg} value={pkg}>
+                                    {pkg}
+                                  </option>
+                                ))}
+                              </select>
+                              <span
+                                className="custom-select-caret"
+                                aria-hidden="true"
+                              >
+                                ▾
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Reset Filters Button */}
+                          <button
+                            type="button"
+                            className="library-sidebar-reset-btn"
+                            onClick={clearFilters}
+                            disabled={!hasActiveFilters}
+                            title="Reset all search keywords and parametric filters"
+                          >
+                            <RotateCcw size={13} aria-hidden="true" />
+                            <span>Reset filters</span>
+                          </button>
+                        </div>
+                      </aside>
+
+                      {/* Right Main Content Panel (Toolbar, Pills & Grid/Table) */}
+                      <div className="library-main-panel">
+
+                    {/* Unified Toolbar: Sorting, View Mode Toggle, Result Count */}
+                    <div
+                      className="library-toolbar"
+                      role="region"
+                      aria-label="Catalog sorting and view mode controls"
+                    >
+                      <div className="library-toolbar-filters">
+                        {/* Sort Field & Direction Toggle */}
+                        <div className="library-control-wrap">
+                          <label
+                            htmlFor="library-sort-select"
+                            className="library-control-label"
+                          >
+                            Sort:
+                          </label>
+                          <div className="library-sort-group">
+                            <div className="custom-select-container">
+                              <select
+                                id="library-sort-select"
+                                className="custom-select"
+                                value={sortField}
+                                onChange={(e) =>
+                                  setSortField(e.target.value as SortField)
+                                }
+                                aria-label="Sort components by attribute"
+                              >
+                                <option value="partNumber">
+                                  Part Number (MPN)
+                                </option>
+                                <option value="name">Component Name</option>
+                                <option value="manufacturer">
+                                  Manufacturer
+                                </option>
+                                <option value="category">Category</option>
+                                <option value="package">Package / Case</option>
+                              </select>
+                              <span
+                                className="custom-select-caret"
+                                aria-hidden="true"
+                              >
+                                ▾
+                              </span>
+                            </div>
+
+                            <button
+                              type="button"
+                              className="library-sort-dir-btn"
+                              onClick={() =>
+                                setSortDirection((prev) =>
+                                  prev === "asc" ? "desc" : "asc"
+                                )
+                              }
+                              title={`Direction: ${
+                                sortDirection === "asc"
+                                  ? "Ascending (A-Z)"
+                                  : "Descending (Z-A)"
+                              }`}
+                              aria-label={`Toggle sort direction, currently ${
+                                sortDirection === "asc"
+                                  ? "ascending"
+                                  : "descending"
+                              }`}
+                            >
+                              <span className="mono-num">
+                                {sortDirection === "asc" ? "▲ ASC" : "▼ DESC"}
+                              </span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="library-toolbar-view-controls">
+                        {/* Cards / Table View Mode Toggle */}
+                        <div
+                          className="view-mode-toggle"
+                          role="group"
+                          aria-label="Catalog Layout View"
+                        >
+                          <button
+                            type="button"
+                            className={`view-mode-btn ${
+                              catalogLayout === "grid" ? "active" : ""
+                            }`}
+                            onClick={() => setCatalogLayout("grid")}
+                            title="Card Grid View"
+                            aria-pressed={catalogLayout === "grid"}
+                          >
+                            <span className="view-btn-icon">▦</span> Cards
+                          </button>
+                          <button
+                            type="button"
+                            className={`view-mode-btn ${
+                              catalogLayout === "table" ? "active" : ""
+                            }`}
+                            onClick={() => setCatalogLayout("table")}
+                            title="Engineering Table View"
+                            aria-pressed={catalogLayout === "table"}
+                          >
+                            <span className="view-btn-icon">▤</span> Table
+                          </button>
+                        </div>
+
+                        {/* Result Count Indicator */}
+                        <span className="result-count">
+                          {loading ? (
+                            "Loading..."
+                          ) : (
+                            <>
+                              <span className="mono-num">
+                                {components.length}
+                              </span>{" "}
+                              {components.length === 1 ? "part" : "parts"} found
+                            </>
+                          )}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Active Filter Pills (if active) */}
+                    {hasActiveFilters && (
                       <div className="active-filter-pills">
                         {selectedCategory !== "All Components" && (
                           <button
@@ -603,97 +972,27 @@ function App() {
                       </div>
                     )}
 
-                    <div className="catalog-sort-bar">
-                      <label htmlFor="catalog-sort-select" className="sort-label">
-                        Sort:
-                      </label>
-                      <select
-                        id="catalog-sort-select"
-                        className="catalog-sort-select"
-                        value={sortField}
-                        onChange={(e) => {
-                          setSortField(e.target.value as SortField);
-                        }}
-                        aria-label="Sort component catalog by field"
-                      >
-                        <option value="partNumber">Part Number (MPN)</option>
-                        <option value="name">Component Name</option>
-                        <option value="manufacturer">Manufacturer</option>
-                        <option value="category">Category</option>
-                        <option value="package">Package / Case</option>
-                      </select>
-                      <button
-                        type="button"
-                        className="sort-dir-toggle-btn"
-                        onClick={() =>
-                          setSortDirection((prev) =>
-                            prev === "asc" ? "desc" : "asc"
-                          )
-                        }
-                        title={`Direction: ${
-                          sortDirection === "asc"
-                            ? "Ascending (A-Z)"
-                            : "Descending (Z-A)"
-                        }`}
-                        aria-label={`Toggle sort direction, currently ${
-                          sortDirection === "asc" ? "ascending" : "descending"
-                        }`}
-                      >
-                        {sortDirection === "asc" ? "▲ ASC" : "▼ DESC"}
-                      </button>
-                    </div>
-
-                    <div
-                      className="view-mode-toggle"
-                      role="group"
-                      aria-label="Catalog Layout View"
-                    >
-                      <button
-                        type="button"
-                        className={`view-mode-btn ${
-                          catalogLayout === "grid" ? "active" : ""
-                        }`}
-                        onClick={() => setCatalogLayout("grid")}
-                        title="Card Grid View (Default)"
-                        aria-pressed={catalogLayout === "grid"}
-                      >
-                        <span className="view-btn-icon">▦</span> Cards
-                      </button>
-                      <button
-                        type="button"
-                        className={`view-mode-btn ${
-                          catalogLayout === "table" ? "active" : ""
-                        }`}
-                        onClick={() => setCatalogLayout("table")}
-                        title="Engineering Table View"
-                        aria-pressed={catalogLayout === "table"}
-                      >
-                        <span className="view-btn-icon">▤</span> Table
-                      </button>
-                    </div>
-
-                    <span className="result-count">
-                      {loading
-                        ? "Loading..."
-                        : `${components.length} ${
-                            components.length === 1 ? "part" : "parts"
-                          } found`}
-                    </span>
-                  </div>
-                </div>
-
                 {catalogLayout === "grid" ? (
                   <div className="catalog-cards-container">
                     {loading ? (
                       <div className="component-card-grid">
                         {Array.from({ length: 8 }).map((_, idx) => (
-                          <div className="product-card skeleton-card" key={idx}>
-                            <div className="skeleton-line skeleton-top" />
+                          <div className="product-card skeleton-card" key={idx} aria-hidden="true">
+                            <div className="skeleton-corner-bar">
+                              <div className="skeleton-line skeleton-corner-pill" />
+                              <div className="skeleton-line skeleton-corner-btn" />
+                            </div>
                             <div className="skeleton-thumb-box" />
-                            <div className="skeleton-line skeleton-title" />
-                            <div className="skeleton-line skeleton-sub" />
-                            <div className="skeleton-box skeleton-specs" />
-                            <div className="skeleton-line skeleton-btn" />
+                            <div className="skeleton-body">
+                              <div className="skeleton-line skeleton-mpn" />
+                              <div className="skeleton-line skeleton-title" />
+                              <div className="skeleton-line skeleton-sub" />
+                              <div className="skeleton-box skeleton-specs" />
+                            </div>
+                            <div className="skeleton-footer">
+                              <div className="skeleton-line skeleton-link" />
+                              <div className="skeleton-line skeleton-btn" />
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -705,17 +1004,19 @@ function App() {
                       </div>
                     ) : sortedComponents.length === 0 ? (
                       <div className="card-empty-feedback">
-                        <span className="empty-icon">⌕</span>
-                        <strong>No components match the active criteria</strong>
-                        <p>
-                          Try clearing your keyword search or adjusting the selected category and filters.
+                        <div className="empty-icon-wrap" aria-hidden="true">
+                          <Layers size={36} />
+                        </div>
+                        <h3 className="empty-title">No components match the active criteria</h3>
+                        <p className="empty-desc">
+                          Try clearing your keyword search or adjusting the selected category and filters to view available parts.
                         </p>
                         <button
-                          className="filter-button reset-action-btn"
+                          className="library-empty-reset-btn"
                           type="button"
                           onClick={clearFilters}
                         >
-                          Reset All Filters
+                          Reset filters
                         </button>
                       </div>
                     ) : (
@@ -743,6 +1044,7 @@ function App() {
                               }}
                               aria-label={`${component.name} (${component.partNumber})`}
                             >
+                              {/* Corner controls: Compare checkbox on left, Save bookmark button on right */}
                               <div className="card-top-bar">
                                 <label
                                   className="card-compare-label"
@@ -765,49 +1067,44 @@ function App() {
                                     }
                                     aria-label={`Select ${component.partNumber} for comparison`}
                                   />
-                                  <span className="card-compare-box">
+                                  <span className="card-compare-box" aria-hidden="true">
                                     {isSelected && "✓"}
                                   </span>
                                   <span className="card-compare-text">Compare</span>
                                 </label>
 
-                                <div className="card-top-actions">
-                                  <button
-                                    type="button"
-                                    className={`card-bookmark-btn ${
-                                      isSaved(component._id) ? "saved" : ""
-                                    }`}
-                                    onClick={(e) =>
-                                      handleToggleSave(e, component)
-                                    }
-                                    aria-label={
+                                <button
+                                  type="button"
+                                  className={`card-bookmark-btn ${
+                                    isSaved(component._id) ? "saved" : ""
+                                  }`}
+                                  onClick={(e) =>
+                                    handleToggleSave(e, component)
+                                  }
+                                  aria-label={
+                                    isSaved(component._id)
+                                      ? `Remove ${component.partNumber} from saved parts`
+                                      : `Save ${component.partNumber} to workspace`
+                                  }
+                                  title={
+                                    isSaved(component._id)
+                                      ? "Saved in workspace (click to remove)"
+                                      : "Save component to workspace"
+                                  }
+                                >
+                                  <Bookmark
+                                    size={16}
+                                    fill={
                                       isSaved(component._id)
-                                        ? `Remove ${component.partNumber} from saved parts`
-                                        : `Save ${component.partNumber} to workspace`
+                                        ? "currentColor"
+                                        : "none"
                                     }
-                                    title={
-                                      isSaved(component._id)
-                                        ? "Saved in workspace (click to remove)"
-                                        : "Save component to workspace"
-                                    }
-                                  >
-                                    <Bookmark
-                                      size={15}
-                                      fill={
-                                        isSaved(component._id)
-                                          ? "currentColor"
-                                          : "none"
-                                      }
-                                      aria-hidden="true"
-                                    />
-                                  </button>
-
-                                  <span className="card-cat-badge">
-                                    {component.category}
-                                  </span>
-                                </div>
+                                    aria-hidden="true"
+                                  />
+                                </button>
                               </div>
 
+                              {/* Fixed 4:3 Image Stage with category-icon fallback (no PHOTO badge) */}
                               <div
                                 className="card-image-stage"
                                 onClick={() => setSelectedComponent(component)}
@@ -815,30 +1112,31 @@ function App() {
                               >
                                 <ComponentThumbnail
                                   component={component}
-                                  size="lg"
-                                  showProvenanceBadge
+                                  size="fluid"
+                                  showProvenanceBadge={false}
+                                  fallbackIcon={
+                                    <div className="card-category-placeholder">
+                                      <div className="card-category-placeholder-icon">
+                                        {getCategoryIcon(component.category)}
+                                      </div>
+                                      <span className="card-category-placeholder-label">
+                                        {component.category}
+                                      </span>
+                                    </div>
+                                  }
                                 />
                               </div>
 
+                              {/* Card Body */}
                               <div className="card-body">
                                 <div className="card-mpn-row">
                                   <span
-                                    className="card-mpn"
+                                    className="card-mpn mono-num"
                                     onClick={() => setSelectedComponent(component)}
                                     title={`Manufacturer Part Number: ${component.partNumber}`}
                                   >
                                     {component.partNumber}
                                   </span>
-                                  <button
-                                    type="button"
-                                    className={`mpn-copy-btn ${
-                                      copiedMpn === component.partNumber ? "copied" : ""
-                                    }`}
-                                    onClick={(e) => copyMpn(component.partNumber, e)}
-                                    title="Copy MPN to clipboard"
-                                  >
-                                    {copiedMpn === component.partNumber ? "COPIED" : "COPY"}
-                                  </button>
                                 </div>
 
                                 <h3
@@ -853,15 +1151,10 @@ function App() {
                                   <span className="card-mfr">
                                     {component.manufacturer || "—"}
                                   </span>
-                                  <span className="card-mfr-dot">·</span>
+                                  <span className="card-mfr-dot" aria-hidden="true">·</span>
                                   <span className="card-pkg">
-                                    {component.package?.name || "Unspecified Pkg"}
+                                    {component.package?.name || "Unspecified"}
                                   </span>
-                                  {component.package?.mountingType && (
-                                    <span className="card-mount-type">
-                                      ({component.package.mountingType})
-                                    </span>
-                                  )}
                                 </div>
 
                                 <div className="card-specs-list">
@@ -869,7 +1162,7 @@ function App() {
                                     previewSpecs.map((spec) => (
                                       <div className="card-spec-item" key={spec.key}>
                                         <span className="spec-k">{spec.label}:</span>
-                                        <span className="spec-v" title={spec.value}>
+                                        <span className="spec-v mono-num" title={spec.value}>
                                           {spec.value}
                                         </span>
                                       </div>
@@ -880,10 +1173,11 @@ function App() {
                                 </div>
                               </div>
 
+                              {/* Card Footer: Small datasheet text link + Primary View Details button */}
                               <div className="card-footer">
                                 {isValidHttpUrl(component.datasheetUrl) ? (
                                   <a
-                                    className="card-datasheet-btn"
+                                    className="card-datasheet-text-link"
                                     href={component.datasheetUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
@@ -893,21 +1187,18 @@ function App() {
                                     Datasheet ↗
                                   </a>
                                 ) : (
-                                  <span
-                                    className="card-datasheet-btn disabled"
-                                    title="No datasheet link available"
-                                  >
+                                  <span className="card-datasheet-text-link disabled">
                                     No PDF
                                   </span>
                                 )}
 
                                 <button
                                   type="button"
-                                  className="card-details-btn"
+                                  className="card-view-details-btn"
                                   onClick={() => setSelectedComponent(component)}
                                   title={`View complete specifications and footprint for ${component.name}`}
                                 >
-                                  View Details →
+                                  View details
                                 </button>
                               </div>
                             </article>
@@ -1109,7 +1400,6 @@ function App() {
                                   <ComponentThumbnail
                                     component={component}
                                     size="sm"
-                                    showProvenanceBadge
                                   />
                                 </td>
 
@@ -1275,7 +1565,9 @@ function App() {
                   </div>
                 </div>
                 )}
-              </>
+                        </div>
+                      </div>
+                    </section>
                 }
               />
 

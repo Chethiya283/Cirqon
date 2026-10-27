@@ -46,6 +46,7 @@ const components = [
     ],
     datasheetUrl: "https://www.ti.com/lit/ds/symlink/lm358.pdf",
     manufacturerUrl: "https://www.ti.com/product/LM358",
+    imageUrl: "/images/components/LM358.webp",
     dataStatus: "incomplete",
   },
   {
@@ -131,6 +132,7 @@ const components = [
     ],
     datasheetUrl: "https://www.ti.com/lit/ds/symlink/ne555.pdf",
     manufacturerUrl: "https://www.ti.com/product/NE555",
+    imageUrl: "/images/components/NE555.webp",
     dataStatus: "incomplete",
   },
   {
@@ -184,6 +186,7 @@ const components = [
     ],
     datasheetUrl: "https://www.ti.com/lit/ds/symlink/lm340.pdf",
     manufacturerUrl: "https://www.ti.com/product/LM340",
+    imageUrl: "/images/components/LM7805.webp",
     dataStatus: "incomplete",
   },
   {
@@ -219,6 +222,7 @@ const components = [
     ],
     datasheetUrl: "https://www.vishay.com/docs/88503/1n4001.pdf",
     manufacturerUrl: "https://www.vishay.com/",
+    imageUrl: "/images/components/1N4007.webp",
     dataStatus: "incomplete",
   },
   {
@@ -255,6 +259,7 @@ const components = [
     ],
     datasheetUrl: "https://www.vishay.com/docs/81857/1n4148.pdf",
     manufacturerUrl: "https://www.vishay.com/",
+    imageUrl: "/images/components/1N4148.webp",
     dataStatus: "incomplete",
   },
   {
@@ -297,6 +302,7 @@ const components = [
     ],
     datasheetUrl: "https://www.onsemi.com/pdf/datasheet/bc546b-d.pdf",
     manufacturerUrl: "https://www.onsemi.com/",
+    imageUrl: "/images/components/BC547.webp",
     dataStatus: "incomplete",
   },
   {
@@ -342,6 +348,7 @@ const components = [
       { number: 1, name: "Lead 1", function: "Resistor terminal" },
       { number: 2, name: "Lead 2", function: "Resistor terminal" },
     ],
+    imageUrl: "/images/components/MFR-25FTE52-10K.webp",
     dataStatus: "incomplete",
   },
   {
@@ -394,6 +401,7 @@ const components = [
     datasheetUrl:
       "https://search.kemet.com/component-documentation/download/specsheet/C315C104K5R5TA",
     manufacturerUrl: "https://www.kemet.com/",
+    imageUrl: "/images/components/C315C104K5R5TA.webp",
     dataStatus: "incomplete",
   },
   {
@@ -441,6 +449,7 @@ const components = [
     ],
     datasheetUrl: "https://www.bourns.com/docs/Product-Datasheets/rlb0914.pdf",
     manufacturerUrl: "https://www.bourns.com/",
+    imageUrl: "/images/components/RLB0914-101KL.webp",
     dataStatus: "incomplete",
   },
   {
@@ -491,6 +500,7 @@ const components = [
     ],
     datasheetUrl: "https://omronfs.omron.com/en_US/ecb/products/pdf/en-b3f.pdf",
     manufacturerUrl: "https://components.omron.com/",
+    imageUrl: "/images/components/B3F-1000.webp",
     dataStatus: "incomplete",
   },
   {
@@ -525,10 +535,13 @@ const components = [
     datasheetUrl: "https://www.molex.com/pdm_docs/sd/022232041_sd.pdf",
     manufacturerUrl:
       "https://www.molex.com/en-us/products/part-detail/22232041",
+    imageUrl: "/images/components/0022232041.webp",
     dataStatus: "incomplete",
   },
 ];
 
+// Viva Note: Added 'imageUrl' to the whitelist below so that running re-seeding
+// preserves and updates component image paths with modern .webp assets.
 function buildSetObject(component) {
   const set = {};
 
@@ -538,6 +551,7 @@ function buildSetObject(component) {
     "category",
     "manufacturer",
     "description",
+    "imageUrl",
     "datasheetUrl",
     "manufacturerUrl",
     "dataStatus",
