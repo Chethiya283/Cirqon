@@ -12,6 +12,7 @@ import {
   UserPlus,
   User,
   LogOut,
+  SlidersHorizontal,
 } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import "./Navbar.css";
@@ -119,6 +120,16 @@ export const Navbar: React.FC<NavbarProps> = ({
               >
                 <Bookmark size={16} strokeWidth={1.75} className="nav-link-icon" aria-hidden="true" />
                 <span>My Parts</span>
+              </NavLink>
+            )}
+
+            {user?.role === "admin" && (
+              <NavLink
+                to="/admin/components"
+                className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
+              >
+                <SlidersHorizontal size={16} strokeWidth={1.75} className="nav-link-icon" aria-hidden="true" />
+                <span>Manage</span>
               </NavLink>
             )}
           </nav>
@@ -257,6 +268,17 @@ export const Navbar: React.FC<NavbarProps> = ({
               >
                 <Bookmark size={18} aria-hidden="true" />
                 <span>My Saved Parts</span>
+              </NavLink>
+            )}
+
+            {user?.role === "admin" && (
+              <NavLink
+                to="/admin/components"
+                className={({ isActive }) => `mobile-nav-link ${isActive ? "active" : ""}`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <SlidersHorizontal size={18} aria-hidden="true" />
+                <span>Manage</span>
               </NavLink>
             )}
           </div>

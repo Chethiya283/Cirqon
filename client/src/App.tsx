@@ -28,6 +28,7 @@ import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { MyPartsPage } from "./pages/MyPartsPage";
+import { AdminComponentsPage } from "./pages/AdminComponentsPage";
 import { useAuth } from "./auth/AuthContext";
 import { useSavedParts } from "./auth/SavedPartsContext";
 import { ProtectedRoute } from "./auth/ProtectedRoute";
@@ -2613,6 +2614,16 @@ function App() {
                     <MyPartsPage
                       onSelectComponent={setSelectedComponent}
                     />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Route 6: Administrative Component CRUD Management */}
+              <Route
+                path="/admin/components"
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminComponentsPage />
                   </ProtectedRoute>
                 }
               />
