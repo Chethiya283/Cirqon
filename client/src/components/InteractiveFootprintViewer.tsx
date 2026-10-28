@@ -510,8 +510,8 @@ export const InteractiveFootprintViewer: React.FC<
             onKeyDown={handleCanvasKeyDown}
           >
             <div className="cad-dimension-badge">
-              {component.dataStatus === "verified"
-                ? "Verified Footprint"
+              {validation.status === "verified"
+                ? "Datasheet-checked Footprint"
                 : "Illustrative Footprint (Catalogue Dimensions)"}{" "}
               · <span className="pcb-mono-num">{Math.round(zoom * 100)}%</span>
             </div>

@@ -53,8 +53,8 @@ export function runValidationUnitTests(): { passed: number; failed: number } {
     "LM358 status must be illustrative because pad & drill are unverified placeholders"
   );
   assert(
-    !vLm358.isFabricationReady,
-    "LM358 must not be marked fabrication-ready"
+    !vLm358.isDatasheetChecked,
+    "LM358 must not be marked datasheet-checked"
   );
   assert(
     vLm358.checks.some((c) => c.id === "lead-pitch" && c.state === "passed"),
@@ -169,12 +169,18 @@ export function runValidationUnitTests(): { passed: number; failed: number } {
 
   const vFull = validateComponentFootprint(fullyVerified);
   assert(
-    vFull.status === "verified",
-    "Component with complete verified parameters must receive verified status"
+    vFull.status === "illustrative",
+    "Part with dataStatus: 'verified' and all geometry present must remain illustrative because per-field source citations are not stored"
   );
   assert(
-    vFull.isFabricationReady,
-    "Fully verified component must be fabrication-ready"
+    !vFull.isDatasheetChecked,
+    "Part must not be datasheet-checked without stored per-field source citations"
+  );
+  assert(
+    vFull.requirementsNotice.includes(
+      "Verified status needs per-field datasheet source references"
+    ),
+    "Part must display requirementsNotice for missing per-field source references"
   );
 
   // Test 5: Incomplete component missing lead pitch

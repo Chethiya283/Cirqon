@@ -119,6 +119,18 @@
   line-height: var(--cq-line-height-relaxed);
 }
 
+.validation-requirements-notice {
+  margin: 0;
+  font-family: var(--cq-font-sans);
+  font-size: var(--cq-text-xs);
+  color: var(--cq-text-muted);
+  line-height: var(--cq-line-height-normal);
+  padding: var(--cq-space-1-5) var(--cq-space-2-5);
+  background: var(--cq-surface-subtle);
+  border-radius: var(--cq-radius-sm);
+  border-left: 2px solid var(--cq-border-default);
+}
+
 /* 3. Warning Callout */
 .validation-warning-callout {
   display: flex;

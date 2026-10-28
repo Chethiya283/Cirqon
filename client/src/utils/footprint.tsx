@@ -17,9 +17,9 @@ export type ProvenanceLabel =
   | "Not available";
 
 /**
- * Footprint validation status distinguishing fabrication-ready data from illustrative visualization.
- * - verified: All applicable requirements checked against official documentation (fabrication-ready).
- * - illustrative: Drawing rendered from outline/pinout for visualization, but pads/drills are unverified placeholders or axial leads are flexible.
+ * Footprint validation status distinguishing datasheet-checked data from illustrative visualization.
+ * - verified: All applicable requirements checked against official documentation with per-field source citations.
+ * - illustrative: Drawing rendered from outline/pinout for visualization, but pads/drills are unverified placeholders, axial leads are flexible, or per-field source citations are missing.
  * - incomplete: Critical layout parameters (e.g. lead pitch, body size, or pinout) are missing.
  */
 export type FootprintValidationStatus =
@@ -48,10 +48,11 @@ export interface FootprintValidationResult {
   statusBadgeClass: string;
   summary: string;
   warningNotice?: string;
+  requirementsNotice: string;
   checks: FootprintRequirementCheck[];
   passedCount: number;
   totalApplicableCount: number;
-  isFabricationReady: boolean;
+  isDatasheetChecked: boolean;
   isIllustrativeOnly: boolean;
   missingCrucialData: boolean;
 }
@@ -553,7 +554,7 @@ export function auditComponentFootprint(
 
 /**
  * Validates a component footprint against package-specific engineering requirements.
- * Distinguishes fabrication-ready footprints from illustrative visualization drawings.
+ * Distinguishes datasheet-checked footprints from illustrative visualization drawings.
  */
 export function validateComponentFootprint(
   component: ComponentData,
@@ -838,7 +839,7 @@ export function validateComponentFootprint(
       state: canDrawFootprint ? "unverified" : "missing",
       valueDescription: "Not stored in catalogue",
       detail: canDrawFootprint
-        ? "No manufacturer land pattern stored; drawing uses illustrative fallback pad geometry. Not verified for fabrication."
+        ? "No manufacturer land pattern stored; drawing uses illustrative fallback pad geometry. Not verified for PCB layout."
         : "Pad dimensions are not recorded in catalogue.",
       sourceOrProvenance: canDrawFootprint ? "Placeholder" : "Not available",
     });
@@ -870,7 +871,7 @@ export function validateComponentFootprint(
       state: canDrawFootprint ? "unverified" : "missing",
       valueDescription: "Not stored in catalogue",
       detail: canDrawFootprint
-        ? "Drill size is missing from catalogue; drawing uses illustrative fallback. Confirm drill specification before PCB fabrication."
+        ? "Drill size is missing from catalogue; drawing uses illustrative fallback. Confirm drill specification before PCB layout."
         : "Through-hole drill diameter is missing from catalogue.",
       sourceOrProvenance: canDrawFootprint ? "Placeholder" : "Not available",
     });
@@ -905,33 +906,41 @@ export function validateComponentFootprint(
   const isDataStatusVerified = component.dataStatus === "verified";
   const allApplicablePassed = passedChecks.length === applicableChecks.length;
 
+  // Per-field source references (document URL + page/table) are not stored in the schema yet.
+  // Every applicable requirement must have an explicit stored source reference to produce "verified".
+  const hasPerFieldSourceReferences = false;
+  const requirementsNotice =
+    "Verified status needs per-field datasheet source references, which are not stored yet.";
+
   let status: FootprintValidationStatus;
   let statusLabel: string;
   let statusBadgeClass: string;
   let summary: string;
   let warningNotice: string | undefined;
 
-  if (isDataStatusVerified && allApplicablePassed) {
+  if (hasPerFieldSourceReferences && isDataStatusVerified && allApplicablePassed) {
     status = "verified";
-    statusLabel = "Verified — Fabrication-Ready";
+    statusLabel = "Datasheet-checked";
     statusBadgeClass = "validation-status-verified";
     summary =
-      "All mechanical packaging, terminal pitch, pad sizing, and drill specifications have been verified against authoritative manufacturer documentation.";
+      "All mechanical packaging, terminal pitch, pad sizing, and drill specifications have been verified against authoritative per-field datasheet source references.";
+    warningNotice =
+      "Datasheet-checked Footprint: Confirm land pattern dimensions against datasheet and fabricator rules before PCB layout.";
   } else if (canDrawFootprint) {
     status = "illustrative";
     statusLabel = "Illustrative — Visualization Only";
     statusBadgeClass = "validation-status-illustrative";
     summary = isAxialPackage
-      ? "Component outline and pinout are verified, but axial leads are flexible (variable bend span) and pad/drill sizes are illustrative fallbacks. Not validated for direct PCB fabrication."
-      : "The drawing illustrates verified body dimensions and terminal arrangement, but lacks verified manufacturer pad/drill dimensions. Intended for visual clearance inspection, not direct Gerber fabrication.";
+      ? "Component outline and pinout are verified, but axial leads are flexible (variable bend span) and pad/drill sizes are illustrative fallbacks. Not validated for direct PCB layout."
+      : "The drawing illustrates verified body dimensions and terminal arrangement, but lacks verified manufacturer pad/drill dimensions. Intended for visual clearance inspection, not direct PCB layout.";
     warningNotice =
-      "Illustrative Footprint: Confirm manufacturer land pattern dimensions and drill diameters before generating fabrication tooling.";
+      "Illustrative Footprint: Confirm manufacturer land pattern dimensions and drill diameters against the datasheet and fabricator rules before PCB layout.";
   } else {
     status = "incomplete";
     statusLabel = "Incomplete — Missing Engineering Data";
     statusBadgeClass = "validation-status-incomplete";
     summary =
-      "Essential physical parameters (such as terminal pitch, body dimensions, or pinout) are missing from the catalogue. A reliable footprint cannot be rendered or fabricated.";
+      "Essential physical parameters (such as terminal pitch, body dimensions, or pinout) are missing from the catalogue. A reliable footprint cannot be rendered.";
     warningNotice =
       "Incomplete Footprint Data: Consult the official manufacturer datasheet to obtain physical package and layout parameters.";
   }
@@ -942,10 +951,11 @@ export function validateComponentFootprint(
     statusBadgeClass,
     summary,
     warningNotice,
+    requirementsNotice,
     checks,
     passedCount: passedChecks.length,
     totalApplicableCount: applicableChecks.length,
-    isFabricationReady: status === "verified",
+    isDatasheetChecked: status === "verified",
     isIllustrativeOnly: status === "illustrative",
     missingCrucialData: status === "incomplete",
   };
@@ -1816,9 +1826,7 @@ export function renderFootprintSvg(
           fontFamily="var(--cq-font-sans)"
           textAnchor="middle"
         >
-          {component.dataStatus === "verified"
-            ? "Verified footprint"
-            : "Illustrative diagram"}
+          Illustrative package diagram
         </text>
         {renderMeasureOverlay()}
       </svg>

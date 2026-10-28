@@ -1,4 +1,4 @@
-// Interactive Footprint Validation component presenting validation status, engineering checklist, and fabrication disclaimers.
+// Interactive Footprint Validation component presenting validation status, engineering checklist, and design notices.
 
 import React, { useState } from "react";
 import {
@@ -111,6 +111,13 @@ export const FootprintValidationPanel: React.FC<
       {/* 2. Concise Summary Paragraph */}
       <p className="validation-summary-text">{validation.summary}</p>
 
+      {/* Notice about per-field datasheet source references required for Verified status */}
+      {validation.requirementsNotice && (
+        <p className="validation-requirements-notice">
+          {validation.requirementsNotice}
+        </p>
+      )}
+
       {/* 3. High-Priority Engineering Warning Banner */}
       {validation.warningNotice && (
         <div
@@ -125,8 +132,8 @@ export const FootprintValidationPanel: React.FC<
           <div className="warning-callout-content">
             <strong>
               {validation.status === "incomplete"
-                ? "Fabrication Prohibited:"
-                : "Fabrication Caution:"}
+                ? "Incomplete Data:"
+                : "Design Notice:"}
             </strong>{" "}
             {validation.warningNotice}
           </div>
@@ -139,7 +146,7 @@ export const FootprintValidationPanel: React.FC<
           <div className="validation-checklist-title">
             <span>Applicable Package Requirements</span>
             <span className="validation-checklist-legend">
-              <span className="legend-chip passed">✓ Verified</span>
+              <span className="legend-chip passed">✓ Passed</span>
               <span className="legend-chip unverified">⚠ Unverified / Fallback</span>
               <span className="legend-chip missing">✕ Missing</span>
               <span className="legend-chip na">— N/A</span>

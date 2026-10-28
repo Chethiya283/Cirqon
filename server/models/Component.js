@@ -1,4 +1,3 @@
-
 const mongoose = require("mongoose");
 
 const componentSchema = new mongoose.Schema(
@@ -62,7 +61,7 @@ const componentSchema = new mongoose.Schema(
     package: {
       name: {
         type: String,
-        required: true,
+        default: "",
         trim: true,
       },
 
@@ -114,7 +113,7 @@ const componentSchema = new mongoose.Schema(
     // Official technical references
     datasheetUrl: {
       type: String,
-      required: true,
+      default: "",
       trim: true,
     },
 

@@ -275,15 +275,15 @@ export const ComponentDetailsModal: React.FC<ComponentDetailsModalProps> = ({
                         <div className="modal-footprint-preview cad-grid-overlay">
                           <span className="cad-dimension-badge">
                             {footprintAudit.validation.status === "verified"
-                              ? "Verified Footprint"
+                              ? "Datasheet-checked Footprint"
                               : "Illustrative Footprint (Visualization Only)"}
                           </span>
                           {renderFootprintSvg(component)}
                         </div>
                         <p className="pcb-fabrication-disclaimer modal-footprint-disclaimer">
                           {footprintAudit.validation.status === "verified"
-                            ? "Verified against official manufacturer datasheet."
-                            : "Illustrative drawing from stored outline and terminal data. Confirm land pattern dimensions before fabrication."}
+                            ? "Datasheet-checked against official manufacturer documentation. Confirm land pattern dimensions against fabricator rules."
+                            : "Illustrative drawing from stored outline and terminal data. Confirm land pattern dimensions against datasheet and fabricator rules."}
                         </p>
                         {footprintAudit.missingFields.length > 0 && (
                           <div className="pcb-missing-banner">
