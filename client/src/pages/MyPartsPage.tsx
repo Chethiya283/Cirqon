@@ -6,7 +6,7 @@ import { Bookmark, Trash2 } from "lucide-react";
 import type { ComponentData } from "../types";
 import { useSavedParts } from "../auth/SavedPartsContext";
 import { ComponentThumbnail } from "../ComponentImage";
-import { getSpecPairs, isValidHttpUrl } from "../utils/formatters";
+import { getSpecPairs, isValidHttpUrl, resolveAssetUrl } from "../utils/formatters";
 import "./MyPartsPage.css";
 
 export interface MyPartsPageProps {
@@ -222,7 +222,7 @@ export const MyPartsPage: React.FC<MyPartsPageProps> = ({
                   {isValidHttpUrl(component.datasheetUrl) ? (
                     <a
                       className="card-datasheet-btn"
-                      href={component.datasheetUrl}
+                      href={resolveAssetUrl(component.datasheetUrl)}
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}

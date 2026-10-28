@@ -1,3 +1,5 @@
+import { resolveAssetUrl } from "./utils/formatters";
+
 export type ComponentData = {
   _id: string;
   partNumber: string;
@@ -197,7 +199,7 @@ export function getComponentImageInfo(
   // 1. Direct database record
   if (component.imageUrl && component.imageUrl.trim().length > 0) {
     return {
-      src: component.imageUrl.trim(),
+      src: resolveAssetUrl(component.imageUrl.trim()),
       alt: `${component.name} (${component.partNumber}) Product Photograph`,
       isVerifiedPhoto: true,
       provenance: "database",

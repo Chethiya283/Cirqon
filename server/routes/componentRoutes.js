@@ -1,5 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const path = require("path");
+const fs = require("fs");
 const Component = require("../models/Component");
 const SavedPart = require("../models/SavedPart");
 const { requireAuth, requireAdmin } = require("../middleware/auth");
@@ -30,17 +32,52 @@ function escapeRegex(string) {
 }
 
 /**
- * Validates that a string is a well-formed HTTP or HTTPS URL.
+ * Validates that a string is a well-formed HTTP or HTTPS URL, or a local /uploads/ asset path.
  */
 function isValidHttpUrl(urlString) {
   if (typeof urlString !== "string") return false;
   const trimmed = urlString.trim();
   if (!trimmed) return true; // Empty string is acceptable for optional URL fields
+  if (trimmed.startsWith("/uploads/")) return true; // Accept uploaded local files
   try {
     const parsed = new URL(trimmed);
     return parsed.protocol === "http:" || parsed.protocol === "https:";
   } catch {
     return false;
+  }
+}
+
+/**
+ * VIVA EXPLANATION — 4. Why Old Uploaded Files are Deleted from Disk (Storage Hygiene & Traversal Defense):
+ * When a component's imageUrl or datasheetUrl is replaced or the component itself is deleted,
+ * leaving old files on disk causes storage leaks and disk exhaustion over time.
+ * Security Guard: We ensure the file path strictly begins with "/uploads/" and resolve it
+ * against the absolute server/uploads directory using path.resolve(). Verifying that the target
+ * strictly resides inside server/uploads guards against path traversal (e.g. attempting to delete
+ * system or code files via "../").
+ */
+function safelyDeleteUploadedFile(fileUrl) {
+  if (!fileUrl || typeof fileUrl !== "string") return;
+  const trimmed = fileUrl.trim();
+  if (!trimmed.startsWith("/uploads/")) return;
+
+  const uploadsRoot = path.resolve(__dirname, "../uploads");
+  const relativeSubpath = trimmed.slice("/uploads/".length);
+  const resolvedPath = path.resolve(uploadsRoot, relativeSubpath);
+
+  // Security guard against path traversal attacks
+  if (!resolvedPath.startsWith(uploadsRoot + path.sep)) {
+    console.warn("Security warning: Blocked path traversal attempt in file deletion:", trimmed);
+    return;
+  }
+
+  try {
+    if (fs.existsSync(resolvedPath) && fs.statSync(resolvedPath).isFile()) {
+      fs.unlinkSync(resolvedPath);
+      console.log("Successfully removed unreferenced upload:", resolvedPath);
+    }
+  } catch (err) {
+    console.error("Failed to delete unreferenced upload:", err.message);
   }
 }
 
@@ -564,6 +601,23 @@ router.put("/:id", requireAuth, requireAdmin, async (req, res) => {
       { new: true, runValidators: true }
     );
 
+    // 7. If imageUrl or datasheetUrl changed, clean up previous uploaded files from disk
+    if (
+      whitelistedUpdates.imageUrl !== undefined &&
+      existingComponent.imageUrl &&
+      existingComponent.imageUrl !== updatedComponent.imageUrl
+    ) {
+      safelyDeleteUploadedFile(existingComponent.imageUrl);
+    }
+
+    if (
+      whitelistedUpdates.datasheetUrl !== undefined &&
+      existingComponent.datasheetUrl &&
+      existingComponent.datasheetUrl !== updatedComponent.datasheetUrl
+    ) {
+      safelyDeleteUploadedFile(existingComponent.datasheetUrl);
+    }
+
     res.json(updatedComponent);
   } catch (error) {
     if (error.code === 11000) {
@@ -620,6 +674,10 @@ router.delete("/:id", requireAuth, requireAdmin, async (req, res) => {
 
     // 4. Delete the component itself
     await Component.findByIdAndDelete(id);
+
+    // 5. Clean up any uploaded assets from disk
+    safelyDeleteUploadedFile(component.imageUrl);
+    safelyDeleteUploadedFile(component.datasheetUrl);
 
     res.json({
       message: "Component deleted successfully.",

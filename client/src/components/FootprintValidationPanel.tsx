@@ -20,7 +20,7 @@ import {
   getProvenanceBadgeClass,
   renderValueWithMonoNumbers,
 } from "../utils/footprint";
-import { isValidHttpUrl } from "../utils/formatters";
+import { isValidHttpUrl, resolveAssetUrl } from "../utils/formatters";
 import "./FootprintValidationPanel.css";
 
 export interface FootprintValidationPanelProps {
@@ -199,7 +199,7 @@ export const FootprintValidationPanel: React.FC<
             <div className="validation-datasheet-citation">
               <span className="citation-label">Authoritative Source:</span>
               <a
-                href={datasheetUrl}
+                href={resolveAssetUrl(datasheetUrl)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="citation-link"

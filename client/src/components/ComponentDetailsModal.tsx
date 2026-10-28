@@ -19,6 +19,7 @@ import {
   formatDimensions,
   getSpecPairs,
   isValidHttpUrl,
+  resolveAssetUrl,
 } from "../utils/formatters";
 import "./ComponentDetailsModal.css";
 
@@ -589,7 +590,7 @@ export const ComponentDetailsModal: React.FC<ComponentDetailsModalProps> = ({
             <div className="modal-links">
               {isValidHttpUrl(component.datasheetUrl) && (
                 <a
-                  href={component.datasheetUrl}
+                  href={resolveAssetUrl(component.datasheetUrl)}
                   target="_blank"
                   rel="noopener noreferrer"
                 >

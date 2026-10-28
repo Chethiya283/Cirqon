@@ -35,6 +35,7 @@ import { ProtectedRoute } from "./auth/ProtectedRoute";
 import type { ComponentData, SortField } from "./types";
 import {
   isValidHttpUrl,
+  resolveAssetUrl,
   formatDimensions,
   findUnitForSpecKey,
   formatSpecValue,
@@ -1295,7 +1296,7 @@ function App() {
                                   {isValidHttpUrl(component.datasheetUrl) ? (
                                     <a
                                       className="card-datasheet-text-link"
-                                      href={component.datasheetUrl}
+                                      href={resolveAssetUrl(component.datasheetUrl)}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       onClick={(e) => e.stopPropagation()}
@@ -1646,7 +1647,7 @@ function App() {
                                   {isValidHttpUrl(component.datasheetUrl) ? (
                                     <a
                                       className="table-datasheet-link"
-                                      href={component.datasheetUrl}
+                                      href={resolveAssetUrl(component.datasheetUrl)}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       title={`Open official datasheet PDF for ${component.partNumber}`}
@@ -2041,7 +2042,7 @@ function App() {
                             {isValidHttpUrl(component.datasheetUrl) ? (
                               <a
                                 className="datasheet-card-link"
-                                href={component.datasheetUrl}
+                                href={resolveAssetUrl(component.datasheetUrl)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                               >
@@ -2381,7 +2382,7 @@ function App() {
                                   {isValidHttpUrl(c.datasheetUrl) ? (
                                     <a
                                       className="table-link"
-                                      href={c.datasheetUrl}
+                                      href={resolveAssetUrl(c.datasheetUrl)}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                     >

@@ -2,10 +2,31 @@
 
 import type { ComponentData } from "../types";
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+const SERVER_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
+
+/**
+ * Resolves uploaded asset URLs against the backend server origin, while preserving
+ * external HTTP(S) links and local Vite /images/ asset paths.
+ */
+export function resolveAssetUrl(url?: string): string {
+  if (!url || typeof url !== "string") return "";
+  const trimmed = url.trim();
+  if (trimmed.startsWith("/uploads/")) {
+    return `${SERVER_ORIGIN}${trimmed}`;
+  }
+  return trimmed;
+}
+
 export function isValidHttpUrl(url?: string): boolean {
   if (!url || typeof url !== "string") return false;
   const trimmed = url.trim();
-  return trimmed.startsWith("http://") || trimmed.startsWith("https://");
+  return (
+    trimmed.startsWith("http://") ||
+    trimmed.startsWith("https://") ||
+    trimmed.startsWith("/uploads/")
+  );
 }
 
 export function formatDimensions(pkg?: ComponentData["package"]): string {
