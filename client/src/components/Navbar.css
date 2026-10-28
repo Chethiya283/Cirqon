@@ -532,6 +532,19 @@
 }
 
 @media (max-width: 540px) {
+  .site-header-container {
+    padding: 0 var(--cq-space-3);
+    gap: var(--cq-space-2);
+  }
+
+  .site-header-left {
+    gap: var(--cq-space-2);
+  }
+
+  .header-search-wrapper {
+    min-width: 110px;
+  }
+
   .brand-tag {
     display: none;
   }

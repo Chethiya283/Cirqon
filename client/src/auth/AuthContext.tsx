@@ -111,18 +111,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
    * Log in an existing user and store JWT.
    */
   const login = async (email: string, password: string): Promise<void> => {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    });
+    let response: Response;
+    try {
+      response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+    } catch {
+      throw new Error(
+        "Unable to connect to authentication server. Please check that the backend is running."
+      );
+    }
 
-    const data = await response.json();
+    let data: { token?: string; user?: AuthUser; message?: string };
+    try {
+      data = await response.json();
+    } catch {
+      throw new Error("Received invalid response from authentication server.");
+    }
 
     if (!response.ok) {
       throw new Error(data.message || "Invalid email or password.");
+    }
+
+    if (!data.token || !data.user) {
+      throw new Error("Incomplete authentication payload returned by server.");
     }
 
     // Persist token in localStorage in ONE place
@@ -139,15 +155,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     email: string,
     password: string
   ): Promise<void> => {
-    const response = await fetch(`${API_BASE_URL}/auth/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ name, email, password }),
-    });
+    let response: Response;
+    try {
+      response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, email, password }),
+      });
+    } catch {
+      throw new Error(
+        "Unable to connect to authentication server. Please check that the backend is running."
+      );
+    }
 
-    const data = await response.json();
+    let data: { message?: string };
+    try {
+      data = await response.json();
+    } catch {
+      throw new Error("Received invalid response from registration server.");
+    }
 
     if (!response.ok) {
       throw new Error(data.message || "Failed to create account.");

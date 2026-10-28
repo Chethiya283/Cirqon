@@ -452,6 +452,10 @@
   .library-header-search {
     width: 100%;
   }
+
+  .library-title-block {
+    min-width: 0;
+  }
 }
 
 .library-heading-group {

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate, Routes, Route, Navigate } from "react-router-dom";
+import { useLocation, useNavigate, Routes, Route } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowLeftRight,
@@ -29,6 +29,8 @@ import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { MyPartsPage } from "./pages/MyPartsPage";
 import { AdminComponentsPage } from "./pages/AdminComponentsPage";
+import { NotFoundPage } from "./pages/NotFoundPage";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { useAuth } from "./auth/AuthContext";
 import { useSavedParts } from "./auth/SavedPartsContext";
 import { ProtectedRoute } from "./auth/ProtectedRoute";
@@ -631,8 +633,10 @@ function App() {
 
         <main className="main-content">
           <section className="page-content">
-            {/* VIVA EXPLANATION: React Router Routes map each URL pathname to a view */}
-            <Routes>
+            {/* VIVA EXPLANATION: React Error Boundary wraps all client views to prevent white screen crashes */}
+            <ErrorBoundary>
+              {/* VIVA EXPLANATION: React Router Routes map each URL pathname to a view */}
+              <Routes>
               {/* Route 1: Public Home Page */}
               <Route
                 path="/"
@@ -2629,9 +2633,10 @@ function App() {
                 }
               />
 
-              {/* Catch-all: Redirect unknown URLs to / */}
-              <Route path="*" element={<Navigate to="/" replace />} />
+              {/* Catch-all: Friendly 404 page for unknown URLs */}
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
+          </ErrorBoundary>
           </section>
         </main>
       </div>

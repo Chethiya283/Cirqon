@@ -82,7 +82,11 @@ export const LoginPage: React.FC = () => {
       navigate("/");
     } catch (err: unknown) {
       const msg =
-        err instanceof Error ? err.message : "Invalid email or password.";
+        err instanceof Error
+          ? (err.name === "TypeError" || err.message.toLowerCase().includes("fetch")
+              ? "Unable to connect to the authentication server. Please verify that the backend is running."
+              : err.message)
+          : "Invalid email or password.";
       setServerError(msg);
     } finally {
       setIsSubmitting(false);

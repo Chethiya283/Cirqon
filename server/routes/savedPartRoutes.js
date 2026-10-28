@@ -117,6 +117,107 @@ router.post("/", async (req, res) => {
 });
 
 /**
+ * PUT /api/saved-parts/:componentId
+ * 
+ * Update engineering metadata (quantity and design note) for a bookmarked component.
+ * Request body: { quantity?, note? }
+ * 
+ * VIVA EXPLANATION:
+ * 1. Strict Whitelisting (Anti-Mass Assignment):
+ *    Only `quantity` and `note` are extracted from `req.body`. Even if a malicious client sends
+ *    `{ user: "attackerId", component: "otherId", role: "admin" }`, those fields are ignored,
+ *    preventing mass assignment vulnerabilities.
+ * 2. Identity Security (Anti-IDOR / Anti-BOLA):
+ *    The query filter is locked to `{ user: req.user._id, component: componentId }`.
+ *    The `user` identifier comes strictly from the verified JWT payload attached by `requireAuth`,
+ *    never from request headers or body. This ensures engineers can never read or mutate
+ *    another user's workspace items.
+ * 3. Schema Validation Enforcement (runValidators):
+ *    Mongoose skips schema validation on `findOneAndUpdate` by default. Passing
+ *    `{ runValidators: true }` ensures the database engine enforces schema-level constraints.
+ */
+router.put("/:componentId", async (req, res) => {
+  try {
+    const { componentId } = req.params;
+
+    // 1. Validate ObjectId format
+    if (!componentId || !mongoose.Types.ObjectId.isValid(componentId)) {
+      return res.status(400).json({
+        message: "A valid component ID is required.",
+      });
+    }
+
+    // 2. Strict Whitelisting & Validation
+    const { quantity, note } = req.body;
+    const updateFields = {};
+
+    if (quantity !== undefined) {
+      if (
+        typeof quantity !== "number" ||
+        !Number.isInteger(quantity) ||
+        quantity < 1 ||
+        quantity > 10000
+      ) {
+        return res.status(400).json({
+          message: "Quantity must be an integer between 1 and 10,000.",
+        });
+      }
+      updateFields.quantity = quantity;
+    }
+
+    if (note !== undefined) {
+      if (typeof note !== "string") {
+        return res.status(400).json({
+          message: "Note must be a text string.",
+        });
+      }
+      const trimmedNote = note.trim();
+      if (trimmedNote.length > 300) {
+        return res.status(400).json({
+          message: "Note cannot exceed 300 characters.",
+        });
+      }
+      updateFields.note = trimmedNote;
+    }
+
+    if (Object.keys(updateFields).length === 0) {
+      return res.status(400).json({
+        message: "At least one valid field (quantity or note) must be provided to update.",
+      });
+    }
+
+    // 3. Atomically update document scoped strictly to authenticated user
+    const updated = await SavedPart.findOneAndUpdate(
+      { user: req.user._id, component: componentId },
+      { $set: updateFields },
+      { new: true, runValidators: true }
+    ).populate("component");
+
+    if (!updated) {
+      return res.status(404).json({
+        message: "Saved component entry not found.",
+      });
+    }
+
+    res.json({
+      message: "Saved part updated successfully.",
+      savedPart: updated,
+    });
+  } catch (error) {
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        message: error.message,
+      });
+    }
+
+    console.error("Error updating saved component:", error.message);
+    res.status(500).json({
+      message: "Server error occurred while updating saved component.",
+    });
+  }
+});
+
+/**
  * DELETE /api/saved-parts/:componentId
  * 
  * Remove a component from the authenticated user's saved list.

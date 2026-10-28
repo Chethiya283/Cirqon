@@ -142,3 +142,201 @@
   background: var(--cq-error-soft);
 }
 
+.my-parts-card-remove-btn:focus-visible {
+  outline: 2px solid var(--cq-border-focus);
+  outline-offset: 1px;
+}
+
+/* ========================================================
+   BOM Workspace & Engineering Note Panel (Tokens Only)
+   ======================================================== */
+.my-parts-bom-panel {
+  padding: 12px 14px;
+  background: var(--cq-surface-subtle);
+  border-top: 1px solid var(--cq-border-subtle);
+  border-bottom: 1px solid var(--cq-border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bom-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.bom-panel-title {
+  font-size: var(--cq-text-xs);
+  font-weight: var(--cq-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--cq-text-muted);
+}
+
+.bom-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  font-size: var(--cq-text-xs);
+  font-weight: var(--cq-weight-medium);
+  border-radius: var(--cq-radius-sm);
+}
+
+.bom-status-badge.success {
+  color: var(--cq-emerald);
+  background: var(--cq-emerald-soft);
+  border: 1px solid var(--cq-emerald-border);
+}
+
+.bom-fields-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bom-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bom-field-label {
+  font-size: var(--cq-text-xs);
+  font-weight: var(--cq-weight-medium);
+  color: var(--cq-text-secondary);
+}
+
+.bom-note-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.bom-char-count {
+  font-family: var(--cq-font-mono);
+  font-size: var(--cq-text-xs);
+  color: var(--cq-text-muted);
+}
+
+.bom-char-count.char-limit-near {
+  color: var(--cq-warning);
+  font-weight: var(--cq-weight-semibold);
+}
+
+.bom-char-count.char-limit-exceeded {
+  color: var(--cq-error);
+  font-weight: var(--cq-weight-semibold);
+}
+
+.bom-input {
+  width: 100%;
+  padding: 6px 10px;
+  font-size: var(--cq-text-sm);
+  color: var(--cq-text-primary);
+  background: var(--cq-surface);
+  border: 1px solid var(--cq-border-strong);
+  border-radius: var(--cq-radius-sm);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+  box-sizing: border-box;
+}
+
+.bom-input:focus {
+  outline: none;
+  border-color: var(--cq-border-focus);
+  box-shadow: 0 0 0 2px var(--cq-emerald-soft);
+}
+
+.bom-input:focus-visible {
+  outline: 2px solid var(--cq-border-focus);
+  outline-offset: 1px;
+}
+
+.bom-qty-input {
+  font-family: var(--cq-font-mono);
+  max-width: 110px;
+}
+
+.bom-note-input {
+  font-family: var(--cq-font-sans);
+  min-height: 52px;
+  resize: vertical;
+  line-height: var(--cq-leading-normal);
+}
+
+.bom-input.input-error {
+  border-color: var(--cq-error);
+  background: var(--cq-error-soft);
+}
+
+.bom-field-error {
+  font-size: var(--cq-text-xs);
+  color: var(--cq-error);
+  line-height: 1.3;
+}
+
+.bom-server-error {
+  padding: 6px 8px;
+  font-size: var(--cq-text-xs);
+  color: var(--cq-error);
+  background: var(--cq-error-soft);
+  border: 1px solid var(--cq-error-border);
+  border-radius: var(--cq-radius-sm);
+}
+
+.bom-actions-row {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 2px;
+}
+
+.bom-save-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 12px;
+  font-size: var(--cq-text-xs);
+  font-weight: var(--cq-weight-semibold);
+  color: var(--cq-text-inverse);
+  background: var(--cq-emerald);
+  border: 1px solid var(--cq-emerald);
+  border-radius: var(--cq-radius-sm);
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.bom-save-btn:hover:not(:disabled) {
+  background: var(--cq-emerald-hover);
+  border-color: var(--cq-emerald-hover);
+}
+
+.bom-save-btn:focus-visible {
+  outline: 2px solid var(--cq-border-focus);
+  outline-offset: 2px;
+}
+
+.bom-save-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: var(--cq-text-disabled);
+  border-color: var(--cq-text-disabled);
+}
+
+@media (max-width: 480px) {
+  .my-parts-bom-panel {
+    padding: 10px 12px;
+  }
+
+  .bom-qty-input {
+    max-width: 100%;
+  }
+
+  .bom-save-btn {
+    width: 100%;
+  }
+}
+

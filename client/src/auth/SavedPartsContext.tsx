@@ -4,6 +4,7 @@ import React, {
   createContext,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -16,14 +17,25 @@ const API_BASE_URL =
 export interface SavedPartsContextType {
   /** Array of populated component objects saved by the engineer */
   savedParts: ComponentData[];
+  /** Full list of saved bookmark records with user-defined quantity and notes */
+  savedItems: SavedPartItem[];
   /** Set of component string IDs for instant O(1) membership lookups */
   savedIds: Set<string>;
   /** Indicates whether the saved parts are currently being loaded from the server */
   loading: boolean;
+  /** Error message if loading or mutating saved parts fails */
+  error: string | null;
   /** Fast O(1) check whether a given component ID is saved */
   isSaved: (id: string) => boolean;
   /** Save or unsave a component, persisting changes to MongoDB */
   toggleSave: (component: ComponentData) => Promise<void>;
+  /** Update quantity and/or design note for a saved component */
+  updateSavedPart: (
+    componentId: string,
+    updates: { quantity?: number; note?: string }
+  ) => Promise<void>;
+  /** Retry loading saved parts from backend */
+  retryLoad: () => void;
 }
 
 const SavedPartsContext = createContext<SavedPartsContextType | undefined>(
@@ -36,16 +48,18 @@ const SavedPartsContext = createContext<SavedPartsContextType | undefined>(
  * VIVA EXPLANATION:
  * 1. Reactive State Synchronization:
  *    Maintains the user's saved parts in memory across all catalog cards, table rows,
- *    modal dialogs, and workspace pages so saving in one place updates the entire UI instantly.
+ *    modal dialogs, and workspace pages so saving or updating notes/quantities in one place
+ *    updates the entire UI instantly without requiring a page reload.
  * 
  * 2. O(1) Constant-Time Lookup via Set:
- *    We maintain both `savedParts` (array of full components for rendering) and
+ *    We maintain both `savedItems` (array of full bookmarks with quantity/note) and
  *    `savedIds` (a Set of MongoDB ObjectIds). Checking `savedIds.has(componentId)` takes
  *    O(1) constant time, avoiding expensive O(N) array scans across hundreds of cards.
  * 
- * 3. Token-Based API Authorization:
+ * 3. Token-Based API Authorization & Isolation:
  *    Requests to `/api/saved-parts` attach the active JWT in the `Authorization: Bearer <token>`
- *    header. The backend extracts `req.user._id` from the verified token, guaranteeing data isolation.
+ *    header. The backend extracts `req.user._id` from the verified token, guaranteeing data isolation
+ *    and preventing Insecure Direct Object References (IDOR).
  * 
  * 4. Automatic Session Lifecycle Clearing:
  *    When `token` transitions to null on logout, the saved state is cleared immediately so
@@ -55,17 +69,24 @@ export const SavedPartsProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const { token } = useAuth();
-  const [savedParts, setSavedParts] = useState<ComponentData[]>([]);
-  const [savedIds, setSavedIds] = useState<Set<string>>(() => new Set());
+  const [savedItems, setSavedItems] = useState<SavedPartItem[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
   const prevTokenRef = useRef<string | null>(token);
+
+  const retryLoad = () => {
+    setError(null);
+    setLoading(true);
+    setRefreshTrigger((prev) => prev + 1);
+  };
 
   useEffect(() => {
     // When the user logs out, purge cached bookmarks
     if (!token) {
       if (prevTokenRef.current) {
-        setSavedParts([]);
-        setSavedIds(new Set());
+        setSavedItems([]);
+        setError(null);
         setLoading(false);
       }
       prevTokenRef.current = null;
@@ -79,6 +100,7 @@ export const SavedPartsProvider: React.FC<{ children: React.ReactNode }> = ({
     Promise.resolve().then(() => {
       if (isMounted) {
         setLoading(true);
+        setError(null);
       }
     });
 
@@ -90,22 +112,30 @@ export const SavedPartsProvider: React.FC<{ children: React.ReactNode }> = ({
     })
       .then((res) => {
         if (!res.ok) {
-          throw new Error("Failed to retrieve saved components");
+          throw new Error(`Failed to retrieve saved components (HTTP ${res.status})`);
         }
         return res.json();
       })
       .then((data: SavedPartItem[]) => {
         if (!isMounted) return;
-        // Extract populated component documents (filtering out any null references)
-        const components = data
-          .map((item) => item.component)
-          .filter(Boolean) as ComponentData[];
+        // Filter out any items with missing component documents and normalize quantity/note
+        const validItems = (Array.isArray(data) ? data : [])
+          .filter((item) => Boolean(item && item.component))
+          .map((item) => ({
+            ...item,
+            quantity: typeof item.quantity === "number" ? item.quantity : 1,
+            note: typeof item.note === "string" ? item.note : "",
+          }));
 
-        setSavedParts(components);
-        setSavedIds(new Set(components.map((c) => c._id)));
+        setSavedItems(validItems);
+        setError(null);
       })
       .catch((err) => {
+        if (!isMounted) return;
         console.error("Error loading saved parts:", err);
+        setError(
+          "Unable to load saved components. Please ensure the backend server is running."
+        );
       })
       .finally(() => {
         if (isMounted) {
@@ -116,7 +146,27 @@ export const SavedPartsProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => {
       isMounted = false;
     };
-  }, [token]);
+  }, [token, refreshTrigger]);
+
+  /**
+   * Derived array of populated ComponentData objects for backward-compatibility
+   * with components that consume `savedParts`.
+   */
+  const savedParts = useMemo(
+    () =>
+      savedItems
+        .map((item) => item.component)
+        .filter(Boolean) as ComponentData[],
+    [savedItems]
+  );
+
+  /**
+   * Fast O(1) membership lookup set derived from active bookmarks.
+   */
+  const savedIds = useMemo(
+    () => new Set(savedParts.map((c) => c._id)),
+    [savedParts]
+  );
 
   /**
    * Fast O(1) membership check using Set lookup.
@@ -136,24 +186,26 @@ export const SavedPartsProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     const componentId = component._id;
-    const currentlySaved = savedIds.has(componentId);
+    const existingItem = savedItems.find(
+      (item) => item.component?._id === componentId
+    );
 
-    if (currentlySaved) {
+    if (existingItem) {
       // Optimistically update local state for instant responsive UI feedback
-      setSavedIds((prev) => {
-        const next = new Set(prev);
-        next.delete(componentId);
-        return next;
-      });
-      setSavedParts((prev) => prev.filter((c) => c._id !== componentId));
+      setSavedItems((prev) =>
+        prev.filter((item) => item.component?._id !== componentId)
+      );
 
       try {
-        const response = await fetch(`${API_BASE_URL}/saved-parts/${componentId}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await fetch(
+          `${API_BASE_URL}/saved-parts/${componentId}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         if (!response.ok) {
           throw new Error("Failed to remove saved component on server");
@@ -161,17 +213,23 @@ export const SavedPartsProvider: React.FC<{ children: React.ReactNode }> = ({
       } catch (err) {
         console.error("Error removing saved component:", err);
         // Rollback state on network error
-        setSavedIds((prev) => new Set(prev).add(componentId));
-        setSavedParts((prev) => [component, ...prev]);
-        throw err;
+        setSavedItems((prev) => [existingItem, ...prev]);
+        setError(
+          "Unable to remove saved component. Please verify the backend server is running."
+        );
       }
     } else {
       // Optimistically add to local state
-      setSavedIds((prev) => new Set(prev).add(componentId));
-      setSavedParts((prev) => [
+      const optimisticItem: SavedPartItem = {
+        _id: `temp-${Date.now()}`,
+        user: "",
         component,
-        ...prev.filter((c) => c._id !== componentId),
-      ]);
+        quantity: 1,
+        note: "",
+        createdAt: new Date().toISOString(),
+      };
+
+      setSavedItems((prev) => [optimisticItem, ...prev]);
 
       try {
         const response = await fetch(`${API_BASE_URL}/saved-parts`, {
@@ -188,24 +246,88 @@ export const SavedPartsProvider: React.FC<{ children: React.ReactNode }> = ({
         }
 
         const data = await response.json();
-        // If the server returns a populated component, sync with server's representation
+        // Replace optimistic placeholder with verified server record
         if (data.savedPart?.component) {
-          setSavedParts((prev) => [
-            data.savedPart.component,
-            ...prev.filter((c) => c._id !== componentId),
+          setSavedItems((prev) => [
+            data.savedPart,
+            ...prev.filter(
+              (item) =>
+                item.component?._id !== componentId &&
+                item._id !== optimisticItem._id
+            ),
           ]);
         }
       } catch (err) {
         console.error("Error saving component:", err);
         // Rollback state on network error
-        setSavedIds((prev) => {
-          const next = new Set(prev);
-          next.delete(componentId);
-          return next;
-        });
-        setSavedParts((prev) => prev.filter((c) => c._id !== componentId));
-        throw err;
+        setSavedItems((prev) =>
+          prev.filter((item) => item._id !== optimisticItem._id)
+        );
+        setError(
+          "Unable to save component to workspace. Please verify the backend server is running."
+        );
       }
+    }
+  };
+
+  /**
+   * Update quantity and/or design note for a saved part.
+   * Sends PUT /api/saved-parts/:componentId with authenticated token.
+   */
+  const updateSavedPart = async (
+    componentId: string,
+    updates: { quantity?: number; note?: string }
+  ): Promise<void> => {
+    if (!token) {
+      throw new Error("You must be logged in to update saved components.");
+    }
+
+    let response: Response;
+    try {
+      response = await fetch(`${API_BASE_URL}/saved-parts/${componentId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updates),
+      });
+    } catch {
+      throw new Error(
+        "Unable to connect to the backend server. Please verify that the server is running."
+      );
+    }
+
+    let data: { savedPart?: SavedPartItem; message?: string };
+    try {
+      data = await response.json();
+    } catch {
+      throw new Error("Invalid response received from server.");
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        data.message || "Failed to update saved component details."
+      );
+    }
+
+    const updated = data.savedPart;
+    if (updated) {
+      setSavedItems((prev) =>
+        prev.map((item) =>
+          item.component?._id === componentId
+            ? {
+                ...item,
+                quantity:
+                  typeof updated.quantity === "number"
+                    ? updated.quantity
+                    : item.quantity,
+                note:
+                  typeof updated.note === "string" ? updated.note : item.note,
+              }
+            : item
+        )
+      );
     }
   };
 
@@ -213,10 +335,14 @@ export const SavedPartsProvider: React.FC<{ children: React.ReactNode }> = ({
     <SavedPartsContext.Provider
       value={{
         savedParts,
+        savedItems,
         savedIds,
         loading,
+        error,
         isSaved,
         toggleSave,
+        updateSavedPart,
+        retryLoad,
       }}
     >
       {children}

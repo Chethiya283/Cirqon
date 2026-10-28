@@ -61,6 +61,8 @@ export type SavedPartItem = {
   _id: string;
   user: string;
   component: ComponentData;
+  quantity: number;
+  note: string;
   createdAt: string;
 };
 

@@ -28,6 +28,39 @@ const savedPartSchema = new mongoose.Schema({
     required: [true, "Component reference is required"],
   },
 
+  /**
+   * VIVA EXPLANATION:
+   * 3. BOM Quantity & Backward Compatibility:
+   *    Defaults to 1 so that existing saved part records naturally evaluate to quantity: 1
+   *    without requiring a separate database migration. Validated as an integer between
+   *    1 and 10,000 to prevent fractional or negative component counts in bill of materials.
+   */
+  quantity: {
+    type: Number,
+    required: [true, "Quantity is required"],
+    default: 1,
+    min: [1, "Quantity must be at least 1"],
+    max: [10000, "Quantity cannot exceed 10000"],
+    validate: {
+      validator: Number.isInteger,
+      message: "Quantity must be an integer",
+    },
+  },
+
+  /**
+   * VIVA EXPLANATION:
+   * 4. User Workspace Note:
+   *    Allows engineers to record design notes (e.g., "Decoupling capacitor for IC2 pin 4",
+   *    "BOM Line Item 14"). Trimmed and limited to 300 characters to prevent excessive
+   *    payloads while providing practical engineering context.
+   */
+  note: {
+    type: String,
+    default: "",
+    trim: true,
+    maxlength: [300, "Note cannot exceed 300 characters"],
+  },
+
   createdAt: {
     type: Date,
     default: Date.now,

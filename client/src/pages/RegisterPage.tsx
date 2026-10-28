@@ -110,7 +110,11 @@ export const RegisterPage: React.FC = () => {
       });
     } catch (err: unknown) {
       const msg =
-        err instanceof Error ? err.message : "Registration failed. Please try again.";
+        err instanceof Error
+          ? (err.name === "TypeError" || err.message.toLowerCase().includes("fetch")
+              ? "Unable to connect to the authentication server. Please verify that the backend is running."
+              : err.message)
+          : "Registration failed. Please try again.";
       setServerError(msg);
     } finally {
       setIsSubmitting(false);

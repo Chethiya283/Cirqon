@@ -174,7 +174,11 @@ export const AdminComponentsPage: React.FC = () => {
       } catch (err: unknown) {
         if (!cancelled) {
           const msg =
-            err instanceof Error ? err.message : "Failed to load components.";
+            err instanceof Error
+              ? (err.name === "TypeError" || err.message.toLowerCase().includes("fetch")
+                  ? "Unable to connect to the backend server. Please verify that the backend is running on port 5000."
+                  : err.message)
+              : "Failed to load components.";
           setFetchError(msg);
           setLoading(false);
         }
@@ -304,7 +308,12 @@ export const AdminComponentsPage: React.FC = () => {
         setFormErrors((prev) => ({ ...prev, imageUrl: undefined }));
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to upload image.";
+      const msg =
+        err instanceof Error
+          ? (err.name === "TypeError" || err.message.toLowerCase().includes("fetch")
+              ? "Unable to connect to upload server. Please verify that the backend is running."
+              : err.message)
+          : "Failed to upload image.";
       setImageUploadError(msg);
       setImageFileChosenName(null);
     } finally {
@@ -367,7 +376,11 @@ export const AdminComponentsPage: React.FC = () => {
       }
     } catch (err: unknown) {
       const msg =
-        err instanceof Error ? err.message : "Failed to upload datasheet.";
+        err instanceof Error
+          ? (err.name === "TypeError" || err.message.toLowerCase().includes("fetch")
+              ? "Unable to connect to upload server. Please verify that the backend is running."
+              : err.message)
+          : "Failed to upload datasheet.";
       setDatasheetUploadError(msg);
       setDatasheetFileChosenName(null);
     } finally {
@@ -497,7 +510,11 @@ export const AdminComponentsPage: React.FC = () => {
       refreshList();
     } catch (err: unknown) {
       const msg =
-        err instanceof Error ? err.message : "Failed to save component.";
+        err instanceof Error
+          ? (err.name === "TypeError" || err.message.toLowerCase().includes("fetch")
+              ? "Unable to connect to backend server to save component. Please verify that the backend is running."
+              : err.message)
+          : "Failed to save component.";
       setServerError(msg);
     } finally {
       setIsSaving(false);
@@ -548,7 +565,11 @@ export const AdminComponentsPage: React.FC = () => {
       refreshList();
     } catch (err: unknown) {
       const msg =
-        err instanceof Error ? err.message : "Failed to delete component.";
+        err instanceof Error
+          ? (err.name === "TypeError" || err.message.toLowerCase().includes("fetch")
+              ? "Unable to connect to backend server to delete component. Please verify that the backend is running."
+              : err.message)
+          : "Failed to delete component.";
       setFeedbackBanner({
         type: "error",
         message: msg,
