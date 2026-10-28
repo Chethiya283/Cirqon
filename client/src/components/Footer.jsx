@@ -3,24 +3,22 @@ import { Link } from "react-router-dom";
 import { ExternalLink } from "lucide-react";
 import { CirqonLogo } from "./CirqonLogo";
 import "./Footer.css";
-
 /**
  * Footer Component
- * 
+ *
  * Shared public website footer providing:
  * 1. Brand summary & engineering platform context.
  * 2. Quick navigation links to core workspaces using React Router `Link`.
  * 3. Component category references matching database taxonomy.
  * 4. Technical metadata and academic project attribution.
  */
-export const Footer: React.FC = () => {
-  return (
-    <footer className="site-footer">
+export const Footer = () => {
+    return (<footer className="site-footer">
       <div className="site-footer-container">
         {/* Brand Column */}
         <div className="footer-col brand-col">
           <div className="footer-brand-header">
-            <CirqonLogo size="md" />
+            <CirqonLogo size="md"/>
           </div>
 
           <p className="footer-description">
@@ -28,7 +26,7 @@ export const Footer: React.FC = () => {
           </p>
 
           <div className="footer-status-pill">
-            <span className="status-indicator-dot" />
+            <span className="status-indicator-dot"/>
             <span>11 catalogue components</span>
           </div>
         </div>
@@ -92,25 +90,15 @@ export const Footer: React.FC = () => {
           <h4 className="footer-heading">Datasheet References</h4>
           <ul className="footer-links-list">
             <li>
-              <a
-                href="https://www.ti.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="footer-ext-link"
-              >
+              <a href="https://www.ti.com" target="_blank" rel="noopener noreferrer" className="footer-ext-link">
                 <span>Texas Instruments Datasheets</span>
-                <ExternalLink size={12} aria-hidden="true" />
+                <ExternalLink size={12} aria-hidden="true"/>
               </a>
             </li>
             <li>
-              <a
-                href="https://www.vishay.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="footer-ext-link"
-              >
+              <a href="https://www.vishay.com" target="_blank" rel="noopener noreferrer" className="footer-ext-link">
                 <span>Vishay Semiconductor Specs</span>
-                <ExternalLink size={12} aria-hidden="true" />
+                <ExternalLink size={12} aria-hidden="true"/>
               </a>
             </li>
           </ul>
@@ -128,6 +116,5 @@ export const Footer: React.FC = () => {
           </span>
         </div>
       </div>
-    </footer>
-  );
+    </footer>);
 };

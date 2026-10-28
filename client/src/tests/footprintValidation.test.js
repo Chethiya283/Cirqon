@@ -1,16 +1,15 @@
 // Unit tests and verification assertions for Cirqon Footprint Validation system.
 
-import type { ComponentData } from "../types";
 import {
   validateComponentFootprint,
   auditComponentFootprint,
 } from "../utils/footprint";
 
-export function runValidationUnitTests(): { passed: number; failed: number } {
+export function runValidationUnitTests() {
   let passed = 0;
   let failed = 0;
 
-  function assert(condition: boolean, msg: string) {
+  function assert(condition, msg) {
     if (condition) {
       passed++;
     } else {
@@ -20,7 +19,7 @@ export function runValidationUnitTests(): { passed: number; failed: number } {
   }
 
   // Test 1: LM358 (DIP-8, verified body and pitch, missing pad diameter and drill)
-  const lm358: ComponentData = {
+  const lm358 = {
     _id: "lm358-test",
     partNumber: "LM358",
     name: "Dual Op-Amp",
@@ -70,7 +69,7 @@ export function runValidationUnitTests(): { passed: number; failed: number } {
   );
 
   // Test 2: MFR-25FTE52-10K (Axial Resistor: flexible leads, variable bend span)
-  const mfr25: ComponentData = {
+  const mfr25 = {
     _id: "mfr25-test",
     partNumber: "MFR-25FTE52-10K",
     name: "10 kΩ Resistor",
@@ -101,7 +100,7 @@ export function runValidationUnitTests(): { passed: number; failed: number } {
   );
 
   // Test 3: B3F-1000 (Tactile Switch: verified 1.0mm drill and grid, missing pad diameter)
-  const b3f: ComponentData = {
+  const b3f = {
     _id: "b3f-test",
     partNumber: "B3F-1000",
     name: "Tactile Switch",
@@ -135,7 +134,7 @@ export function runValidationUnitTests(): { passed: number; failed: number } {
   );
 
   // Test 4: Fully Verified hypothetical part
-  const fullyVerified: ComponentData = {
+  const fullyVerified = {
     _id: "verified-test",
     partNumber: "VERIFIED-PART",
     name: "Fully Verified IC",
@@ -184,7 +183,7 @@ export function runValidationUnitTests(): { passed: number; failed: number } {
   );
 
   // Test 5: Incomplete component missing lead pitch
-  const missingPitchPart: ComponentData = {
+  const missingPitchPart = {
     _id: "missing-pitch-test",
     partNumber: "NO-PITCH-IC",
     name: "Incomplete Part",
@@ -211,7 +210,7 @@ export function runValidationUnitTests(): { passed: number; failed: number } {
   );
 
   // Test 6: SMD component drill check must be not-applicable
-  const smdPart: ComponentData = {
+  const smdPart = {
     _id: "smd-test",
     partNumber: "SMD-SOIC-8",
     name: "SMD Component",
@@ -244,4 +243,3 @@ export function runValidationUnitTests(): { passed: number; failed: number } {
 
   return { passed, failed };
 }
-

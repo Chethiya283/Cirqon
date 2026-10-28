@@ -1,69 +1,9 @@
 import { resolveAssetUrl } from "./utils/formatters";
 
-export type ComponentData = {
-  _id: string;
-  partNumber: string;
-  name: string;
-  category: string;
-  manufacturer: string;
-  description: string;
-  imageUrl?: string;
-  specifications?: Record<string, unknown>;
-  package?: {
-    name?: string;
-    mountingType?: string;
-    bodyDimensions?: {
-      lengthMm?: number;
-      widthMm?: number;
-      heightMm?: number;
-      seatedHeightMm?: number;
-    };
-    pcbLayout?: {
-      leadPitchMm?: number;
-      rowSpacingMm?: number;
-      drillDiameterMm?: number;
-      padDiameterMm?: number;
-    };
-    footprintDimensions?: {
-      lengthMm?: number;
-      widthMm?: number;
-      heightMm?: number;
-    };
-    padLayout?: string;
-    landPatternUrl?: string;
-  };
-  pins?: {
-    number?: number;
-    name?: string;
-    function?: string;
-  }[];
-  datasheetUrl?: string;
-  manufacturerUrl?: string;
-  dataStatus: "verified" | "incomplete";
-};
-
-export type ImageProvenance = "database" | "verified-photo" | "package-spec";
-
-export interface ComponentImageInfo {
-  src?: string;
-  alt: string;
-  isVerifiedPhoto: boolean;
-  provenance: ImageProvenance;
-  provenanceLabel: string;
-  packageType: string;
-}
-
 /**
- * Curated product photographs from open-access scientific & engineering repositories
- * (Wikimedia Commons CC BY-SA / Public Domain) matched exactly to component part numbers.
- *
- * Viva Note: Migrated from legacy .jpg to modern .webp format for superior compression
- * efficiency, reduced bandwidth, and faster image decoding in browser rendering.
+ * Curated product illustrations matched exactly to component part numbers.
  */
-export const VERIFIED_PRODUCT_PHOTOS: Record<
-  string,
-  { url: string; packageType: string; label: string }
-> = {
+export const VERIFIED_PRODUCT_PHOTOS = {
   LM358: {
     url: "/images/components/LM358.webp",
     packageType: "dip8",
@@ -124,7 +64,7 @@ export const VERIFIED_PRODUCT_PHOTOS: Record<
 /**
  * Determine the visual package category for fallback vector rendering.
  */
-export function inferPackageType(component: ComponentData): string {
+export function inferPackageType(component) {
   const cat = (component.category || "").toLowerCase();
   const pkg = (component.package?.name || "").toLowerCase();
   const part = (component.partNumber || "").toUpperCase();
@@ -193,9 +133,7 @@ export function inferPackageType(component: ComponentData): string {
  * 2. Curated verified product photo
  * 3. Package specification illustration
  */
-export function getComponentImageInfo(
-  component: ComponentData
-): ComponentImageInfo {
+export function getComponentImageInfo(component) {
   // 1. Direct database record
   if (component.imageUrl && component.imageUrl.trim().length > 0) {
     return {

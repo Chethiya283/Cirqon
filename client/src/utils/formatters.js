@@ -1,7 +1,5 @@
 // Pure formatting and validation utility functions for component specifications, dimensions, and URLs.
 
-import type { ComponentData } from "../types";
-
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 const SERVER_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
@@ -10,7 +8,7 @@ const SERVER_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
  * Resolves uploaded asset URLs against the backend server origin, while preserving
  * external HTTP(S) links and local Vite /images/ asset paths.
  */
-export function resolveAssetUrl(url?: string): string {
+export function resolveAssetUrl(url) {
   if (!url || typeof url !== "string") return "";
   const trimmed = url.trim();
   if (trimmed.startsWith("/uploads/")) {
@@ -19,7 +17,7 @@ export function resolveAssetUrl(url?: string): string {
   return trimmed;
 }
 
-export function isValidHttpUrl(url?: string): boolean {
+export function isValidHttpUrl(url) {
   if (!url || typeof url !== "string") return false;
   const trimmed = url.trim();
   return (
@@ -29,7 +27,7 @@ export function isValidHttpUrl(url?: string): boolean {
   );
 }
 
-export function formatDimensions(pkg?: ComponentData["package"]): string {
+export function formatDimensions(pkg) {
   const dims =
     pkg?.bodyDimensions &&
     (pkg.bodyDimensions.lengthMm != null ||
@@ -39,33 +37,30 @@ export function formatDimensions(pkg?: ComponentData["package"]): string {
       : pkg?.footprintDimensions;
   if (!dims) return "Not available";
   const { lengthMm, widthMm, heightMm } = dims;
-  const parts: string[] = [];
+  const parts = [];
   if (lengthMm != null) parts.push(`${lengthMm} mm L`);
   if (widthMm != null) parts.push(`${widthMm} mm W`);
   if (heightMm != null) parts.push(`${heightMm} mm H`);
   return parts.length > 0 ? parts.join(" × ") : "Not available";
 }
 
-export function findUnitForSpecKey(
-  key: string,
-  specs?: Record<string, unknown>
-): string | undefined {
+export function findUnitForSpecKey(key, specs) {
   if (!specs) return undefined;
   if (typeof specs[`${key}Unit`] === "string") {
-    return specs[`${key}Unit`] as string;
+    return specs[`${key}Unit`];
   }
   const baseKey = key.replace(/(Max|Min|Nom)$/, "");
   if (baseKey !== key && typeof specs[`${baseKey}Unit`] === "string") {
-    return specs[`${baseKey}Unit`] as string;
+    return specs[`${baseKey}Unit`];
   }
   return undefined;
 }
 
-export function formatSpecValue(val: unknown, unit?: string): string {
+export function formatSpecValue(val, unit) {
   if (val === undefined || val === null || val === "") {
     return "Not available";
   }
-  let display: string;
+  let display;
   if (typeof val === "boolean") {
     display = val ? "Yes" : "No";
   } else if (Array.isArray(val)) {
@@ -92,17 +87,14 @@ export function formatSpecValue(val: unknown, unit?: string): string {
   return display;
 }
 
-export function formatSpecKeyLabel(key: string): string {
+export function formatSpecKeyLabel(key) {
   return key
     .replace(/([A-Z])/g, " $1")
     .replace(/^./, (str) => str.toUpperCase())
     .trim();
 }
 
-export function getSpecPairs(
-  specs?: Record<string, unknown>,
-  limit?: number
-): { key: string; label: string; value: string }[] {
+export function getSpecPairs(specs, limit) {
   if (!specs) return [];
   const allKeys = Object.keys(specs);
   const filteredKeys = allKeys.filter((key) => {
@@ -131,7 +123,7 @@ export function getSpecPairs(
   return limit ? pairs.slice(0, limit) : pairs;
 }
 
-export function isRowDivergent(values: (string | undefined | null)[]): boolean {
+export function isRowDivergent(values) {
   const valid = values
     .map((v) => (v ?? "").trim())
     .filter(
