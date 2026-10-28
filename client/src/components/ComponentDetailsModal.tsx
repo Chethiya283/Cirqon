@@ -14,6 +14,7 @@ import {
   renderFootprintSvg,
   renderValueWithMonoNumbers,
 } from "../utils/footprint";
+import { FootprintValidationPanel } from "./FootprintValidationPanel";
 import {
   formatDimensions,
   getSpecPairs,
@@ -234,7 +235,6 @@ export const ComponentDetailsModal: React.FC<ComponentDetailsModalProps> = ({
 
           {(() => {
             const footprintAudit = auditComponentFootprint(component);
-            const isVerifiedData = component.dataStatus === "verified";
             const hasStoredBodyDims =
               (component.package?.bodyDimensions?.lengthMm != null &&
                 component.package?.bodyDimensions?.widthMm != null) ||
@@ -247,12 +247,10 @@ export const ComponentDetailsModal: React.FC<ComponentDetailsModalProps> = ({
                   <div className="modal-mechanical-title-group">
                     <h3>Package & Mechanical Dimensions</h3>
                     <span
-                      className={`pcb-datastatus-badge ${
-                        isVerifiedData ? "status-verified" : "status-incomplete"
-                      }`}
-                      title={`Record dataStatus: ${component.dataStatus}`}
+                      className={`pcb-datastatus-badge ${footprintAudit.validation.statusBadgeClass}`}
+                      title={`Footprint Validation: ${footprintAudit.validation.statusLabel}`}
                     >
-                      Data status: {isVerifiedData ? "Verified" : "Incomplete"}
+                      {footprintAudit.validation.statusLabel}
                     </span>
                   </div>
                   <button
@@ -276,16 +274,16 @@ export const ComponentDetailsModal: React.FC<ComponentDetailsModalProps> = ({
                       <>
                         <div className="modal-footprint-preview cad-grid-overlay">
                           <span className="cad-dimension-badge">
-                            {isVerifiedData
+                            {footprintAudit.validation.status === "verified"
                               ? "Verified Footprint"
-                              : "Illustrative Footprint (Catalogue Dimensions)"}
+                              : "Illustrative Footprint (Visualization Only)"}
                           </span>
                           {renderFootprintSvg(component)}
                         </div>
                         <p className="pcb-fabrication-disclaimer modal-footprint-disclaimer">
-                          {isVerifiedData
-                            ? "Verified against the manufacturer datasheet."
-                            : "Illustrative footprint generated from stored catalogue dimensions. Confirm against the manufacturer datasheet before fabrication."}
+                          {footprintAudit.validation.status === "verified"
+                            ? "Verified against official manufacturer datasheet."
+                            : "Illustrative drawing from stored outline and terminal data. Confirm land pattern dimensions before fabrication."}
                         </p>
                         {footprintAudit.missingFields.length > 0 && (
                           <div className="pcb-missing-banner">
@@ -529,6 +527,16 @@ export const ComponentDetailsModal: React.FC<ComponentDetailsModalProps> = ({
                       </div>
                     )}
                   </div>
+                </div>
+
+                <div className="modal-validation-panel-container">
+                  <FootprintValidationPanel
+                    validation={footprintAudit.validation}
+                    datasheetUrl={component.datasheetUrl}
+                    manufacturer={component.manufacturer}
+                    compact={true}
+                    initialExpanded={false}
+                  />
                 </div>
               </section>
             );

@@ -3558,6 +3558,8 @@
   white-space: nowrap;
 }
 
+.pcb-datastatus-badge.validation-status-verified,
+.pcb-datastatus-inline.validation-status-verified,
 .pcb-datastatus-badge.status-verified,
 .pcb-datastatus-inline.status-verified {
   background: var(--cq-emerald-soft);
@@ -3565,11 +3567,22 @@
   color: var(--cq-emerald-hover);
 }
 
-.pcb-datastatus-badge.status-incomplete,
-.pcb-datastatus-inline.status-incomplete {
+.pcb-datastatus-badge.validation-status-illustrative,
+.pcb-datastatus-inline.validation-status-illustrative,
+.pcb-datastatus-badge.status-illustrative,
+.pcb-datastatus-inline.status-illustrative {
   background: var(--cq-warning-soft);
   border: 1px solid var(--cq-warning-border);
   color: var(--cq-warning);
+}
+
+.pcb-datastatus-badge.validation-status-incomplete,
+.pcb-datastatus-inline.validation-status-incomplete,
+.pcb-datastatus-badge.status-incomplete,
+.pcb-datastatus-inline.status-incomplete {
+  background: var(--cq-red-soft, #fef2f2);
+  border: 1px solid var(--cq-red-border, #fecaca);
+  color: var(--cq-red, #dc2626);
 }
 
 /* Drawn Footprint Wrapper & Fabrication Disclaimer */

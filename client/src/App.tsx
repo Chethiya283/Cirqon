@@ -50,6 +50,7 @@ import {
   InteractiveFootprintViewer,
   PcbComponentPhotoPanel,
 } from "./components/InteractiveFootprintViewer";
+import { FootprintValidationPanel } from "./components/FootprintValidationPanel";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
@@ -1853,17 +1854,17 @@ function App() {
                                 <span>
                                   {selectedPcbComponent.package?.name || "Unspecified Package"}
                                 </span>
-                                <span
-                                  className={`pcb-datastatus-inline ${
-                                    selectedPcbComponent.dataStatus === "verified"
-                                      ? "status-verified"
-                                      : "status-incomplete"
-                                  }`}
-                                >
-                                  {selectedPcbComponent.dataStatus === "verified"
-                                    ? "Verified Footprint Data"
-                                    : "Incomplete Footprint Data"}
-                                </span>
+                                {(() => {
+                                  const focusValidation = auditComponentFootprint(selectedPcbComponent).validation;
+                                  return (
+                                    <span
+                                      className={`pcb-datastatus-inline ${focusValidation.statusBadgeClass}`}
+                                      title={`Footprint Validation: ${focusValidation.statusLabel}`}
+                                    >
+                                      {focusValidation.statusLabel}
+                                    </span>
+                                  );
+                                })()}
                               </div>
                             </div>
                             <div className="pcb-focused-actions">
@@ -1890,7 +1891,6 @@ function App() {
                         <div className={`pcb-grid ${selectedPcbComponent ? "single-focus-grid" : ""}`}>
                           {displayedPcbComponents.map((component) => {
                             const audit = auditComponentFootprint(component);
-                            const isVerified = component.dataStatus === "verified";
                             const isCardSelected = selectedPcbComponent
                               ? selectedPcbComponent._id === component._id
                               : selectedComponent?._id === component._id;
@@ -1924,12 +1924,10 @@ function App() {
                           </div>
                           <div className="pcb-header-badges">
                             <span
-                              className={`pcb-datastatus-badge ${
-                                isVerified ? "status-verified" : "status-incomplete"
-                              }`}
-                              title={`Record dataStatus: ${component.dataStatus}`}
+                              className={`pcb-datastatus-badge ${audit.validation.statusBadgeClass}`}
+                              title={`Footprint Validation: ${audit.validation.statusLabel}`}
                             >
-                              Data status: {isVerified ? "Verified" : "Incomplete"}
+                              {audit.validation.statusLabel}
                             </span>
                             <span className="filter-pill">
                               {component.package?.name || "Not available"}
@@ -1944,6 +1942,7 @@ function App() {
                               key={component._id}
                               component={component}
                               missingFields={audit.missingFields}
+                              validation={audit.validation}
                             />
                           ) : (
                             <div className="pcb-empty-workspace">
@@ -1961,6 +1960,13 @@ function App() {
                                 <div className="pcb-missing-banner">
                                   <strong>Missing:</strong> {audit.missingFields.join(", ")}
                                 </div>
+                                <FootprintValidationPanel
+                                  validation={audit.validation}
+                                  datasheetUrl={component.datasheetUrl}
+                                  manufacturer={component.manufacturer}
+                                  compact={true}
+                                  initialExpanded={false}
+                                />
                               </div>
                               <div className="pcb-side-column">
                                 <PcbComponentPhotoPanel component={component} />
@@ -1975,11 +1981,9 @@ function App() {
                             <div className="pcb-data-sources-header">
                               <h4>Data sources</h4>
                               <span
-                                className={`pcb-datastatus-inline ${
-                                  isVerified ? "status-verified" : "status-incomplete"
-                                }`}
+                                className={`pcb-datastatus-inline ${audit.validation.statusBadgeClass}`}
                               >
-                                {isVerified ? "Verified" : "Incomplete"}
+                                {audit.validation.statusLabel}
                               </span>
                             </div>
 

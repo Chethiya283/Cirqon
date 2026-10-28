@@ -14,11 +14,15 @@ import {
   getProvenanceBadgeClass,
   renderFootprintSvg,
   renderValueWithMonoNumbers,
+  validateComponentFootprint,
+  type FootprintValidationResult,
 } from "../utils/footprint";
+import { FootprintValidationPanel } from "./FootprintValidationPanel";
 
 interface InteractiveFootprintViewerProps {
   component: ComponentData;
   missingFields: string[];
+  validation?: FootprintValidationResult;
 }
 
 export const PcbComponentPhotoPanel: React.FC<{
@@ -78,7 +82,12 @@ const PAN_STEP_SVG = 14;
  */
 export const InteractiveFootprintViewer: React.FC<
   InteractiveFootprintViewerProps
-> = ({ component, missingFields }) => {
+> = ({ component, missingFields, validation: propValidation }) => {
+  const validation = useMemo(
+    () => propValidation || validateComponentFootprint(component),
+    [propValidation, component]
+  );
+
   const defaultAxialSpan = getDefaultAxialSpanMm(
     component.package?.bodyDimensions?.lengthMm ?? 5
   );
@@ -753,13 +762,18 @@ export const InteractiveFootprintViewer: React.FC<
         </div>
       </div>
 
-      {/* Required Phase 1 Fabrication Disclaimer & Missing Banner */}
-      <p className="pcb-fabrication-disclaimer">
-        Illustrative footprint generated from stored catalogue dimensions. Confirm against the manufacturer datasheet before fabrication.
-      </p>
-      {missingFields.length > 0 && (
+      {/* Footprint Validation System Status & Engineering Checklist */}
+      <FootprintValidationPanel
+        validation={validation}
+        datasheetUrl={component.datasheetUrl}
+        manufacturer={component.manufacturer}
+        compact={false}
+        initialExpanded={false}
+      />
+
+      {missingFields.length > 0 && validation.status === "incomplete" && (
         <div className="pcb-missing-banner">
-          <strong>Missing:</strong>{" "}
+          <strong>Missing Fields:</strong>{" "}
           {renderValueWithMonoNumbers(missingFields.join(", "))}
         </div>
       )}

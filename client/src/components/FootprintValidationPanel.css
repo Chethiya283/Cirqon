@@ -1,0 +1,348 @@
+/* ========================================================
+   Footprint Validation Panel Styles
+   Cirqon Design System Integration
+   ======================================================== */
+
+.footprint-validation-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cq-space-3);
+  padding: var(--cq-space-4);
+  border-radius: var(--cq-radius-md);
+  background: var(--cq-surface-1);
+  border: 1px solid var(--cq-border-default);
+  box-shadow: var(--cq-shadow-sm);
+  transition: border-color var(--cq-transition-fast), box-shadow var(--cq-transition-fast);
+}
+
+.footprint-validation-panel.validation-status-verified {
+  border-left: 4px solid var(--cq-emerald);
+}
+
+.footprint-validation-panel.validation-status-illustrative {
+  border-left: 4px solid var(--cq-amber, #d97706);
+}
+
+.footprint-validation-panel.validation-status-incomplete {
+  border-left: 4px solid var(--cq-red, #dc2626);
+}
+
+/* 1. Header with Status Badge & Score */
+.validation-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cq-space-3);
+  flex-wrap: wrap;
+}
+
+.validation-status-group {
+  display: flex;
+  align-items: center;
+  gap: var(--cq-space-2-5);
+  flex-wrap: wrap;
+}
+
+.validation-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--cq-radius-full);
+  font-family: var(--cq-font-sans);
+  font-size: var(--cq-text-xs);
+  font-weight: var(--cq-weight-bold);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.validation-status-pill.validation-status-verified {
+  background: var(--cq-emerald-soft);
+  color: var(--cq-emerald-hover);
+  border: 1px solid var(--cq-emerald-border);
+}
+
+.validation-status-pill.validation-status-illustrative {
+  background: var(--cq-warning-soft);
+  color: var(--cq-warning);
+  border: 1px solid var(--cq-warning-border);
+}
+
+.validation-status-pill.validation-status-incomplete {
+  background: var(--cq-red-soft, #fef2f2);
+  color: var(--cq-red, #dc2626);
+  border: 1px solid var(--cq-red-border, #fecaca);
+}
+
+.validation-score-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: var(--cq-radius-sm);
+  background: var(--cq-surface-2);
+  border: 1px solid var(--cq-border-subtle);
+  font-family: var(--cq-font-sans);
+  font-size: var(--cq-text-xs);
+  font-weight: var(--cq-weight-medium);
+  color: var(--cq-text-secondary);
+}
+
+.validation-expand-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: 1px solid var(--cq-border-default);
+  padding: 4px 8px;
+  border-radius: var(--cq-radius-sm);
+  font-family: var(--cq-font-sans);
+  font-size: var(--cq-text-xs);
+  font-weight: var(--cq-weight-medium);
+  color: var(--cq-text-secondary);
+  cursor: pointer;
+  transition: all var(--cq-transition-fast);
+}
+
+.validation-expand-btn:hover {
+  background: var(--cq-surface-2);
+  color: var(--cq-text-primary);
+  border-color: var(--cq-border-strong);
+}
+
+/* 2. Summary Paragraph */
+.validation-summary-text {
+  margin: 0;
+  font-family: var(--cq-font-sans);
+  font-size: var(--cq-text-sm);
+  color: var(--cq-text-secondary);
+  line-height: var(--cq-line-height-relaxed);
+}
+
+/* 3. Warning Callout */
+.validation-warning-callout {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--cq-space-2-5);
+  padding: var(--cq-space-3);
+  border-radius: var(--cq-radius-sm);
+  font-family: var(--cq-font-sans);
+  font-size: var(--cq-text-xs);
+  line-height: var(--cq-line-height-normal);
+}
+
+.validation-warning-callout.warning-caution {
+  background: var(--cq-warning-soft);
+  border: 1px solid var(--cq-warning-border);
+  color: var(--cq-warning);
+}
+
+.validation-warning-callout.warning-critical {
+  background: var(--cq-red-soft, #fef2f2);
+  border: 1px solid var(--cq-red-border, #fecaca);
+  color: var(--cq-red, #dc2626);
+}
+
+.warning-callout-icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.warning-callout-content {
+  flex: 1;
+}
+
+/* 4. Detailed Checklist Section */
+.validation-checklist-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cq-space-2-5);
+  margin-top: var(--cq-space-2);
+  padding-top: var(--cq-space-3);
+  border-top: 1px solid var(--cq-border-subtle);
+}
+
+.validation-checklist-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cq-space-3);
+  font-family: var(--cq-font-sans);
+  font-size: var(--cq-text-xs);
+  font-weight: var(--cq-weight-semibold);
+  color: var(--cq-text-primary);
+  flex-wrap: wrap;
+}
+
+.validation-checklist-legend {
+  display: flex;
+  align-items: center;
+  gap: var(--cq-space-2);
+  font-size: 11px;
+}
+
+.legend-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--cq-text-muted);
+}
+
+.legend-chip.passed {
+  color: var(--cq-emerald);
+}
+
+.legend-chip.unverified {
+  color: var(--cq-amber, #d97706);
+}
+
+.legend-chip.missing {
+  color: var(--cq-red, #dc2626);
+}
+
+.legend-chip.na {
+  color: var(--cq-text-disabled);
+}
+
+.validation-checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--cq-space-2);
+}
+
+.validation-check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--cq-space-2-5);
+  padding: var(--cq-space-2-5) var(--cq-space-3);
+  border-radius: var(--cq-radius-sm);
+  background: var(--cq-surface-2);
+  border: 1px solid var(--cq-border-subtle);
+  transition: background var(--cq-transition-fast);
+}
+
+.validation-check-item.check-state-passed {
+  border-left: 3px solid var(--cq-emerald);
+}
+
+.validation-check-item.check-state-unverified {
+  border-left: 3px solid var(--cq-amber, #d97706);
+}
+
+.validation-check-item.check-state-missing {
+  border-left: 3px solid var(--cq-red, #dc2626);
+  background: var(--cq-red-soft, #fef2f2);
+}
+
+.validation-check-item.check-state-na {
+  border-left: 3px solid var(--cq-text-disabled);
+  opacity: 0.85;
+}
+
+.check-item-indicator {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.check-icon-svg.passed {
+  color: var(--cq-emerald);
+}
+
+.check-icon-svg.unverified {
+  color: var(--cq-amber, #d97706);
+}
+
+.check-icon-svg.missing {
+  color: var(--cq-red, #dc2626);
+}
+
+.check-icon-svg.na {
+  color: var(--cq-text-disabled);
+}
+
+.check-item-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.check-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cq-space-2);
+}
+
+.check-item-label {
+  font-family: var(--cq-font-sans);
+  font-size: var(--cq-text-xs);
+  font-weight: var(--cq-weight-semibold);
+  color: var(--cq-text-primary);
+}
+
+.check-item-value {
+  font-family: var(--cq-font-sans);
+  font-size: var(--cq-text-xs);
+  color: var(--cq-text-secondary);
+}
+
+.check-item-detail {
+  margin: 2px 0 0;
+  font-family: var(--cq-font-sans);
+  font-size: 11.5px;
+  color: var(--cq-text-muted);
+  line-height: var(--cq-line-height-normal);
+}
+
+/* 5. Datasheet Citation */
+.validation-datasheet-citation {
+  display: flex;
+  align-items: center;
+  gap: var(--cq-space-2);
+  margin-top: var(--cq-space-1);
+  padding: var(--cq-space-2) var(--cq-space-3);
+  background: var(--cq-surface-subtle);
+  border-radius: var(--cq-radius-sm);
+  font-family: var(--cq-font-sans);
+  font-size: var(--cq-text-xs);
+}
+
+.citation-label {
+  color: var(--cq-text-muted);
+  font-weight: var(--cq-weight-medium);
+}
+
+.citation-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--cq-blue);
+  font-weight: var(--cq-weight-semibold);
+  text-decoration: none;
+  transition: color var(--cq-transition-fast);
+}
+
+.citation-link:hover {
+  color: var(--cq-blue-hover);
+  text-decoration: underline;
+}
+
+/* Compact Mode Variations */
+.footprint-validation-panel.compact-panel {
+  padding: var(--cq-space-3);
+  gap: var(--cq-space-2);
+}
+
+.footprint-validation-panel.compact-panel .validation-checklist {
+  gap: var(--cq-space-1-5);
+}
+
+.footprint-validation-panel.compact-panel .validation-check-item {
+  padding: var(--cq-space-2) var(--cq-space-2-5);
+}
+

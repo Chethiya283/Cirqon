@@ -256,6 +256,10 @@
   gap: 8px;
 }
 
+.modal-validation-panel-container {
+  margin-top: 14px;
+}
+
 .modal-footprint-preview {
   position: relative;
   display: flex;

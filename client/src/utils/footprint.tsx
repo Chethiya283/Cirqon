@@ -1,6 +1,7 @@
 // Utility functions for auditing footprint data provenance and rendering SVG component footprints.
 
 import type { ComponentData } from "../types";
+import { isValidHttpUrl } from "./formatters";
 
 /**
  * Viva Note: Exact four provenance labels required by the specification:
@@ -14,6 +15,46 @@ export type ProvenanceLabel =
   | "Derived"
   | "Placeholder"
   | "Not available";
+
+/**
+ * Footprint validation status distinguishing fabrication-ready data from illustrative visualization.
+ * - verified: All applicable requirements checked against official documentation (fabrication-ready).
+ * - illustrative: Drawing rendered from outline/pinout for visualization, but pads/drills are unverified placeholders or axial leads are flexible.
+ * - incomplete: Critical layout parameters (e.g. lead pitch, body size, or pinout) are missing.
+ */
+export type FootprintValidationStatus =
+  | "verified"
+  | "illustrative"
+  | "incomplete";
+
+export type RequirementCheckState =
+  | "passed"
+  | "missing"
+  | "unverified"
+  | "not-applicable";
+
+export interface FootprintRequirementCheck {
+  id: string;
+  label: string;
+  state: RequirementCheckState;
+  valueDescription: string;
+  detail?: string;
+  sourceOrProvenance?: ProvenanceLabel | "N/A";
+}
+
+export interface FootprintValidationResult {
+  status: FootprintValidationStatus;
+  statusLabel: string;
+  statusBadgeClass: string;
+  summary: string;
+  warningNotice?: string;
+  checks: FootprintRequirementCheck[];
+  passedCount: number;
+  totalApplicableCount: number;
+  isFabricationReady: boolean;
+  isIllustrativeOnly: boolean;
+  missingCrucialData: boolean;
+}
 
 export type PackageTemplateKind =
   | "pdip"
@@ -57,6 +98,7 @@ export interface FootprintAuditResult {
     drill: FootprintDataSourceField;
     pinout: FootprintDataSourceField;
   };
+  validation: FootprintValidationResult;
 }
 
 /**
@@ -469,7 +511,7 @@ export function auditComponentFootprint(
     }
   }
 
-  return {
+  const partialAudit = {
     canDrawFootprint,
     templateKind,
     isAxialPackage,
@@ -486,6 +528,464 @@ export function auditComponentFootprint(
       pinout: pinoutField,
     },
   };
+
+  const validation = validateComponentFootprint(component, partialAudit);
+
+  return {
+    canDrawFootprint,
+    templateKind,
+    isAxialPackage,
+    defaultAxialSpanMm,
+    emptyStateReason,
+    missingFields,
+    fields: {
+      package: packageField,
+      pinCount: pinCountField,
+      leadPitch: leadPitchField,
+      bodySize: bodySizeField,
+      padSize: padSizeField,
+      drill: drillField,
+      pinout: pinoutField,
+    },
+    validation,
+  };
+}
+
+/**
+ * Validates a component footprint against package-specific engineering requirements.
+ * Distinguishes fabrication-ready footprints from illustrative visualization drawings.
+ */
+export function validateComponentFootprint(
+  component: ComponentData,
+  auditContext?: {
+    canDrawFootprint: boolean;
+    templateKind: PackageTemplateKind;
+    isAxialPackage: boolean;
+    defaultAxialSpanMm: number | null;
+    emptyStateReason: string;
+    missingFields: string[];
+    fields: {
+      package: FootprintDataSourceField;
+      pinCount: FootprintDataSourceField;
+      leadPitch: FootprintDataSourceField;
+      bodySize: FootprintDataSourceField;
+      padSize: FootprintDataSourceField;
+      drill: FootprintDataSourceField;
+      pinout: FootprintDataSourceField;
+    };
+  }
+): FootprintValidationResult {
+  const templateKind =
+    auditContext?.templateKind ?? getPackageTemplateKind(component);
+  const isAxialPackage =
+    auditContext?.isAxialPackage ??
+    (templateKind === "axial-resistor" || templateKind === "axial-diode");
+  const canDrawFootprint = auditContext
+    ? auditContext.canDrawFootprint
+    : Boolean(
+        templateKind !== "unsupported" &&
+          ((component.package?.bodyDimensions?.lengthMm != null &&
+            component.package?.bodyDimensions?.widthMm != null) ||
+            (component.package?.footprintDimensions?.lengthMm != null &&
+              component.package?.footprintDimensions?.widthMm != null)) &&
+          (component.package?.pcbLayout?.leadPitchMm != null || isAxialPackage) &&
+          (component.pins?.length || 0) > 0
+      );
+
+  const pkg = component.package;
+  const pkgName = pkg?.name?.trim() || "";
+  const mountingType = pkg?.mountingType?.trim() || "";
+  const mountingLower = mountingType.toLowerCase();
+  const isSmd =
+    mountingLower.includes("surface") ||
+    mountingLower.includes("smd") ||
+    mountingLower.includes("smt");
+  const isThroughHole =
+    mountingLower.includes("through") ||
+    mountingLower.includes("tht") ||
+    (!isSmd && mountingType.length > 0);
+
+  const bodyDims = pkg?.bodyDimensions;
+  const fpDims = pkg?.footprintDimensions;
+  const hasBodyDims =
+    (bodyDims?.lengthMm != null && bodyDims?.widthMm != null) ||
+    (fpDims?.lengthMm != null && fpDims?.widthMm != null);
+
+  const storedLengthMm = bodyDims?.lengthMm ?? fpDims?.lengthMm ?? null;
+  const defaultAxialSpanMm =
+    isAxialPackage && storedLengthMm != null
+      ? getDefaultAxialSpanMm(storedLengthMm)
+      : null;
+
+  const storedPitch = pkg?.pcbLayout?.leadPitchMm;
+  const storedRowSpacing = pkg?.pcbLayout?.rowSpacingMm;
+  const storedPadSize = pkg?.pcbLayout?.padDiameterMm;
+  const storedDrill = pkg?.pcbLayout?.drillDiameterMm;
+  const pins = component.pins || [];
+  const pinCount = pins.length;
+
+  const checks: FootprintRequirementCheck[] = [];
+
+  // 1. Package Identity & Physical Template
+  if (pkgName && templateKind !== "unsupported") {
+    checks.push({
+      id: "package-identity",
+      label: "Package Identity & Template",
+      state: "passed",
+      valueDescription: pkgName,
+      detail: `Mapped to dedicated physical template (${templateKind}).`,
+      sourceOrProvenance: "Catalogue",
+    });
+  } else if (pkgName) {
+    checks.push({
+      id: "package-identity",
+      label: "Package Identity & Template",
+      state: "unverified",
+      valueDescription: pkgName,
+      detail: `Package designation recorded, but no dedicated CAD template exists for "${pkgName}".`,
+      sourceOrProvenance: "Catalogue",
+    });
+  } else {
+    checks.push({
+      id: "package-identity",
+      label: "Package Identity & Template",
+      state: "missing",
+      valueDescription: "Not specified",
+      detail: "Package name and packaging family are missing from database.",
+      sourceOrProvenance: "Not available",
+    });
+  }
+
+  // 2. Mounting Technology
+  if (mountingType) {
+    checks.push({
+      id: "mounting-type",
+      label: "Mounting Technology",
+      state: "passed",
+      valueDescription: mountingType,
+      detail: isThroughHole
+        ? "Through-hole mounting: requires drill diameter and annular pad sizing."
+        : "Surface-mount technology: requires land pattern pad dimensions (drill not applicable).",
+      sourceOrProvenance: "Catalogue",
+    });
+  } else {
+    checks.push({
+      id: "mounting-type",
+      label: "Mounting Technology",
+      state: "missing",
+      valueDescription: "Not specified",
+      detail: "Mounting type (Through-Hole or Surface Mount) is unrecorded.",
+      sourceOrProvenance: "Not available",
+    });
+  }
+
+  // 3. Package Body Envelope Dimensions
+  if (hasBodyDims) {
+    const activeDims =
+      bodyDims?.lengthMm != null && bodyDims?.widthMm != null
+        ? bodyDims
+        : fpDims!;
+    const h = activeDims.heightMm ? ` × ${activeDims.heightMm} mm H` : "";
+    checks.push({
+      id: "body-dimensions",
+      label: "Package Body Dimensions",
+      state: "passed",
+      valueDescription: `${activeDims.lengthMm} × ${activeDims.widthMm} mm${h}`,
+      detail: "Body boundary dimensions stored from manufacturer datasheet.",
+      sourceOrProvenance: "Catalogue",
+    });
+  } else {
+    checks.push({
+      id: "body-dimensions",
+      label: "Package Body Dimensions",
+      state: "missing",
+      valueDescription: "Not available",
+      detail: "Component body length and width are missing from catalogue.",
+      sourceOrProvenance: "Not available",
+    });
+  }
+
+  // 4. Pin Count & Terminal Numbering
+  if (pinCount > 0) {
+    const allNumbered = pins.every((p) => p.number != null);
+    const allNamed = pins.every((p) => p.name && p.name.trim().length > 0);
+    if (allNumbered && allNamed) {
+      checks.push({
+        id: "pin-configuration",
+        label: "Pinout & Terminal Layout",
+        state: "passed",
+        valueDescription: `${pinCount} pins (numbered with assigned names)`,
+        detail: "All leads/pins have explicit numeric indices and signal names.",
+        sourceOrProvenance: "Catalogue",
+      });
+    } else {
+      checks.push({
+        id: "pin-configuration",
+        label: "Pinout & Terminal Layout",
+        state: "unverified",
+        valueDescription: `${pinCount} pins (incomplete labels)`,
+        detail: "Pin count is recorded, but one or more pins lack explicit numbers or standard signal names.",
+        sourceOrProvenance: "Catalogue",
+      });
+    }
+  } else {
+    checks.push({
+      id: "pin-configuration",
+      label: "Pinout & Terminal Layout",
+      state: "missing",
+      valueDescription: "No pins recorded",
+      detail: "Terminal layout and pinout table are missing from database.",
+      sourceOrProvenance: "Not available",
+    });
+  }
+
+  // 5. Terminal Spacing & Lead Pitch (Package-Dependent)
+  if (isAxialPackage) {
+    checks.push({
+      id: "lead-pitch",
+      label: "Terminal / Lead Pitch",
+      state: "not-applicable",
+      valueDescription: `Flexible axial leads (${defaultAxialSpanMm} mm illustrative grid)`,
+      detail: "Flexible axial component leads do not have a fixed lead pitch in datasheets. Terminal spacing depends on user lead bending and PCB grid rules.",
+      sourceOrProvenance: "Placeholder",
+    });
+  } else if (templateKind === "pdip") {
+    if (storedPitch != null && storedRowSpacing != null) {
+      checks.push({
+        id: "lead-pitch",
+        label: "Lead Pitch & Row Spacing",
+        state: "passed",
+        valueDescription: `${storedPitch} mm pitch · ${storedRowSpacing} mm row spacing`,
+        detail: "Dual-in-line 2.54 mm pin pitch and 7.62 mm row spacing verified against DIP specification.",
+        sourceOrProvenance: "Catalogue",
+      });
+    } else if (storedPitch != null) {
+      checks.push({
+        id: "lead-pitch",
+        label: "Lead Pitch & Row Spacing",
+        state: "unverified",
+        valueDescription: `${storedPitch} mm pitch (row spacing missing)`,
+        detail: "Lead pitch is recorded, but dual-in-line row spacing is missing.",
+        sourceOrProvenance: "Catalogue",
+      });
+    } else {
+      checks.push({
+        id: "lead-pitch",
+        label: "Lead Pitch & Row Spacing",
+        state: "missing",
+        valueDescription: "Not available",
+        detail: "Lead pitch and row spacing are required for DIP packages but missing from catalogue.",
+        sourceOrProvenance: "Not available",
+      });
+    }
+  } else if (templateKind === "tactile-switch-4p") {
+    if (storedPitch != null && storedRowSpacing != null) {
+      checks.push({
+        id: "lead-pitch",
+        label: "Terminal Grid Spacing (X × Y)",
+        state: "passed",
+        valueDescription: `${storedPitch} mm × ${storedRowSpacing} mm grid`,
+        detail: "Tactile switch 4-terminal mounting pitch and row spacing verified.",
+        sourceOrProvenance: "Catalogue",
+      });
+    } else {
+      checks.push({
+        id: "lead-pitch",
+        label: "Terminal Grid Spacing",
+        state: "missing",
+        valueDescription: "Not available",
+        detail: "Terminal mounting pitch/row spacing is missing from catalogue.",
+        sourceOrProvenance: "Not available",
+      });
+    }
+  } else {
+    // Rigid lead through-hole (TO-220, TO-92, Headers, etc.)
+    if (storedPitch != null) {
+      checks.push({
+        id: "lead-pitch",
+        label: "Lead Pitch",
+        state: "passed",
+        valueDescription: `${storedPitch} mm pitch`,
+        detail: "Adjacent terminal lead pitch verified against package drawing.",
+        sourceOrProvenance: "Catalogue",
+      });
+    } else {
+      checks.push({
+        id: "lead-pitch",
+        label: "Lead Pitch",
+        state: "missing",
+        valueDescription: "Not available",
+        detail: "Lead pitch is required for this package but missing from catalogue.",
+        sourceOrProvenance: "Not available",
+      });
+    }
+  }
+
+  // 6. Pad Dimensions (Land Pattern)
+  if (storedPadSize != null) {
+    checks.push({
+      id: "pad-dimensions",
+      label: "Pad Dimensions (Land Pattern)",
+      state: "passed",
+      valueDescription: `${storedPadSize} mm pad diameter`,
+      detail: "Authoritative pad diameter stored from manufacturer land pattern.",
+      sourceOrProvenance: "Catalogue",
+    });
+  } else {
+    checks.push({
+      id: "pad-dimensions",
+      label: "Pad Dimensions (Land Pattern)",
+      state: canDrawFootprint ? "unverified" : "missing",
+      valueDescription: "Not stored in catalogue",
+      detail: canDrawFootprint
+        ? "No manufacturer land pattern stored; drawing uses illustrative fallback pad geometry. Not verified for fabrication."
+        : "Pad dimensions are not recorded in catalogue.",
+      sourceOrProvenance: canDrawFootprint ? "Placeholder" : "Not available",
+    });
+  }
+
+  // 7. Drill Diameter (Through-Hole Only)
+  if (isSmd) {
+    checks.push({
+      id: "drill-diameter",
+      label: "Through-Hole Drill Diameter",
+      state: "not-applicable",
+      valueDescription: "N/A (Surface-mount component)",
+      detail: "Surface-mount packages do not require through-hole drilling.",
+      sourceOrProvenance: "N/A",
+    });
+  } else if (storedDrill != null) {
+    checks.push({
+      id: "drill-diameter",
+      label: "Through-Hole Drill Diameter",
+      state: "passed",
+      valueDescription: `${storedDrill} mm drill diameter`,
+      detail: "Finished drill hole diameter verified against official datasheet specification.",
+      sourceOrProvenance: "Catalogue",
+    });
+  } else {
+    checks.push({
+      id: "drill-diameter",
+      label: "Through-Hole Drill Diameter",
+      state: canDrawFootprint ? "unverified" : "missing",
+      valueDescription: "Not stored in catalogue",
+      detail: canDrawFootprint
+        ? "Drill size is missing from catalogue; drawing uses illustrative fallback. Confirm drill specification before PCB fabrication."
+        : "Through-hole drill diameter is missing from catalogue.",
+      sourceOrProvenance: canDrawFootprint ? "Placeholder" : "Not available",
+    });
+  }
+
+  // 8. Documentation / Datasheet Reference
+  const hasDatasheet = isValidHttpUrl(component.datasheetUrl);
+  if (hasDatasheet) {
+    checks.push({
+      id: "datasheet-documentation",
+      label: "Datasheet & Reference Documentation",
+      state: "passed",
+      valueDescription: "Official manufacturer datasheet available",
+      detail: `Referenced documentation: ${component.manufacturer} official datasheet link.`,
+      sourceOrProvenance: "Catalogue",
+    });
+  } else {
+    checks.push({
+      id: "datasheet-documentation",
+      label: "Datasheet & Reference Documentation",
+      state: "missing",
+      valueDescription: "No datasheet link",
+      detail: "Authoritative manufacturer datasheet link is not recorded.",
+      sourceOrProvenance: "Not available",
+    });
+  }
+
+  // Evaluation of overall status
+  const applicableChecks = checks.filter((c) => c.state !== "not-applicable");
+  const passedChecks = applicableChecks.filter((c) => c.state === "passed");
+
+  const isDataStatusVerified = component.dataStatus === "verified";
+  const allApplicablePassed = passedChecks.length === applicableChecks.length;
+
+  let status: FootprintValidationStatus;
+  let statusLabel: string;
+  let statusBadgeClass: string;
+  let summary: string;
+  let warningNotice: string | undefined;
+
+  if (isDataStatusVerified && allApplicablePassed) {
+    status = "verified";
+    statusLabel = "Verified — Fabrication-Ready";
+    statusBadgeClass = "validation-status-verified";
+    summary =
+      "All mechanical packaging, terminal pitch, pad sizing, and drill specifications have been verified against authoritative manufacturer documentation.";
+  } else if (canDrawFootprint) {
+    status = "illustrative";
+    statusLabel = "Illustrative — Visualization Only";
+    statusBadgeClass = "validation-status-illustrative";
+    summary = isAxialPackage
+      ? "Component outline and pinout are verified, but axial leads are flexible (variable bend span) and pad/drill sizes are illustrative fallbacks. Not validated for direct PCB fabrication."
+      : "The drawing illustrates verified body dimensions and terminal arrangement, but lacks verified manufacturer pad/drill dimensions. Intended for visual clearance inspection, not direct Gerber fabrication.";
+    warningNotice =
+      "Illustrative Footprint: Confirm manufacturer land pattern dimensions and drill diameters before generating fabrication tooling.";
+  } else {
+    status = "incomplete";
+    statusLabel = "Incomplete — Missing Engineering Data";
+    statusBadgeClass = "validation-status-incomplete";
+    summary =
+      "Essential physical parameters (such as terminal pitch, body dimensions, or pinout) are missing from the catalogue. A reliable footprint cannot be rendered or fabricated.";
+    warningNotice =
+      "Incomplete Footprint Data: Consult the official manufacturer datasheet to obtain physical package and layout parameters.";
+  }
+
+  return {
+    status,
+    statusLabel,
+    statusBadgeClass,
+    summary,
+    warningNotice,
+    checks,
+    passedCount: passedChecks.length,
+    totalApplicableCount: applicableChecks.length,
+    isFabricationReady: status === "verified",
+    isIllustrativeOnly: status === "illustrative",
+    missingCrucialData: status === "incomplete",
+  };
+}
+
+export function getValidationBadgeClass(status: FootprintValidationStatus): string {
+  switch (status) {
+    case "verified":
+      return "status-badge status-verified";
+    case "illustrative":
+      return "status-badge status-illustrative";
+    case "incomplete":
+      return "status-badge status-incomplete";
+  }
+}
+
+export function getCheckStateIcon(state: RequirementCheckState): string {
+  switch (state) {
+    case "passed":
+      return "✓";
+    case "unverified":
+      return "⚠";
+    case "missing":
+      return "✕";
+    case "not-applicable":
+      return "—";
+  }
+}
+
+export function getCheckStateClass(state: RequirementCheckState): string {
+  switch (state) {
+    case "passed":
+      return "check-state-passed";
+    case "unverified":
+      return "check-state-unverified";
+    case "missing":
+      return "check-state-missing";
+    case "not-applicable":
+      return "check-state-na";
+  }
 }
 
 export function getProvenanceBadgeClass(provenance: ProvenanceLabel): string {
