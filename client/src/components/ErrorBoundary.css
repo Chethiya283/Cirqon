@@ -30,10 +30,10 @@
   align-items: center;
   gap: var(--cq-space-2);
   padding: 4px 10px;
-  font-family: var(--cq-font-mono);
+  font-family: var(--cq-font-sans);
   font-size: var(--cq-text-xs);
-  font-weight: var(--cq-weight-semibold);
-  letter-spacing: 0.04em;
+  font-weight: var(--cq-weight-medium);
+  letter-spacing: var(--cq-tracking-normal);
   color: var(--cq-error);
   background: var(--cq-error-soft);
   border: 1px solid var(--cq-error-border);

@@ -23,14 +23,13 @@ export const NotFoundPage: React.FC = () => {
       <div className="not-found-card">
         <div className="not-found-badge">
           <Compass size={14} aria-hidden="true" />
-          <span>404 · RESOURCE NOT FOUND</span>
+          <span>404 · Page not found</span>
         </div>
 
         <h1 className="not-found-title">Page Not Found</h1>
 
         <p className="not-found-description">
-          The component URL, workspace route, or documentation page you requested
-          does not exist or may have been relocated.
+          The page or component you requested could not be found.
         </p>
 
         <div className="not-found-links-group">

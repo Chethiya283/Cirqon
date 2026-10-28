@@ -167,8 +167,8 @@
   color: var(--cq-text-primary);
   font-weight: var(--cq-weight-semibold);
   font-size: var(--cq-text-xs);
-  text-transform: uppercase;
-  letter-spacing: var(--cq-tracking-wide);
+  text-transform: none;
+  letter-spacing: var(--cq-tracking-normal);
   padding: var(--cq-space-3) var(--cq-space-4);
   border-bottom: 1px solid var(--cq-border-default);
   white-space: nowrap;
@@ -272,7 +272,7 @@
 .admin-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.45);
+  background: var(--cq-overlay);
   backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
@@ -514,7 +514,7 @@
 }
 
 .btn-admin-danger:hover:not(:disabled) {
-  background: #b91c1c;
+  background: var(--cq-error-hover);
 }
 
 .btn-admin-danger:focus-visible {

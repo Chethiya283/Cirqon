@@ -70,12 +70,12 @@
 }
 
 .home-eyebrow {
-  font-family: var(--cq-font-mono);
+  font-family: var(--cq-font-sans);
   font-size: var(--cq-text-xs);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--cq-emerald);
+  font-weight: var(--cq-weight-semibold);
+  text-transform: none;
+  letter-spacing: var(--cq-tracking-normal);
+  color: var(--cq-teal);
   margin-bottom: var(--cq-space-1);
 }
 
@@ -105,10 +105,10 @@
      tag because it is purely decorative ambiance. Assistive technology (screen readers)
      automatically ignores CSS backgrounds, preserving clean semantic hierarchy.
    - WCAG AA Contrast Overlay (::before):
-     A flat, solid semi-transparent overlay using the `--cq-bg` token at ~86% opacity
-     ensures dark navy text (--cq-text-primary) and interactive elements comfortably
-     maintain the WCAG AA minimum 4.5:1 contrast ratio against the photograph, without
-     requiring gradients, glows, or blur filters.
+     A flat, solid semi-transparent overlay using the `--cq-bg` token at ~65% opacity
+     ensures the electronics background photo is recognizable while dark navy text
+     (--cq-text-primary) and interactive elements comfortably maintain the WCAG AA
+     minimum 4.5:1 contrast ratio, without requiring gradients, glows, or blur filters.
    ======================================================== */
 .home-hero-section {
   position: relative;
@@ -136,7 +136,7 @@
   position: absolute;
   inset: 0;
   background-color: var(--cq-bg);
-  opacity: 0.86;
+  opacity: 0.65;
   z-index: 1;
   pointer-events: none;
 }
@@ -162,15 +162,15 @@
   background: var(--cq-emerald-soft);
   color: var(--cq-emerald);
   font-size: var(--cq-text-xs);
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font-weight: 500;
+  letter-spacing: var(--cq-tracking-normal);
 }
 
 .home-hero-badge-dot {
   width: 6px;
   height: 6px;
   border-radius: var(--cq-radius-pill);
-  background: var(--cq-emerald);
+  background: var(--cq-teal);
 }
 
 .home-hero-headline {
@@ -245,7 +245,7 @@
 
 .home-search-input:focus {
   border-color: var(--cq-border-focus);
-  box-shadow: 0 0 0 3px var(--cq-emerald-soft);
+  box-shadow: 0 0 0 2px var(--cq-teal-soft);
 }
 
 .home-search-clear {

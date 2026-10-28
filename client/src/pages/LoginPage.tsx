@@ -99,11 +99,11 @@ export const LoginPage: React.FC = () => {
         <header className="auth-card-header">
           <div className="auth-badge">
             <Lock size={12} aria-hidden="true" />
-            <span>ENGINEER ACCESS</span>
+            <span>Account login</span>
           </div>
-          <h1 className="auth-title">Log In to Cirqon</h1>
+          <h1 className="auth-title">Log in to Cirqon</h1>
           <p className="auth-subtitle">
-            Sign in to access your saved component trays, project workspaces, and bill of materials.
+            Sign in to access your saved components and project notes.
           </p>
         </header>
 

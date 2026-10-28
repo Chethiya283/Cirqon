@@ -30,13 +30,13 @@
   align-items: center;
   gap: var(--cq-space-2);
   padding: 4px 10px;
-  font-family: var(--cq-font-mono);
+  font-family: var(--cq-font-sans);
   font-size: var(--cq-text-xs);
-  font-weight: var(--cq-weight-semibold);
-  letter-spacing: 0.04em;
-  color: var(--cq-emerald);
-  background: var(--cq-emerald-soft);
-  border: 1px solid var(--cq-emerald-border);
+  font-weight: var(--cq-weight-medium);
+  letter-spacing: var(--cq-tracking-normal);
+  color: var(--cq-teal);
+  background: var(--cq-teal-soft);
+  border: 1px solid var(--cq-teal-border);
   border-radius: var(--cq-radius-pill);
   margin-bottom: var(--cq-space-4);
 }

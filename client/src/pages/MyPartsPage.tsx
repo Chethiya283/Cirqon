@@ -187,7 +187,7 @@ const SavedPartCard: React.FC<SavedPartCardProps> = ({
             onClick={(e) => onCopyMpn(component.partNumber, e)}
             title="Copy MPN to clipboard"
           >
-            {copiedMpn === component.partNumber ? "COPIED" : "COPY"}
+            {copiedMpn === component.partNumber ? "Copied" : "Copy"}
           </button>
         </div>
 
@@ -235,7 +235,7 @@ const SavedPartCard: React.FC<SavedPartCardProps> = ({
         onKeyDown={(e) => e.stopPropagation()}
       >
         <div className="bom-panel-header">
-          <span className="bom-panel-title">Project Allocation</span>
+          <span className="bom-panel-title">Saved part details</span>
           {saveSuccess && (
             <span className="bom-status-badge success" role="status">
               <Check size={12} aria-hidden="true" />
@@ -280,7 +280,7 @@ const SavedPartCard: React.FC<SavedPartCardProps> = ({
                 htmlFor={`note-${inputIdSuffix}`}
                 className="bom-field-label"
               >
-                Engineering Note
+                Note
               </label>
               <span
                 className={`bom-char-count ${
@@ -300,7 +300,7 @@ const SavedPartCard: React.FC<SavedPartCardProps> = ({
               className={`bom-input bom-note-input ${
                 noteError ? "input-error" : ""
               }`}
-              placeholder="e.g. C12 decoupling on MCU VDD rail"
+              placeholder="e.g. Decoupling capacitor for IC pin 4"
               value={noteInput}
               onChange={(e) => setNoteInput(e.target.value)}
               aria-invalid={Boolean(noteError)}
@@ -347,7 +347,7 @@ const SavedPartCard: React.FC<SavedPartCardProps> = ({
             aria-busy={isSaving}
           >
             <Save size={13} aria-hidden="true" />
-            <span>{isSaving ? "Saving..." : "Save Details"}</span>
+            <span>{isSaving ? "Saving..." : "Save changes"}</span>
           </button>
         </div>
       </div>
@@ -433,7 +433,7 @@ export const MyPartsPage: React.FC<MyPartsPageProps> = ({
           </div>
           <h1>My Saved Parts</h1>
           <p className="my-parts-subtitle">
-            Electronic components bookmarked for active circuit designs, bill of materials (BOM), and CAD layout.
+            Electronic components saved to your account.
           </p>
         </div>
 

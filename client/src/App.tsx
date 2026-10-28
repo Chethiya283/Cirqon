@@ -556,7 +556,7 @@ function App() {
             />
 
             <div className="sidebar-section sidebar-filters">
-              <div className="sidebar-label">PARAMETRIC FILTERS</div>
+              <div className="sidebar-label">Filters</div>
 
               <div className="filter-field">
                 <label htmlFor="manufacturer-filter">Manufacturer</label>
@@ -686,7 +686,7 @@ function App() {
 
                       <div className="library-header-row">
                         <div className="library-title-block">
-                          <div className="library-eyebrow">CATALOGUE WORKSPACE</div>
+                          <div className="library-eyebrow">Component catalogue</div>
                           <div className="library-title-row">
                             <h1 className="library-title">Electronic Component Library</h1>
                             <span
@@ -701,7 +701,7 @@ function App() {
                             </span>
                           </div>
                           <p className="library-subtitle">
-                            Discover, filter, and inspect electronic components with verified parametric specifications, CAD footprints, and technical documentation.
+                            Browse and filter electronic components, package dimensions, footprints, and datasheets.
                           </p>
                         </div>
 
@@ -1184,12 +1184,12 @@ function App() {
                                     }`}
                                     title={`Data completeness: ${
                                       component.dataStatus === "verified"
-                                        ? "Verified against official datasheet"
+                                        ? "Complete catalogue specifications"
                                         : "Incomplete catalogue parameters"
                                     }`}
                                   >
                                     {component.dataStatus === "verified"
-                                      ? "Verified"
+                                      ? "Complete"
                                       : "Incomplete"}
                                   </span>
 
@@ -1355,7 +1355,7 @@ function App() {
                           <th className="th-select" title="Compare selection (max 4 components)">
                             <span className="th-compare-icon">⇄</span> Compare
                           </th>
-                          <th className="th-image" title="Component product photograph / package visual">
+                          <th className="th-image" title="Component image">
                             Image
                           </th>
                           <th
@@ -1575,8 +1575,8 @@ function App() {
                                       title="Copy MPN to clipboard"
                                     >
                                       {copiedMpn === component.partNumber
-                                        ? "COPIED"
-                                        : "COPY"}
+                                        ? "Copied"
+                                        : "Copy"}
                                     </button>
                                   </div>
                                 </td>
@@ -2139,7 +2139,7 @@ function App() {
 
                       <div className="compare-top-row">
                         <div className="compare-heading-group">
-                          <div className="eyebrow">ENGINEERING COMPARISON MATRIX</div>
+                          <div className="eyebrow">Component comparison</div>
                           <h1>Component Comparison</h1>
                           <p className="subtitle">
                             {selectedForCompare.length === 0

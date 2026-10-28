@@ -16,15 +16,15 @@
 }
 
 .footprint-validation-panel.validation-status-verified {
-  border-left: 4px solid var(--cq-emerald);
+  border-left: 4px solid var(--cq-teal);
 }
 
 .footprint-validation-panel.validation-status-illustrative {
-  border-left: 4px solid var(--cq-amber, #d97706);
+  border-left: 4px solid var(--cq-warning);
 }
 
 .footprint-validation-panel.validation-status-incomplete {
-  border-left: 4px solid var(--cq-red, #dc2626);
+  border-left: 4px solid var(--cq-error);
 }
 
 /* 1. Header with Status Badge & Score */
@@ -52,14 +52,14 @@
   font-family: var(--cq-font-sans);
   font-size: var(--cq-text-xs);
   font-weight: var(--cq-weight-bold);
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+  letter-spacing: var(--cq-tracking-normal);
+  text-transform: none;
 }
 
 .validation-status-pill.validation-status-verified {
-  background: var(--cq-emerald-soft);
-  color: var(--cq-emerald-hover);
-  border: 1px solid var(--cq-emerald-border);
+  background: var(--cq-teal-soft);
+  color: var(--cq-teal-hover);
+  border: 1px solid var(--cq-teal-border);
 }
 
 .validation-status-pill.validation-status-illustrative {
@@ -69,9 +69,9 @@
 }
 
 .validation-status-pill.validation-status-incomplete {
-  background: var(--cq-red-soft, #fef2f2);
-  color: var(--cq-red, #dc2626);
-  border: 1px solid var(--cq-red-border, #fecaca);
+  background: var(--cq-error-soft);
+  color: var(--cq-error);
+  border: 1px solid var(--cq-error-border);
 }
 
 .validation-score-pill {
@@ -150,9 +150,9 @@
 }
 
 .validation-warning-callout.warning-critical {
-  background: var(--cq-red-soft, #fef2f2);
-  border: 1px solid var(--cq-red-border, #fecaca);
-  color: var(--cq-red, #dc2626);
+  background: var(--cq-error-soft);
+  border: 1px solid var(--cq-error-border);
+  color: var(--cq-error);
 }
 
 .warning-callout-icon {
@@ -201,15 +201,15 @@
 }
 
 .legend-chip.passed {
-  color: var(--cq-emerald);
+  color: var(--cq-teal);
 }
 
 .legend-chip.unverified {
-  color: var(--cq-amber, #d97706);
+  color: var(--cq-warning);
 }
 
 .legend-chip.missing {
-  color: var(--cq-red, #dc2626);
+  color: var(--cq-error);
 }
 
 .legend-chip.na {
@@ -237,16 +237,16 @@
 }
 
 .validation-check-item.check-state-passed {
-  border-left: 3px solid var(--cq-emerald);
+  border-left: 3px solid var(--cq-teal);
 }
 
 .validation-check-item.check-state-unverified {
-  border-left: 3px solid var(--cq-amber, #d97706);
+  border-left: 3px solid var(--cq-warning);
 }
 
 .validation-check-item.check-state-missing {
-  border-left: 3px solid var(--cq-red, #dc2626);
-  background: var(--cq-red-soft, #fef2f2);
+  border-left: 3px solid var(--cq-error);
+  background: var(--cq-error-soft);
 }
 
 .validation-check-item.check-state-na {
@@ -260,15 +260,15 @@
 }
 
 .check-icon-svg.passed {
-  color: var(--cq-emerald);
+  color: var(--cq-teal);
 }
 
 .check-icon-svg.unverified {
-  color: var(--cq-amber, #d97706);
+  color: var(--cq-warning);
 }
 
 .check-icon-svg.missing {
-  color: var(--cq-red, #dc2626);
+  color: var(--cq-error);
 }
 
 .check-icon-svg.na {

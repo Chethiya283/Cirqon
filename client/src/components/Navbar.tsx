@@ -15,6 +15,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
+import { CirqonLogo } from "./CirqonLogo";
 import "./Navbar.css";
 
 interface NavbarProps {
@@ -63,21 +64,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           <Link
             to="/"
             className="brand-identity"
-            title="Cirqon — Engineering Parts Discovery Home"
+            title="Cirqon — Electronic Component Catalogue & PCB Assistant"
             onClick={() => setIsMobileMenuOpen(false)}
+            aria-label="Cirqon — Return to homepage"
           >
-            <div className="brand-logo-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <circle cx="12" cy="12" r="9" stroke="var(--cq-emerald)" strokeWidth="2" />
-                <path d="M12 7V12L15 15" stroke="var(--cq-emerald)" strokeWidth="2" strokeLinecap="round" />
-                <circle cx="12" cy="7" r="1.5" fill="var(--cq-emerald)" />
-                <circle cx="15" cy="15" r="1.5" fill="var(--cq-emerald)" />
-              </svg>
-            </div>
-            <div className="brand-wordmark">
-              <span className="brand-title">Cirqon</span>
-              <span className="brand-tag">Engineering</span>
-            </div>
+            <CirqonLogo size="md" />
           </Link>
 
           <span className="header-brand-divider" aria-hidden="true" />

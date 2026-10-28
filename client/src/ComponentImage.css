@@ -54,20 +54,20 @@
   position: relative;
   width: 100%;
   height: 100%;
-  background: #ffffff;
+  background: var(--cq-surface);
   border: 1px solid var(--cq-border-default);
   border-radius: var(--cq-radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  box-shadow: 0 1px 2px rgba(23, 43, 77, 0.04);
+  box-shadow: var(--cq-shadow-sm);
   transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 
 .component-thumb-container:hover .component-thumb-box {
   border-color: var(--cq-accent-border);
-  box-shadow: 0 2px 6px rgba(20, 125, 100, 0.1);
+  box-shadow: var(--cq-shadow-md);
 }
 
 /* Image Contained Scaling */
@@ -94,9 +94,9 @@
   inset: 0;
   background: linear-gradient(
     90deg,
-    #f8fafc 0%,
-    #edf2f7 50%,
-    #f8fafc 100%
+    var(--cq-surface-subtle) 0%,
+    var(--cq-surface-hover) 50%,
+    var(--cq-surface-subtle) 100%
   );
   background-size: 200% 100%;
   animation: thumb-shimmer 1.4s infinite;
@@ -119,7 +119,7 @@
   width: 100%;
   height: 100%;
   padding: 2px;
-  background: #f8fafc;
+  background: var(--cq-surface-subtle);
 }
 
 .package-svg {
@@ -135,12 +135,12 @@
   position: absolute;
   bottom: -4px;
   right: -4px;
-  padding: 1px 4px;
+  padding: 1px 5px;
   border-radius: 2px;
-  font-family: var(--cq-font-mono);
-  font-size: 7.5px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-family: var(--cq-font-sans);
+  font-size: 8px;
+  font-weight: var(--cq-weight-medium);
+  letter-spacing: var(--cq-tracking-normal);
   line-height: 1.1;
   border: 1px solid transparent;
   pointer-events: none;
@@ -192,10 +192,10 @@
   gap: 4px;
   padding: 2px 7px;
   border-radius: 3px;
-  font-family: var(--cq-font-mono);
-  font-size: 9.5px;
-  font-weight: 700;
-  letter-spacing: 0.03em;
+  font-family: var(--cq-font-sans);
+  font-size: 10px;
+  font-weight: var(--cq-weight-medium);
+  letter-spacing: var(--cq-tracking-normal);
 }
 
 .photo-indicator-tag.verified {

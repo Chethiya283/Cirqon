@@ -132,13 +132,13 @@ a:hover {
 
 /* High-contrast text selection */
 ::selection {
-  color: #ffffff;
-  background: var(--cq-emerald);
+  color: var(--cq-text-inverse);
+  background: var(--cq-teal);
 }
 
 /* Accessible focus ring (WCAG AA compliant) */
 :focus-visible {
-  outline: 2px solid var(--cq-emerald);
+  outline: 2px solid var(--cq-teal);
   outline-offset: 2px;
 }
 

@@ -127,11 +127,11 @@ export const RegisterPage: React.FC = () => {
         <header className="auth-card-header">
           <div className="auth-badge">
             <UserPlus size={12} aria-hidden="true" />
-            <span>ACCOUNT CREATION</span>
+            <span>Create account</span>
           </div>
-          <h1 className="auth-title">Create Engineer Account</h1>
+          <h1 className="auth-title">Create Account</h1>
           <p className="auth-subtitle">
-            Join the precision electronic component platform to save custom pinouts and BOM matrices.
+            Create an account to save components and add project notes.
           </p>
         </header>
 

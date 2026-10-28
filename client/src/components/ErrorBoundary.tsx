@@ -72,14 +72,13 @@ export class ErrorBoundary extends Component<
           <div className="error-boundary-card">
             <div className="error-boundary-badge">
               <AlertTriangle size={15} aria-hidden="true" />
-              <span>CIRCUIT RENDER INTERRUPTED</span>
+              <span>Rendering error</span>
             </div>
 
             <h1 className="error-boundary-title">Something went wrong</h1>
 
             <p className="error-boundary-desc">
-              An unexpected error occurred while rendering this workspace.
-              Your account session and saved components remain safe.
+              An unexpected error occurred while rendering this view.
             </p>
 
             {this.state.error && (

@@ -8,7 +8,7 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: rgba(23, 43, 77, 0.45);
+  background: var(--cq-overlay);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
 }
@@ -157,8 +157,8 @@
   font-family: var(--cq-font-heading);
   font-size: var(--cq-text-xs);
   font-weight: var(--cq-weight-bold);
-  letter-spacing: var(--cq-tracking-wide);
-  text-transform: uppercase;
+  letter-spacing: var(--cq-tracking-normal);
+  text-transform: none;
 }
 
 .modal-section > p {
@@ -188,7 +188,7 @@
   color: var(--cq-text-muted);
   font-size: var(--cq-text-xs);
   font-weight: var(--cq-weight-semibold);
-  text-transform: uppercase;
+  text-transform: none;
 }
 
 .modal-info-grid strong {
@@ -238,9 +238,9 @@
 }
 
 .modal-mechanical-pcb-btn:hover {
-  background: var(--cq-emerald);
-  color: #ffffff;
-  border-color: var(--cq-emerald);
+  background: var(--cq-teal);
+  color: var(--cq-text-inverse);
+  border-color: var(--cq-teal);
 }
 
 .modal-footprint-grid {
@@ -363,8 +363,8 @@
   color: var(--cq-text-secondary);
   font-size: var(--cq-text-xs);
   font-weight: var(--cq-weight-semibold);
-  letter-spacing: var(--cq-tracking-wide);
-  text-transform: uppercase;
+  letter-spacing: var(--cq-tracking-normal);
+  text-transform: none;
 }
 
 .pin-table td {
@@ -403,7 +403,8 @@
 }
 
 .modal-links a:hover {
-  background: #d5ede3;
+  background: var(--cq-teal-soft);
+  border-color: var(--cq-teal-border);
 }
 
 .modal-footer {

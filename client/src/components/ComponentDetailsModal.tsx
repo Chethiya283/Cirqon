@@ -91,7 +91,7 @@ export const ComponentDetailsModal: React.FC<ComponentDetailsModalProps> = ({
       >
         <header className="modal-header">
           <div>
-            <div className="eyebrow">COMPONENT SPECIFICATION</div>
+            <div className="eyebrow">Component details</div>
             <h2 id="modal-component-name">
               {component.name}
             </h2>
@@ -155,8 +155,8 @@ export const ComponentDetailsModal: React.FC<ComponentDetailsModalProps> = ({
                       }`}
                     >
                       {imgInfo.provenance === "package-spec"
-                        ? "◈ PACKAGE SPEC VISUAL"
-                        : "● VERIFIED PRODUCT PHOTO"}
+                        ? "Package illustration"
+                        : "Component illustration"}
                     </span>
                     <span>{imgInfo.provenanceLabel}</span>
                   </div>

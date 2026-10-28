@@ -123,16 +123,16 @@ export const HomePage: React.FC<HomePageProps> = ({
         <div className="home-hero-content">
           <div className="home-hero-badge">
             <span className="home-hero-badge-dot" />
-            <span>PRECISION ELECTRONIC COMPONENT CATALOGUE</span>
+            <span>Electronic Component Catalogue</span>
           </div>
 
           <h1 id="hero-headline" className="home-hero-headline">
-            Engineering Parts Discovery &amp; Layout Assistant
+            Electronic Component Catalogue &amp; PCB Assistant
           </h1>
 
           <p className="home-hero-sentence">
-            Explore verified technical specifications, parametric CAD footprints,
-            and real product imagery for electronic circuit design.
+            Browse and compare electronic components, inspect footprints,
+            and reference technical datasheets.
           </p>
 
           {/* Large Hero Search Box */}
@@ -203,12 +203,12 @@ export const HomePage: React.FC<HomePageProps> = ({
         aria-labelledby="category-heading"
       >
         <div className="home-section-header">
-          <div className="home-eyebrow">COMPONENT TAXONOMY</div>
+          <div className="home-eyebrow">Categories</div>
           <h2 id="category-heading" className="home-section-title">
             Explore Component Families
           </h2>
           <p className="home-section-desc">
-            Browse verified parts organized by electronic component class with direct parametric inventory counts.
+            Browse components by category.
           </p>
         </div>
 
@@ -254,7 +254,7 @@ export const HomePage: React.FC<HomePageProps> = ({
         aria-labelledby="workflow-heading"
       >
         <div className="home-section-header">
-          <div className="home-eyebrow">ENGINEERING PIPELINE</div>
+          <div className="home-eyebrow">Workflow</div>
           <h2 id="workflow-heading" className="home-section-title">
             How It Works
           </h2>
@@ -332,7 +332,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             <h3 className="home-workflow-title">Find</h3>
             <p className="home-workflow-body">
               Search components by manufacturer part number (MPN), category, or package.
-              Filter by verified parametric ratings and inspect authentic product photographs.
+              Filter by specifications and inspect package dimensions.
             </p>
           </div>
 
@@ -401,8 +401,8 @@ export const HomePage: React.FC<HomePageProps> = ({
             </div>
             <h3 className="home-workflow-title">Compare</h3>
             <p className="home-workflow-body">
-              Select up to 4 components into the matrix to inspect specs side-by-side
-              with automatic highlighting of divergent electrical values and tolerances.
+              Select up to 4 components to compare specifications side-by-side
+              with highlighting of differing values.
             </p>
           </div>
 
@@ -454,8 +454,8 @@ export const HomePage: React.FC<HomePageProps> = ({
             </div>
             <h3 className="home-workflow-title">Design</h3>
             <p className="home-workflow-body">
-              Verify CAD body dimensions, pin counts, lead pitch, and procedural
-              SVG footprint diagrams directly before laying out printed circuit boards.
+              Check package dimensions, pin counts, lead pitch, and
+              footprint drawings before PCB layout.
             </p>
           </div>
         </div>
@@ -466,13 +466,13 @@ export const HomePage: React.FC<HomePageProps> = ({
           ======================================================== */}
       <section className="home-cta-section" aria-labelledby="cta-heading">
         <div className="home-cta-content">
-          <div className="home-eyebrow">GET STARTED</div>
+          <div className="home-eyebrow">Get started</div>
           <h2 id="cta-heading" className="home-cta-title">
-            Ready to accelerate your circuit design?
+            Start exploring the catalogue
           </h2>
           <p className="home-cta-desc">
-            Discover verified electronic components, analyze side-by-side parametric
-            matrices, and inspect procedural CAD layout footprints.
+            Browse the component catalogue, compare specifications,
+            and inspect package footprints.
           </p>
         </div>
 

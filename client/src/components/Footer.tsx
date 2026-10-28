@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Cpu, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
+import { CirqonLogo } from "./CirqonLogo";
 import "./Footer.css";
 
 /**
@@ -19,20 +20,16 @@ export const Footer: React.FC = () => {
         {/* Brand Column */}
         <div className="footer-col brand-col">
           <div className="footer-brand-header">
-            <div className="brand-logo-icon">
-              <Cpu size={18} color="var(--cq-emerald)" aria-hidden="true" />
-            </div>
-            <span className="brand-title">Cirqon</span>
+            <CirqonLogo size="md" />
           </div>
 
           <p className="footer-description">
-            A parametric electronic component discovery platform and PCB design assistant
-            engineered for hardware designers, researchers, and university engineering labs.
+            Electronic component catalogue and PCB design assistant.
           </p>
 
           <div className="footer-status-pill">
             <span className="status-indicator-dot" />
-            <span>Catalogue Online · 11 Verified Parts</span>
+            <span>11 catalogue components</span>
           </div>
         </div>
 
@@ -92,10 +89,8 @@ export const Footer: React.FC = () => {
 
         {/* Project Attribution & References */}
         <div className="footer-col">
-          <h4 className="footer-heading">Project & Standards</h4>
+          <h4 className="footer-heading">Datasheet References</h4>
           <ul className="footer-links-list">
-            <li className="footer-text-item">University Engineering Project</li>
-            <li className="footer-text-item">Full MERN + TypeScript + Vite Stack</li>
             <li>
               <a
                 href="https://www.ti.com"
@@ -122,20 +117,14 @@ export const Footer: React.FC = () => {
         </div>
       </div>
 
-      {/* Bottom Copyright & Design System Bar */}
+      {/* Bottom Copyright Bar */}
       <div className="footer-bottom-bar">
         <div className="footer-bottom-container">
           <span className="copyright-text">
-            © 2026 Cirqon. Built for academic viva demonstration.
+            © 2026 Cirqon
           </span>
           <span className="footer-photo-credit">
-            Hero photo by [PHOTOGRAPHER] on [Unsplash/Pexels]
-          </span>
-          <span className="footer-photo-credit">
-            Component images are AI-generated illustrations (Google Gemini), not product photographs.
-          </span>
-          <span className="footer-system-tag">
-            Precision Light Theme · High Contrast WCAG AA
+            Component images are illustrations.
           </span>
         </div>
       </div>

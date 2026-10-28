@@ -757,7 +757,7 @@ export function validateComponentFootprint(
         label: "Lead Pitch & Row Spacing",
         state: "passed",
         valueDescription: `${storedPitch} mm pitch · ${storedRowSpacing} mm row spacing`,
-        detail: "Dual-in-line 2.54 mm pin pitch and 7.62 mm row spacing verified against DIP specification.",
+        detail: "Dual-in-line 2.54 mm pin pitch and 7.62 mm row spacing checked against DIP specification.",
         sourceOrProvenance: "Catalogue",
       });
     } else if (storedPitch != null) {
@@ -786,7 +786,7 @@ export function validateComponentFootprint(
         label: "Terminal Grid Spacing (X × Y)",
         state: "passed",
         valueDescription: `${storedPitch} mm × ${storedRowSpacing} mm grid`,
-        detail: "Tactile switch 4-terminal mounting pitch and row spacing verified.",
+        detail: "Tactile switch 4-terminal mounting pitch and row spacing checked.",
         sourceOrProvenance: "Catalogue",
       });
     } else {
@@ -807,7 +807,7 @@ export function validateComponentFootprint(
         label: "Lead Pitch",
         state: "passed",
         valueDescription: `${storedPitch} mm pitch`,
-        detail: "Adjacent terminal lead pitch verified against package drawing.",
+        detail: "Adjacent terminal lead pitch checked against package drawing.",
         sourceOrProvenance: "Catalogue",
       });
     } else {
@@ -839,7 +839,7 @@ export function validateComponentFootprint(
       state: canDrawFootprint ? "unverified" : "missing",
       valueDescription: "Not stored in catalogue",
       detail: canDrawFootprint
-        ? "No manufacturer land pattern stored; drawing uses illustrative fallback pad geometry. Not verified for PCB layout."
+        ? "No manufacturer land pattern stored; drawing uses illustrative fallback pad geometry. Not checked for PCB layout."
         : "Pad dimensions are not recorded in catalogue.",
       sourceOrProvenance: canDrawFootprint ? "Placeholder" : "Not available",
     });
@@ -861,7 +861,7 @@ export function validateComponentFootprint(
       label: "Through-Hole Drill Diameter",
       state: "passed",
       valueDescription: `${storedDrill} mm drill diameter`,
-      detail: "Finished drill hole diameter verified against official datasheet specification.",
+      detail: "Finished drill hole diameter checked against official datasheet specification.",
       sourceOrProvenance: "Catalogue",
     });
   } else {
@@ -923,7 +923,7 @@ export function validateComponentFootprint(
     statusLabel = "Datasheet-checked";
     statusBadgeClass = "validation-status-verified";
     summary =
-      "All mechanical packaging, terminal pitch, pad sizing, and drill specifications have been verified against authoritative per-field datasheet source references.";
+      "All mechanical packaging, terminal pitch, pad sizing, and drill specifications have been checked against per-field datasheet source references.";
     warningNotice =
       "Datasheet-checked Footprint: Confirm land pattern dimensions against datasheet and fabricator rules before PCB layout.";
   } else if (canDrawFootprint) {
@@ -931,8 +931,8 @@ export function validateComponentFootprint(
     statusLabel = "Illustrative — Visualization Only";
     statusBadgeClass = "validation-status-illustrative";
     summary = isAxialPackage
-      ? "Component outline and pinout are verified, but axial leads are flexible (variable bend span) and pad/drill sizes are illustrative fallbacks. Not validated for direct PCB layout."
-      : "The drawing illustrates verified body dimensions and terminal arrangement, but lacks verified manufacturer pad/drill dimensions. Intended for visual clearance inspection, not direct PCB layout.";
+      ? "Component outline and pinout are recorded, but axial leads are flexible (variable bend span) and pad/drill sizes are illustrative fallbacks. Not validated for direct PCB layout."
+      : "The drawing illustrates package body dimensions and terminal arrangement, but lacks verified manufacturer pad/drill dimensions. Intended for visual clearance inspection, not direct PCB layout.";
     warningNotice =
       "Illustrative Footprint: Confirm manufacturer land pattern dimensions and drill diameters against the datasheet and fabricator rules before PCB layout.";
   } else {

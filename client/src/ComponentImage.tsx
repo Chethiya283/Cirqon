@@ -295,7 +295,7 @@ export const ComponentThumbnail: React.FC<ComponentThumbnailProps> = ({
           }`}
           title={imageInfo.provenanceLabel}
         >
-          {imageInfo.isVerifiedPhoto && !hasError ? "PHOTO" : "SPEC"}
+          {imageInfo.isVerifiedPhoto && !hasError ? "Illustration" : "Package visual"}
         </span>
       )}
     </div>

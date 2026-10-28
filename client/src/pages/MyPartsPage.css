@@ -170,9 +170,9 @@
 .bom-panel-title {
   font-size: var(--cq-text-xs);
   font-weight: var(--cq-weight-semibold);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--cq-text-muted);
+  text-transform: none;
+  letter-spacing: var(--cq-tracking-normal);
+  color: var(--cq-text-secondary);
 }
 
 .bom-status-badge {
@@ -247,7 +247,7 @@
 .bom-input:focus {
   outline: none;
   border-color: var(--cq-border-focus);
-  box-shadow: 0 0 0 2px var(--cq-emerald-soft);
+  box-shadow: 0 0 0 2px var(--cq-teal-soft);
 }
 
 .bom-input:focus-visible {

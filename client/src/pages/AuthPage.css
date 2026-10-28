@@ -39,9 +39,9 @@
   background: var(--cq-emerald-soft);
   color: var(--cq-emerald);
   font-size: var(--cq-text-xs);
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  font-weight: 500;
+  letter-spacing: var(--cq-tracking-normal);
+  text-transform: none;
 }
 
 .auth-title {
@@ -102,7 +102,7 @@
   outline: none;
   border-color: var(--cq-border-focus);
   background: var(--cq-surface);
-  box-shadow: 0 0 0 3px var(--cq-emerald-soft);
+  box-shadow: 0 0 0 2px var(--cq-teal-soft);
 }
 
 .form-input.input-error {
@@ -112,7 +112,7 @@
 
 .form-input.input-error:focus {
   border-color: var(--cq-error);
-  box-shadow: 0 0 0 3px var(--cq-error-border);
+  box-shadow: 0 0 0 2px var(--cq-error-soft);
 }
 
 .form-input-has-toggle {
@@ -211,8 +211,8 @@
 }
 
 .auth-submit-btn:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px var(--cq-emerald-soft);
+  outline: 2px solid var(--cq-border-focus);
+  outline-offset: 2px;
 }
 
 /* Card Footer */
