@@ -1,6 +1,6 @@
 // Administrative CRUD management view for electronic components.
-import React, { useEffect, useState } from "react";
-import { Plus, Pencil, Trash2, X, AlertTriangle, CheckCircle2, AlertCircle, Loader2, Package, FileText, } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { Plus, Pencil, Trash2, X, AlertTriangle, CheckCircle2, AlertCircle, Loader2, Package, FileText, Search, } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { resolveAssetUrl } from "../utils/formatters";
 import "./AdminComponentsPage.css";
@@ -105,6 +105,8 @@ export const AdminComponentsPage = () => {
     // Delete confirmation dialog state
     const [deletingComponent, setDeletingComponent] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    // Table filter search query
+    const [adminSearchQuery, setAdminSearchQuery] = useState("");
     // Trigger state to refresh the component list without full page reload
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     // Fetch all components from catalogue
@@ -144,6 +146,17 @@ export const AdminComponentsPage = () => {
         setLoading(true);
         setRefreshTrigger((prev) => prev + 1);
     };
+    // Filter components in the admin table by search query
+    const filteredComponents = useMemo(() => {
+        if (!adminSearchQuery.trim())
+            return components;
+        const q = adminSearchQuery.trim().toLowerCase();
+        return components.filter((comp) => (comp.partNumber || "").toLowerCase().includes(q) ||
+            (comp.name || "").toLowerCase().includes(q) ||
+            (comp.manufacturer || "").toLowerCase().includes(q) ||
+            (comp.category || "").toLowerCase().includes(q) ||
+            (comp.package?.name || "").toLowerCase().includes(q));
+    }, [components, adminSearchQuery]);
     // Open modal in "Create" mode
     const handleOpenAddModal = () => {
         setEditingComponent(null);
@@ -351,24 +364,32 @@ export const AdminComponentsPage = () => {
             return;
         setIsSaving(true);
         setServerError(null);
-        // Build payload: omit empty optional fields so technical specs are not invented
+        const isEdit = Boolean(editingComponent);
+        // Build payload: on update, pass explicit string values (including empty string to clear optional fields)
         const payload = {
             partNumber: formValues.partNumber.trim(),
             name: formValues.name.trim(),
             manufacturer: formValues.manufacturer.trim(),
             category: formValues.category.trim(),
         };
-        if (formValues.description.trim()) {
+        if (isEdit) {
             payload.description = formValues.description.trim();
-        }
-        if (formValues.imageUrl.trim()) {
             payload.imageUrl = formValues.imageUrl.trim();
-        }
-        if (formValues.datasheetUrl.trim()) {
             payload.datasheetUrl = formValues.datasheetUrl.trim();
-        }
-        if (formValues.manufacturerUrl.trim()) {
             payload.manufacturerUrl = formValues.manufacturerUrl.trim();
+        } else {
+            if (formValues.description.trim()) {
+                payload.description = formValues.description.trim();
+            }
+            if (formValues.imageUrl.trim()) {
+                payload.imageUrl = formValues.imageUrl.trim();
+            }
+            if (formValues.datasheetUrl.trim()) {
+                payload.datasheetUrl = formValues.datasheetUrl.trim();
+            }
+            if (formValues.manufacturerUrl.trim()) {
+                payload.manufacturerUrl = formValues.manufacturerUrl.trim();
+            }
         }
         // Preserve existing package geometry on edit, or update package name if provided
         if (editingComponent?.package || formValues.packageName.trim()) {
@@ -377,7 +398,6 @@ export const AdminComponentsPage = () => {
                 name: formValues.packageName.trim() || editingComponent?.package?.name || "",
             };
         }
-        const isEdit = Boolean(editingComponent);
         const url = isEdit
             ? `${API_BASE_URL}/components/${editingComponent._id}`
             : `${API_BASE_URL}/components`;
@@ -525,54 +545,78 @@ export const AdminComponentsPage = () => {
               <Plus size={16} aria-hidden="true"/>
               <span>Add Component</span>
             </button>
-          </div>) : (<div className="admin-table-scroll">
-            <table className="admin-components-table" aria-label="Electronic components catalogue table">
-              <thead>
-                <tr>
-                  <th scope="col">Part Number</th>
-                  <th scope="col">Component Name</th>
-                  <th scope="col">Manufacturer</th>
-                  <th scope="col">Category</th>
-                  <th scope="col">Package</th>
-                  <th scope="col" style={{ textAlign: "right" }}>
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {components.map((comp) => (<tr key={comp._id}>
-                    <td>
-                      <span className="admin-part-number">
-                        {comp.partNumber}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="admin-component-name">{comp.name}</span>
-                    </td>
-                    <td>{comp.manufacturer}</td>
-                    <td>
-                      <span className="admin-category-badge">
-                        {comp.category}
-                      </span>
-                    </td>
-                    <td>{comp.package?.name || "—"}</td>
-                    <td style={{ textAlign: "right" }}>
-                      <div className="admin-table-actions" style={{ justifyContent: "flex-end" }}>
-                        <button type="button" className="btn-row-action" onClick={() => handleOpenEditModal(comp)} aria-label={`Edit ${comp.partNumber}`} title={`Edit ${comp.partNumber}`}>
-                          <Pencil size={13} aria-hidden="true"/>
-                          <span>Edit</span>
-                        </button>
+          </div>) : (<>
+            <div className="admin-table-toolbar">
+              <div className="admin-search-wrapper">
+                <Search size={15} className="admin-search-icon" aria-hidden="true"/>
+                <input type="text" className="admin-search-input" placeholder="Filter components by MPN, name, manufacturer..." value={adminSearchQuery} onChange={(e) => setAdminSearchQuery(e.target.value)} aria-label="Filter components table"/>
+                {adminSearchQuery && (<button type="button" className="admin-search-clear" onClick={() => setAdminSearchQuery("")} title="Clear filter" aria-label="Clear search filter">
+                    <X size={14} aria-hidden="true"/>
+                  </button>)}
+              </div>
+              <span className="admin-count-badge">
+                Showing {filteredComponents.length} of {components.length} components
+              </span>
+            </div>
 
-                        <button type="button" className="btn-row-action action-delete" onClick={() => handleOpenDeleteDialog(comp)} aria-label={`Delete ${comp.partNumber}`} title={`Delete ${comp.partNumber}`}>
-                          <Trash2 size={13} aria-hidden="true"/>
-                          <span>Delete</span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>))}
-              </tbody>
-            </table>
-          </div>)}
+            {filteredComponents.length === 0 ? (<div className="admin-state-container">
+                <Package size={28} style={{ margin: "0 auto 12px", color: "var(--cq-text-muted)" }} aria-hidden="true"/>
+                <div className="admin-state-title">No matching components</div>
+                <p style={{ margin: "0 0 16px", fontSize: "var(--cq-text-sm)" }}>
+                  No catalogue components matched &quot;{adminSearchQuery}&quot;.
+                </p>
+                <button type="button" className="btn-admin-primary" onClick={() => setAdminSearchQuery("")}>
+                  Clear filter
+                </button>
+              </div>) : (<div className="admin-table-scroll">
+              <table className="admin-components-table" aria-label="Electronic components catalogue table">
+                <thead>
+                  <tr>
+                    <th scope="col">Part Number</th>
+                    <th scope="col">Component Name</th>
+                    <th scope="col">Manufacturer</th>
+                    <th scope="col">Category</th>
+                    <th scope="col">Package</th>
+                    <th scope="col" style={{ textAlign: "right" }}>
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredComponents.map((comp) => (<tr key={comp._id}>
+                      <td>
+                        <span className="admin-part-number">
+                          {comp.partNumber}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="admin-component-name">{comp.name}</span>
+                      </td>
+                      <td>{comp.manufacturer}</td>
+                      <td>
+                        <span className="admin-category-badge">
+                          {comp.category}
+                        </span>
+                      </td>
+                      <td>{comp.package?.name || "—"}</td>
+                      <td style={{ textAlign: "right" }}>
+                        <div className="admin-table-actions" style={{ justifyContent: "flex-end" }}>
+                          <button type="button" className="btn-row-action" onClick={() => handleOpenEditModal(comp)} aria-label={`Edit ${comp.partNumber}`} title={`Edit ${comp.partNumber}`}>
+                            <Pencil size={13} aria-hidden="true"/>
+                            <span>Edit</span>
+                          </button>
+
+                          <button type="button" className="btn-row-action action-delete" onClick={() => handleOpenDeleteDialog(comp)} aria-label={`Delete ${comp.partNumber}`} title={`Delete ${comp.partNumber}`}>
+                            <Trash2 size={13} aria-hidden="true"/>
+                            <span>Delete</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>))}
+                </tbody>
+              </table>
+            </div>)}
+          </>)}
       </div>
 
       {/* 4. Shared Create / Edit Form Modal */}

@@ -594,6 +594,29 @@ router.put("/:id", requireAuth, requireAdmin, async (req, res) => {
       true
     );
 
+    // Defensive Merge: If updating package metadata, preserve existing mechanical/layout properties
+    if (whitelistedUpdates.package && existingComponent.package) {
+      const existingPkg = existingComponent.package.toObject
+        ? existingComponent.package.toObject()
+        : existingComponent.package;
+      whitelistedUpdates.package = {
+        ...existingPkg,
+        ...whitelistedUpdates.package,
+        bodyDimensions: {
+          ...(existingPkg.bodyDimensions || {}),
+          ...(whitelistedUpdates.package.bodyDimensions || {}),
+        },
+        pcbLayout: {
+          ...(existingPkg.pcbLayout || {}),
+          ...(whitelistedUpdates.package.pcbLayout || {}),
+        },
+        footprintDimensions: {
+          ...(existingPkg.footprintDimensions || {}),
+          ...(whitelistedUpdates.package.footprintDimensions || {}),
+        },
+      };
+    }
+
     // 6. Update document with runValidators enabled to enforce schema rules
     const updatedComponent = await Component.findByIdAndUpdate(
       id,

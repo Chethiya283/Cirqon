@@ -271,7 +271,7 @@ function App() {
         return () => {
             cancelled = true;
         };
-    }, []);
+    }, [refreshIndex, location.pathname]);
     // Fetch components whenever the active page's search or filter changes.
     useEffect(() => {
         let cancelled = false;
@@ -328,6 +328,7 @@ function App() {
         activeManufacturer,
         activePackage,
         refreshIndex,
+        location.pathname,
     ]);
     // Calculate manufacturer options using the other active filters on the current page.
     const manufacturers = useMemo(() => {
