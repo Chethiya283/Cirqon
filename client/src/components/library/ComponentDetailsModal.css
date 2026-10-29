@@ -1,5 +1,3 @@
-/* Component Details Modal Styling */
-
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -199,7 +197,6 @@
   font-weight: var(--cq-weight-semibold);
 }
 
-/* Modal CAD Footprint Preview Layout */
 .modal-mechanical-header {
   display: flex;
   align-items: center;

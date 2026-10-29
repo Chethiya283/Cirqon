@@ -1,25 +1,8 @@
-/**
- * server/scripts/updateImages.js
- *
- * Viva Notes:
- * 1. Safe Database Updates: Uses MongoDB's atomic `$set` operator to update ONLY
- *    the `imageUrl` field on matched components. No other fields, indexes, or
- *    schema validations are touched.
- * 2. Preview / Dry-run Safety: The `--dry-run` flag performs full audit and path
- *    matching without executing write operations, preventing accidental data corruption.
- * 3. Strict String Matching & Leading Zeros Preservation: Part numbers (like Molex "0022232041")
- *    are explicitly cast and handled as strings (`String(val).trim()`). They are NEVER parsed
- *    as numbers, which would strip leading zeros (e.g. turning "0022232041" into 22232041).
- * 4. Targeted Part Updating: Supports `--part <MPN>` to selectively update a single component
- *    record in the database without affecting any other records.
- * 5. Case-Insensitive Matching: Compares `partNumber.toLowerCase()` against the
- *    filename stem to ensure case differences do not prevent correct image linking.
- */
+// Updates component imageUrl paths in MongoDB from client/public/images/components/
 
 const fs = require("fs");
 const path = require("path");
 
-// Ensure resolution of server dependencies when invoked from any directory
 if (!module.paths.includes(path.resolve(__dirname, "../node_modules"))) {
   module.paths.push(path.resolve(__dirname, "../node_modules"));
 }
@@ -31,7 +14,6 @@ const Component = require("../models/Component");
 async function runImageUpdate() {
   const isDryRun = process.argv.includes("--dry-run");
 
-  // Optional target part filter (e.g. --part 0022232041)
   const partArgIndex = process.argv.findIndex((a) => a === "--part" || a === "--mpn");
   const targetPartFilter = partArgIndex !== -1 && process.argv[partArgIndex + 1]
     ? String(process.argv[partArgIndex + 1]).trim()
@@ -47,36 +29,31 @@ async function runImageUpdate() {
   }
   console.log("=".repeat(65));
 
-  // Resolve directory of client webp assets
-  const imagesDir = path.resolve(__dirname, "../../client/public/images/components");
-  if (!fs.existsSync(imagesDir)) {
-    console.error(`Error: Images directory not found: ${imagesDir}`);
+  const clientImagesDir = path.resolve(
+    __dirname,
+    "../../client/public/images/components"
+  );
+
+  let webpFiles = [];
+  try {
+    const allFiles = fs.readdirSync(clientImagesDir);
+    webpFiles = allFiles.filter((f) => f.toLowerCase().endsWith(".webp"));
+  } catch (err) {
+    console.error(`[ERROR] Unable to read directory: ${clientImagesDir}`);
+    console.error(`Reason: ${err.message}`);
     process.exit(1);
   }
-
-  // Read all .webp image files
-  const dirEntries = fs.readdirSync(imagesDir);
-  const webpFiles = dirEntries.filter((file) =>
-    file.toLowerCase().endsWith(".webp")
-  );
 
   console.log(`Scanned directory: client/public/images/components/`);
   console.log(`Found ${webpFiles.length} .webp image file(s) on disk.\n`);
 
   let components = [];
-  let connectedToDb = false;
-
   try {
-    if (!process.env.MONGODB_URI) {
-      throw new Error("MONGODB_URI is not defined in server/.env");
+    if (!isDryRun) {
+      console.log("Connecting to MongoDB Atlas...");
+      await mongoose.connect(process.env.MONGODB_URI);
+      console.log("Connected successfully to database.\n");
     }
-
-    console.log("Connecting to MongoDB Atlas...");
-    await mongoose.connect(process.env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 5000,
-    });
-    connectedToDb = true;
-    console.log("Connected successfully to database.\n");
 
     components = await Component.find({});
   } catch (err) {
@@ -93,62 +70,60 @@ async function runImageUpdate() {
 
       if (startIdx !== -1 && endIdx !== -1) {
         const jsonCode = seedContent
-          .substring(startIdx + "const components = ".length, endIdx)
+          .slice(startIdx + startMarker.length - 1, endIdx)
           .trim()
-          .replace(/;\s*$/, "");
+          .replace(/;$/, "");
         components = eval(jsonCode);
       } else {
         throw new Error("Failed to parse fallback components from seedComponents.js");
       }
     } else {
-      console.error(`[FATAL] Database connection failed: ${err.message}`);
+      console.error("[FATAL] Failed to connect to MongoDB Atlas:", err.message);
       process.exit(1);
     }
   }
 
   const toUpdate = [];
-  const unmatchedFiles = [];
-  const matchedPartNumbers = new Set();
+  const matchedWebpFiles = new Set();
 
-  // Match each .webp file to a component partNumber (strictly as strings, case-insensitive)
-  for (const file of webpFiles) {
+  for (const filename of webpFiles) {
     // Preserve leading zeros by strictly treating filename stem as string
-    const fileStem = String(path.basename(file, path.extname(file))).trim();
+    const stem = path.basename(filename, path.extname(filename)).trim();
 
-    const matched = components.find((c) => {
+    const matchedComponent = components.find((c) => {
       const compMpn = String(c.partNumber ?? "").trim();
-      return compMpn.toLowerCase() === fileStem.toLowerCase();
+      return compMpn.toLowerCase() === stem.toLowerCase();
     });
 
-    if (matched) {
-      const canonicalMpn = String(matched.partNumber).trim();
-      matchedPartNumbers.add(canonicalMpn.toLowerCase());
+    if (matchedComponent) {
+      matchedWebpFiles.add(filename);
+      const targetImageUrl = `/images/components/${filename}`;
+      const currentImageUrl = matchedComponent.imageUrl || "(none)";
 
-      // If a specific part was requested, skip parts that do not match the filter
-      if (targetPartFilter && canonicalMpn.toLowerCase() !== targetPartFilter.toLowerCase()) {
+      if (targetPartFilter && String(matchedComponent.partNumber).toLowerCase() !== targetPartFilter.toLowerCase()) {
         continue;
       }
 
-      const targetUrl = `/images/components/${file}`;
       toUpdate.push({
-        partNumber: canonicalMpn,
-        matchedFile: file,
-        currentImageUrl: matched.imageUrl || "(none)",
-        targetImageUrl: targetUrl,
-        componentId: matched._id,
+        id: matchedComponent._id,
+        partNumber: String(matchedComponent.partNumber),
+        name: matchedComponent.name,
+        targetImageUrl,
+        currentImageUrl,
       });
-    } else {
-      unmatchedFiles.push(file);
     }
   }
 
-  // Check for components with no matching .webp file
-  const componentsWithoutWebp = components.filter((c) => {
-    const compMpn = String(c.partNumber ?? "").trim();
-    return !matchedPartNumbers.has(compMpn.toLowerCase());
+  const unmatchedFiles = webpFiles.filter((f) => !matchedWebpFiles.has(f));
+
+  const componentsWithoutWebp = components.filter((comp) => {
+    const compMpn = String(comp.partNumber ?? "").trim().toLowerCase();
+    return !webpFiles.some((f) => {
+      const stem = path.basename(f, path.extname(f)).trim().toLowerCase();
+      return stem === compMpn;
+    });
   });
 
-  // 1. Output components to update
   console.log(`--- 1. Components to Update (${toUpdate.length}) ---`);
   if (toUpdate.length === 0) {
     console.log("  No matching components found for update.");
@@ -156,10 +131,9 @@ async function runImageUpdate() {
     for (const item of toUpdate) {
       console.log(`  [UPDATE] ${item.partNumber.padEnd(18)} : "${item.currentImageUrl}" -> "${item.targetImageUrl}"`);
 
-      // If real run, perform MongoDB atomic update
-      if (!isDryRun && connectedToDb && item.componentId) {
+      if (!isDryRun && item.id) {
         await Component.updateOne(
-          { _id: item.componentId },
+          { _id: item.id },
           { $set: { imageUrl: item.targetImageUrl } }
         );
       }
@@ -167,7 +141,6 @@ async function runImageUpdate() {
   }
   console.log();
 
-  // 2. Output files with no matching part
   console.log(`--- 2. Files with No Matching Component (${unmatchedFiles.length}) ---`);
   if (unmatchedFiles.length === 0) {
     console.log("  None. All .webp files correspond to a component part number.");
@@ -178,7 +151,6 @@ async function runImageUpdate() {
   }
   console.log();
 
-  // 3. Output components with no .webp file
   console.log(`--- 3. Components with No .webp File (${componentsWithoutWebp.length}) ---`);
   if (componentsWithoutWebp.length === 0) {
     console.log("  None. All catalogue components have a matching .webp image.");
@@ -199,12 +171,12 @@ async function runImageUpdate() {
   }
   console.log("=".repeat(65));
 
-  if (connectedToDb) {
+  if (mongoose.connection.readyState !== 0) {
     await mongoose.disconnect();
   }
 }
 
 runImageUpdate().catch((err) => {
-  console.error("Script error:", err.message);
+  console.error("Script failed with unhandled error:", err);
   process.exit(1);
 });

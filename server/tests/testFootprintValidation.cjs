@@ -1,4 +1,4 @@
-// Standalone verification script for Footprint Validation logic on seed catalogue components.
+// Automated footprint validation test suite for catalogue components
 
 const fs = require("fs");
 const path = require("path");
@@ -6,13 +6,9 @@ const path = require("path");
 process.env.NODE_PATH = path.join(__dirname, "../node_modules");
 require("module").Module._initPaths();
 
-// Load the seed components definition
 const seedPath = path.join(__dirname, "../scripts/seedComponents.js");
 const seedContent = fs.readFileSync(seedPath, "utf8");
 
-// Extract the components array by running the file in a restricted sandbox or parsing
-// Since seedComponents.js uses require('mongoose') and dotenv, we can mock mongoose or read components directly
-// Extract the components array cleanly from seedComponents.js
 let components;
 try {
   const startIdx = seedContent.indexOf("const components = [");
@@ -23,7 +19,6 @@ try {
   console.error("Failed to parse components:", e.message);
 }
 
-// Replicate the pure validation logic to test server-side as well
 function validateComponentFootprint(component) {
   const pkg = component.package;
   const pkgName = (pkg && pkg.name) ? pkg.name.trim() : "";
@@ -66,35 +61,30 @@ function validateComponentFootprint(component) {
 
   const checks = [];
 
-  // 1. Identity
   checks.push({
     id: "package-identity",
     state: pkgName ? "passed" : "missing",
     value: pkgName,
   });
 
-  // 2. Mounting
   checks.push({
     id: "mounting-type",
     state: mountingType ? "passed" : "missing",
     value: mountingType,
   });
 
-  // 3. Body Dims
   checks.push({
     id: "body-dimensions",
     state: hasBodyDims ? "passed" : "missing",
     value: hasBodyDims ? `${bodyDims.lengthMm}x${bodyDims.widthMm}mm` : "missing",
   });
 
-  // 4. Pinout
   checks.push({
     id: "pin-configuration",
     state: pinCount > 0 ? "passed" : "missing",
     value: `${pinCount} pins`,
   });
 
-  // 5. Pitch
   if (isAxial) {
     checks.push({
       id: "lead-pitch",
@@ -115,14 +105,12 @@ function validateComponentFootprint(component) {
     });
   }
 
-  // 6. Pad Dimensions
   checks.push({
     id: "pad-dimensions",
     state: storedPadSize != null ? "passed" : canDraw ? "unverified" : "missing",
     value: storedPadSize != null ? `${storedPadSize}mm` : "Placeholder / Missing",
   });
 
-  // 7. Drill
   if (isSmd) {
     checks.push({
       id: "drill-diameter",
@@ -137,7 +125,6 @@ function validateComponentFootprint(component) {
     });
   }
 
-  // 8. Datasheet
   checks.push({
     id: "datasheet-documentation",
     state: component.datasheetUrl ? "passed" : "missing",
@@ -190,7 +177,6 @@ for (const pn of testParts) {
     console.log(`  - [${c.state.toUpperCase()}] ${c.id}: ${c.value}`);
   }
 
-  // Verification assertions
   if (pn === "LM358" || pn === "NE555") {
     if (res.status !== "illustrative") {
       console.error(`FAIL: ${pn} should be illustrative, got ${res.status}`);

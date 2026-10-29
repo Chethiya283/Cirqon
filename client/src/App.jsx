@@ -83,14 +83,7 @@ function App() {
             setSortDirection("asc");
         }
     }
-    // ========================================================
-    // ROUTING (Single Source of Truth)
-    // ========================================================
-    // VIVA EXPLANATION:
-    // The browser URL pathname is the single source of truth for the active view.
-    // We do not store an `activeView` state variable that could become desynchronized
-    // on browser Back/Forward navigation or direct page refreshes.
-    // Instead, `activeView` is derived directly from React Router's `location.pathname`.
+    // activeView is derived from URL pathname to stay in sync with browser navigation
     const location = useLocation();
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -101,14 +94,7 @@ function App() {
     const isLibraryView = location.pathname === "/library";
     const isPcbView = location.pathname === "/pcb";
     const isCompareView = location.pathname === "/compare";
-    // VIVA EXPLANATION: The Library page is full width with its own two-column sticky sidebar.
-    // Shared workspace sidebar is shown for /compare and /pcb, while /, /library, /my-parts, and auth routes are full-width.
     const showSidebar = !isHomeView && !isAuthView && !isMyPartsView && !isLibraryView;
-    /**
-     * Handle bookmark save click.
-     * If logged out, directs engineer to /login.
-     * If logged in, toggles bookmark status.
-     */
     const handleToggleSave = (e, component) => {
         e.stopPropagation();
         if (!user) {
@@ -180,9 +166,8 @@ function App() {
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState(search);
     const [refreshIndex, setRefreshIndex] = useState(0);
-    // Debounce text search input by 300ms
+    // Debounce text search by 300ms to avoid excessive API requests
     useEffect(() => {
-        // Clear immediately if search is empty, otherwise wait 300ms
         const delay = search.trim() ? 300 : 0;
         const timer = setTimeout(() => {
             setDebouncedSearch(search);
@@ -191,8 +176,7 @@ function App() {
             clearTimeout(timer);
         };
     }, [search]);
-    // Per-page category and parametric filter states so selecting a category on one page
-    // does not unexpectedly alter another page's active category or filters.
+    // Separate filter states per route to prevent cross-page state contamination
     const [selectedCategory, setSelectedCategory] = useState("All Components");
     const [selectedManufacturer, setSelectedManufacturer] = useState("");
     const [selectedPackage, setSelectedPackage] = useState("");
@@ -217,15 +201,12 @@ function App() {
         : isCompareView
             ? comparePackage
             : selectedPackage;
-    // Indicates whether any keyword search, category, or parametric filter is currently active on the Library page
     const hasActiveFilters = Boolean(selectedCategory !== "All Components" ||
         selectedManufacturer ||
         selectedPackage ||
         search.trim());
     const [selectedComponent, setSelectedComponent] = useState(null);
-    // VIVA EXPLANATION: PCB Assistant query parameter synchronization.
-    // Supports deep linking, browser bookmarks, refreshes, and direct navigation
-    // via ?partNumber=LM358 or ?id=... without desynchronizing state.
+    // Sync selected component with URL query params for deep-linking
     const pcbQueryParam = useMemo(() => {
         if (!isPcbView)
             return "";
@@ -249,7 +230,6 @@ function App() {
         }
         return components;
     }, [selectedPcbComponent, components]);
-    // Load the full component list once to populate filter options.
     useEffect(() => {
         let cancelled = false;
         async function fetchFilterOptions() {
@@ -272,7 +252,6 @@ function App() {
             cancelled = true;
         };
     }, [refreshIndex, location.pathname]);
-    // Fetch components whenever the active page's search or filter changes.
     useEffect(() => {
         let cancelled = false;
         async function fetchComponents() {
@@ -330,7 +309,6 @@ function App() {
         refreshIndex,
         location.pathname,
     ]);
-    // Calculate manufacturer options using the other active filters on the current page.
     const manufacturers = useMemo(() => {
         return [
             ...new Set(filterOptions
@@ -350,7 +328,6 @@ function App() {
                 .filter(Boolean)),
         ].sort((a, b) => a.localeCompare(b));
     }, [filterOptions, search, activeCategory, activePackage]);
-    // Calculate package options using the other active filters on the current page.
     const packages = useMemo(() => {
         return [
             ...new Set(filterOptions
@@ -403,7 +380,6 @@ function App() {
         }
     }
     return (<div className="app-shell">
-      {/* Shared Site Shell Header (Navbar with Search & NavLinks) */}
       <Navbar searchQuery={search} onSearchChange={(query) => {
             setSearch(query);
             if (!isLibraryView) {
@@ -413,7 +389,6 @@ function App() {
 
       <div className={`workspace-body ${!showSidebar ? "home-layout" : ""}`}>
         {showSidebar && (<aside className="sidebar" aria-label="Parametric and category filters">
-            {/* Shared Library-design Category Cards Section */}
             <CategoryCardsSection categories={categories} categoryCounts={categoryCounts} selectedCategory={activeCategory} onSelectCategory={(catName) => {
                 if (isPcbView) {
                     setPcbCategory(catName);
@@ -494,11 +469,8 @@ function App() {
 
         <main className="main-content">
           <section className="page-content">
-            {/* VIVA EXPLANATION: React Error Boundary wraps all client views to prevent white screen crashes */}
             <ErrorBoundary>
-              {/* VIVA EXPLANATION: React Router Routes map each URL pathname to a view */}
               <Routes>
-              {/* Route 1: Public Home Page */}
               <Route path="/" element={<HomePage categoryCounts={categoryCounts} categories={categories} onSearch={(query) => {
                 setSearch(query);
                 navigate("/library");
@@ -507,21 +479,10 @@ function App() {
                 navigate("/library");
             }}/>}/>
 
-              {/* Route 2: Authentication Views (UI Only) */}
               <Route path="/login" element={<LoginPage />}/>
               <Route path="/register" element={<RegisterPage />}/>
 
-              {/* Route 2: Component Library Catalog Workspace */}
               <Route path="/library" element={<section className="library-view-container" aria-label="Component Catalog">
-                    {/* VIVA EXPLANATION: Library Layout & Presentation Architecture
-              * 1. Page Header: Breadcrumb, title "Component library", short subtitle, result count.
-              * 2. Responsive Grid: repeat(auto-fill, minmax(260px, 1fr)) dynamically adjusts columns.
-              * 3. Card Hierarchy: Corners for Compare & Save -> 4:3 Image Stage -> Mono MPN -> 2-line Name -> Quiet Mfr/Pkg -> 3 Specs -> Datasheet text link + Primary 'View details'.
-              * 4. Image Aspect Ratio: Fixed 4:3 container with object-fit: contain on neutral surface, zero CLS, category-icon fallback.
-              * 5. Sticky Elements: Sticky table header (position: sticky; top: 0) and sticky bottom compare tray floating over content.
-              */}
-
-                    {/* Catalog Heading Group */}
                     <div className="library-heading-group">
                       <nav className="library-breadcrumb" aria-label="Breadcrumb">
                         <span className="breadcrumb-root">Electronic Components</span>
@@ -545,7 +506,6 @@ function App() {
                           </p>
                         </div>
 
-                        {/* On-Page Quick Search Field */}
                         <div className="library-header-search">
                           <div className="library-search-container">
                             <Search size={16} className="library-search-icon" aria-hidden="true"/>
@@ -558,21 +518,10 @@ function App() {
                       </div>
                     </div>
 
-                    {/* VIVA EXPLANATION: Two-Column Sticky Sidebar Architecture
-              * 1. Layout: Two-column layout with 260px left sidebar and flex-1 main panel.
-              * 2. position: sticky: Top offset is `top: calc(var(--cq-navbar-height) + 16px)`.
-              * 3. align-self: flex-start: Prevents flex stretch from giving sidebar the same height as main content,
-              *    which would leave 0px room for sticking.
-              * 4. max-height + overflow-y: auto: Sidebar scrolls internally if categories + filters exceed viewport.
-              * 5. Under 900px: Collapses into horizontal touch-swipe category strip and collapsible filters panel.
-              */}
                     <div className="library-two-column-layout">
-                      {/* Left Sticky Sidebar: Category Cards + Parametric Filters */}
                       <aside className="library-sidebar" aria-label="Component categories and parametric filters">
-                        {/* Category Cards Section */}
                         <CategoryCardsSection categories={categories} categoryCounts={categoryCounts} selectedCategory={selectedCategory} onSelectCategory={setSelectedCategory}/>
 
-                        {/* Mobile Collapsible Filters Toggle Button (<900px only) */}
                         <button type="button" className="library-mobile-filters-toggle" onClick={() => setMobileFiltersOpen((prev) => !prev)} aria-expanded={mobileFiltersOpen} aria-label="Toggle parametric filters panel">
                           <div className="library-mobile-toggle-left">
                             <SlidersHorizontal size={15} aria-hidden="true"/>
@@ -593,11 +542,9 @@ function App() {
                           </div>
                         </button>
 
-                        {/* Parametric Filters Section (Always visible >900px, collapsible <900px) */}
                         <div className={`library-sidebar-filters ${mobileFiltersOpen ? "mobile-open" : ""}`}>
                           <div className="library-sidebar-heading">Filters</div>
 
-                          {/* Manufacturer Select */}
                           <div className="library-sidebar-field">
                             <label htmlFor="library-sidebar-mfr" className="library-sidebar-label">
                               Manufacturer
@@ -617,7 +564,6 @@ function App() {
                             </div>
                           </div>
 
-                          {/* Package / Case Select */}
                           <div className="library-sidebar-field">
                             <label htmlFor="library-sidebar-pkg" className="library-sidebar-label">
                               Package / Case
@@ -637,7 +583,6 @@ function App() {
                             </div>
                           </div>
 
-                          {/* Reset Filters Button */}
                           <button type="button" className="library-sidebar-reset-btn" onClick={clearFilters} disabled={!hasActiveFilters} title="Reset all search keywords and parametric filters">
                             <RotateCcw size={13} aria-hidden="true"/>
                             <span>Reset filters</span>
@@ -645,13 +590,10 @@ function App() {
                         </div>
                       </aside>
 
-                      {/* Right Main Content Panel (Toolbar, Pills & Grid/Table) */}
                       <div className="library-main-panel">
 
-                    {/* Unified Toolbar: Sorting, View Mode Toggle, Result Count */}
                     <div className="library-toolbar" role="region" aria-label="Catalog sorting and view mode controls">
                       <div className="library-toolbar-filters">
-                        {/* Sort Field & Direction Toggle */}
                         <div className="library-control-wrap">
                           <label htmlFor="library-sort-select" className="library-control-label">
                             Sort:
@@ -688,7 +630,6 @@ function App() {
                       </div>
 
                       <div className="library-toolbar-view-controls">
-                        {/* Cards / Table View Mode Toggle */}
                         <div className="view-mode-toggle" role="group" aria-label="Catalog Layout View">
                           <button type="button" className={`view-mode-btn ${catalogLayout === "grid" ? "active" : ""}`} onClick={() => setCatalogLayout("grid")} title="Card Grid View" aria-pressed={catalogLayout === "grid"}>
                             <span className="view-btn-icon">▦</span> Cards
@@ -698,7 +639,6 @@ function App() {
                           </button>
                         </div>
 
-                        {/* Result Count Indicator */}
                         <span className="result-count">
                           {loading ? ("Loading...") : (<>
                               <span className="mono-num">
@@ -710,7 +650,6 @@ function App() {
                       </div>
                     </div>
 
-                    {/* Active Filter Pills (if active) */}
                     {hasActiveFilters && (<div className="active-filter-pills">
                         <span className="active-filter-label">Active filters:</span>
                         {selectedCategory !== "All Components" && (<button className="filter-pill" type="button" onClick={() => setSelectedCategory("All Components")} title="Remove category filter">
@@ -780,7 +719,6 @@ function App() {
                                     setSelectedComponent(component);
                                 }
                             }} aria-label={`${component.name} (${component.partNumber})`}>
-                              {/* Corner controls: Compare checkbox on left, Status & Save bookmark on right */}
                               <div className="card-top-bar">
                                 <label className="card-compare-label" onClick={(e) => e.stopPropagation()} title={!isSelected && selectedForCompare.length >= 4
                                 ? "Maximum 4 components selected for comparison"
@@ -817,7 +755,6 @@ function App() {
                                 </div>
                               </div>
 
-                              {/* Fixed 4:3 Image Stage with category-icon fallback (no PHOTO badge) */}
                               <div className="card-image-stage" onClick={() => setSelectedComponent(component)} title={`View technical details for ${component.name}`}>
                                 <ComponentThumbnail component={component} size="fluid" showProvenanceBadge={false} fallbackIcon={<div className="card-category-placeholder">
                                       <div className="card-category-placeholder-icon">
@@ -829,7 +766,6 @@ function App() {
                                     </div>}/>
                               </div>
 
-                              {/* Card Body */}
                               <div className="card-body">
                                 <div className="card-mpn-row">
                                   <span className="card-mpn mono-num" onClick={() => setSelectedComponent(component)} title={`Manufacturer Part Number: ${component.partNumber}`}>
@@ -861,7 +797,6 @@ function App() {
                                 </div>
                               </div>
 
-                              {/* Card Footer: Small datasheet text link + PCB Assistant quick link + Primary View Details button */}
                               <div className="card-footer">
                                 <div className="card-footer-links">
                                   {isValidHttpUrl(component.datasheetUrl) ? (<a className="card-datasheet-text-link" href={resolveAssetUrl(component.datasheetUrl)} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} title={`Open official datasheet PDF for ${component.partNumber}`}>
@@ -1124,7 +1059,6 @@ function App() {
                       </div>
                     </section>}/>
 
-              {/* Route 3: PCB Footprint & Design Assistant Workspace */}
               <Route path="/pcb" element={<section className="pcb-assistant-view">
                     <div className="catalog-control-bar">
                       <div className="catalog-heading-group">
@@ -1150,8 +1084,6 @@ function App() {
                       </button>
                     </div>
 
-                    {/* Viva Note: Legend explaining the 4 provenance categories so users know
-                whether a number is stored in the database, derived, a placeholder fallback, or missing. */}
                     <div className="pcb-provenance-legend" aria-label="Data provenance legend">
                       <span className="pcb-legend-title">Provenance legend:</span>
                       <div className="pcb-legend-items">
@@ -1250,7 +1182,6 @@ function App() {
                         audit.fields.pinout,
                     ];
                     return (<article className={`pcb-card cad-grid-overlay ${audit.canDrawFootprint ? "pcb-card-interactive" : ""} ${isCardSelected ? "pcb-card-selected" : ""}`} key={component._id}>
-                        {/* 1. Card Identity Header */}
                         <div className="pcb-card-header">
                           <div className="pcb-card-title-group">
                             <span className="part-number">
@@ -1271,7 +1202,6 @@ function App() {
                           </div>
                         </div>
 
-                        {/* 2. Footprint Drawing & Interactive Inspection Area */}
                         <div className="pcb-card-footprint-section">
                           {audit.canDrawFootprint ? (<InteractiveFootprintViewer key={component._id} component={component} missingFields={audit.missingFields} validation={audit.validation}/>) : (<div className="pcb-empty-workspace">
                               <div className="pcb-footprint-empty-state" role="region" aria-label={`Footprint unavailable for ${component.partNumber}`}>
@@ -1292,7 +1222,6 @@ function App() {
                             </div>)}
                         </div>
 
-                        {/* 3. Specifications, Provenance Data Sources & Layout Notes */}
                         <div className="pcb-card-specs-section">
                           <div className="pcb-data-sources-panel">
                             <div className="pcb-data-sources-header">
@@ -1334,7 +1263,6 @@ function App() {
                             </p>)}
                         </div>
 
-                        {/* 4. Action Links & Modal Trigger Footer */}
                         <div className="pcb-card-footer">
                           <div className="pcb-sources-links">
                             {isValidHttpUrl(component.datasheetUrl) ? (<a className="datasheet-card-link" href={resolveAssetUrl(component.datasheetUrl)} target="_blank" rel="noopener noreferrer">
@@ -1377,7 +1305,6 @@ function App() {
               </>)}
           </section>}/>
 
-              {/* Route 4: Side-by-Side Component Compare Workspace */}
               <Route path="/compare" element={<section className="compare-view">
                     <div className="compare-header-container">
                       <nav className="compare-breadcrumb" aria-label="Breadcrumb">
@@ -1689,17 +1616,14 @@ function App() {
                       </div>)}
                   </section>}/>
 
-              {/* Route 5: Authenticated Engineer Saved Parts Workspace */}
               <Route path="/my-parts" element={<ProtectedRoute>
                     <MyPartsPage onSelectComponent={setSelectedComponent}/>
                   </ProtectedRoute>}/>
 
-              {/* Route 6: Administrative Component CRUD Management */}
               <Route path="/admin/components" element={<ProtectedRoute requiredRole="admin">
                     <AdminComponentsPage />
                   </ProtectedRoute>}/>
 
-              {/* Catch-all: Friendly 404 page for unknown URLs */}
               <Route path="*" element={<NotFoundPage />}/>
             </Routes>
           </ErrorBoundary>
@@ -1707,7 +1631,6 @@ function App() {
         </main>
       </div>
 
-      {/* Shared Site Shell Footer */}
       <Footer />
 
       {isLibraryView && (<CompareTray selectedComponents={selectedForCompare} onRemove={toggleCompare} onClear={() => setSelectedForCompare([])} onCompare={() => navigate("/compare")}/>)}

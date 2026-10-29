@@ -3,19 +3,9 @@ import { Link } from "react-router-dom";
 import { ExternalLink } from "lucide-react";
 import { CirqonLogo } from "../common/CirqonLogo";
 import "./Footer.css";
-/**
- * Footer Component
- *
- * Shared public website footer providing:
- * 1. Brand summary & engineering platform context.
- * 2. Quick navigation links to core workspaces using React Router `Link`.
- * 3. Component category references matching database taxonomy.
- * 4. Technical metadata and academic project attribution.
- */
 export const Footer = () => {
     return (<footer className="site-footer">
       <div className="site-footer-container">
-        {/* Brand Column */}
         <div className="footer-col brand-col">
           <div className="footer-brand-header">
             <CirqonLogo size="md"/>
@@ -31,7 +21,6 @@ export const Footer = () => {
           </div>
         </div>
 
-        {/* Platform Workspaces */}
         <div className="footer-col">
           <h4 className="footer-heading">Workspaces</h4>
           <ul className="footer-links-list">
@@ -58,7 +47,6 @@ export const Footer = () => {
           </ul>
         </div>
 
-        {/* Component Taxonomy */}
         <div className="footer-col">
           <h4 className="footer-heading">Component Families</h4>
           <ul className="footer-links-list">
@@ -85,7 +73,6 @@ export const Footer = () => {
           </ul>
         </div>
 
-        {/* Project Attribution & References */}
         <div className="footer-col">
           <h4 className="footer-heading">Datasheet References</h4>
           <ul className="footer-links-list">
@@ -105,7 +92,6 @@ export const Footer = () => {
         </div>
       </div>
 
-      {/* Bottom Copyright Bar */}
       <div className="footer-bottom-bar">
         <div className="footer-bottom-container">
           <span className="copyright-text">

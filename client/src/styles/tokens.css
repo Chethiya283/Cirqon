@@ -1,61 +1,30 @@
-/**
- * Cirqon Design Tokens System
- *
- * Professional Engineering Palette:
- * - Page background: Neutral cool off-white (#F5F6F8)
- * - Surfaces: Crisp white cards and modals (#FFFFFF)
- * - Subtle surface: Light neutral (#EEF1F4)
- * - Text: High-contrast deep navy-charcoal (#1B2433)
- * - Secondary text: Slate neutral (#556070)
- * - Muted text: #667080 (adjusted from #7A8494 for full 4.5:1 WCAG AA body contrast; #7A8494 retained for UI chrome/captions)
- * - Borders: Hairline #DDE1E7, Strong border #C5CCD6
- * - Primary accent: Deep teal (#1F5F5B), hover (#184C49), soft tint (#E6EFEE)
- * - Technical / link blue: Muted steel (#2F5D8C), hover (#23476B), soft tint (#E8EEF5)
- * - Status colours: Muted success (#1E6B4A), warning (#9A5B13), error (#A63232)
- * - Shadows: Soft neutral (rgba(27, 36, 51, 0.06)); no colored glows
- */
-
 :root {
-  /* ========================================================
-     1. Surface & Background Colors
-     ======================================================== */
-  --cq-bg: #F5F6F8;                  /* Neutral off-white page background */
-  --cq-bg-alt: #EEF1F4;              /* Subtle neutral for alternate sections */
-  --cq-surface: #FFFFFF;             /* Primary white card / table surface */
-  --cq-surface-subtle: #EEF1F4;      /* Subtle surface for chips, tags & table headers */
-  --cq-surface-hover: #E7EBF0;       /* Hover state for interactive rows */
-  --cq-surface-active: #DFE4EA;      /* Active / pressed state */
-  --cq-surface-elevated: #FFFFFF;    /* Elevated surfaces like modals */
-  --cq-overlay: rgba(27, 36, 51, 0.45); /* Modal backdrop overlay */
+  --cq-bg: #F5F6F8;
+  --cq-bg-alt: #EEF1F4;
+  --cq-surface: #FFFFFF;
+  --cq-surface-subtle: #EEF1F4;
+  --cq-surface-hover: #E7EBF0;
+  --cq-surface-active: #DFE4EA;
+  --cq-surface-elevated: #FFFFFF;
+  --cq-overlay: rgba(27, 36, 51, 0.45);
 
-  /* ========================================================
-     2. Hairline Borders (1px subtle precision)
-     ======================================================== */
-  --cq-border-subtle: #E7EBF0;       /* Quiet dividers */
-  --cq-border-default: #DDE1E7;      /* Standard card and table borders */
-  --cq-border-strong: #C5CCD6;       /* Input borders and active boundaries */
-  --cq-border-focus: #1F5F5B;        /* Focus border matching deep teal accent */
+  --cq-border-subtle: #E7EBF0;
+  --cq-border-default: #DDE1E7;
+  --cq-border-strong: #C5CCD6;
+  --cq-border-focus: #1F5F5B;
 
-  /* ========================================================
-     3. Typography Colors
-     ======================================================== */
-  --cq-text-primary: #1B2433;        /* Deep navy-charcoal for headings and primary body */
-  --cq-text-secondary: #556070;      /* Slate neutral for descriptions and metadata */
-  --cq-text-muted: #667080;          /* WCAG AA (>= 4.5:1) compliant muted text */
-  --cq-text-tertiary: #7A8494;       /* Quiet captions and subtle numeric indicators */
-  --cq-text-disabled: #949EAC;       /* Inactive controls */
-  --cq-text-inverse: #FFFFFF;        /* White text for filled primary buttons */
+  --cq-text-primary: #1B2433;
+  --cq-text-secondary: #556070;
+  --cq-text-muted: #667080; /* Meets 4.5:1 WCAG AA contrast against --cq-bg */
+  --cq-text-tertiary: #7A8494;
+  --cq-text-disabled: #949EAC;
+  --cq-text-inverse: #FFFFFF;
 
-  /* ========================================================
-     4. Engineering Brand & Functional Accents
-     ======================================================== */
-  /* Primary Accent: Deep Teal */
   --cq-teal: #1F5F5B;
   --cq-teal-hover: #184C49;
   --cq-teal-soft: #E6EFEE;
   --cq-teal-border: #C2D8D6;
 
-  /* Backward Compatibility Aliases for Teal */
   --cq-emerald: var(--cq-teal);
   --cq-emerald-hover: var(--cq-teal-hover);
   --cq-emerald-soft: var(--cq-teal-soft);
@@ -65,13 +34,11 @@
   --cq-accent-soft: var(--cq-teal-soft);
   --cq-accent-border: var(--cq-teal-border);
 
-  /* Technical / Link Accent: Muted Steel Blue */
   --cq-steel: #2F5D8C;
   --cq-steel-hover: #23476B;
   --cq-steel-soft: #E8EEF5;
   --cq-steel-border: #CAD8E6;
 
-  /* Backward Compatibility Aliases for Steel */
   --cq-blue: var(--cq-steel);
   --cq-blue-hover: var(--cq-steel-hover);
   --cq-blue-soft: var(--cq-steel-soft);
@@ -80,7 +47,6 @@
   --cq-signal-blue-soft: var(--cq-steel-soft);
   --cq-signal-blue-border: var(--cq-steel-border);
 
-  /* Status Colors (Muted Professional Tones) */
   --cq-success: #1E6B4A;
   --cq-success-hover: #17533A;
   --cq-success-soft: #E7F2EC;
@@ -96,18 +62,13 @@
   --cq-error-soft: #F8E9E9;
   --cq-error-border: #ECC3C3;
 
-  /* Additional backward-compatibility surface aliases */
   --cq-surface-1: var(--cq-surface);
   --cq-surface-2: var(--cq-surface-subtle);
 
-  /* ========================================================
-     5. Typography System
-     ======================================================== */
   --cq-font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --cq-font-heading: "Inter", var(--cq-font-sans);
   --cq-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
-  /* Font Sizes */
   --cq-text-xs: 12px;
   --cq-text-sm: 13px;
   --cq-text-base: 14px;
@@ -117,43 +78,31 @@
   --cq-text-2xl: 28px;
   --cq-text-3xl: 32px;
 
-  /* Font Weights */
   --cq-weight-regular: 400;
   --cq-weight-medium: 500;
   --cq-weight-semibold: 600;
   --cq-weight-bold: 700;
 
-  /* Line Heights */
   --cq-leading-tight: 1.25;
   --cq-leading-snug: 1.35;
   --cq-leading-normal: 1.5;
   --cq-leading-relaxed: 1.6;
 
-  /* Letter Spacing (Sentence case friendly, normal tracking) */
   --cq-tracking-tight: -0.015em;
   --cq-tracking-tighter: -0.02em;
   --cq-tracking-normal: 0;
   --cq-tracking-wide: 0.01em;
 
-  /* ========================================================
-     6. Consistent Radii Scale (Strict 8px - 12px)
-     ======================================================== */
   --cq-radius-sm: 8px;
   --cq-radius-md: 10px;
   --cq-radius-lg: 12px;
   --cq-radius-pill: 9999px;
 
-  /* ========================================================
-     7. Elevation Shadows (Soft Neutral - No Coloured Glows)
-     ======================================================== */
   --cq-shadow-sm: 0 1px 2px rgba(27, 36, 51, 0.06);
   --cq-shadow-md: 0 4px 12px rgba(27, 36, 51, 0.06);
   --cq-shadow-lg: 0 8px 24px rgba(27, 36, 51, 0.08);
   --cq-shadow-modal: 0 12px 32px rgba(27, 36, 51, 0.12);
 
-  /* ========================================================
-     8. Spacing Scale
-     ======================================================== */
   --cq-space-1: 4px;
   --cq-space-2: 8px;
   --cq-space-3: 12px;
@@ -165,12 +114,8 @@
   --cq-space-12: 48px;
   --cq-space-16: 64px;
 
-  /* ========================================================
-     9. Transitions & Layout Dimensions
-     ======================================================== */
   --cq-transition-fast: 120ms ease;
   --cq-transition-base: 180ms ease;
 
-  /* Global Shell Heights */
   --cq-navbar-height: 56px;
 }

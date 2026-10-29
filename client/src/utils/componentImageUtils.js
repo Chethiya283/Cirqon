@@ -1,8 +1,5 @@
 import { resolveAssetUrl } from "./formatters";
 
-/**
- * Curated product illustrations matched exactly to component part numbers.
- */
 export const VERIFIED_PRODUCT_PHOTOS = {
   LM358: {
     url: "/images/components/LM358.webp",
@@ -61,9 +58,6 @@ export const VERIFIED_PRODUCT_PHOTOS = {
   },
 };
 
-/**
- * Determine the visual package category for fallback vector rendering.
- */
 export function inferPackageType(component) {
   const cat = (component.category || "").toLowerCase();
   const pkg = (component.package?.name || "").toLowerCase();
@@ -127,14 +121,7 @@ export function inferPackageType(component) {
   return "generic";
 }
 
-/**
- * Resolves component image metadata in strict priority order:
- * 1. Database record `imageUrl`
- * 2. Curated verified product photo
- * 3. Package specification illustration
- */
 export function getComponentImageInfo(component) {
-  // 1. Direct database record
   if (component.imageUrl && component.imageUrl.trim().length > 0) {
     return {
       src: resolveAssetUrl(component.imageUrl.trim()),
@@ -146,7 +133,7 @@ export function getComponentImageInfo(component) {
     };
   }
 
-  // 2. Verified real product photo mapping (strictly string-keyed to preserve leading zeros in numeric MPNs like "0022232041")
+  // String-keyed lookup preserves leading zeros in part numbers like "0022232041"
   const partKey = String(component.partNumber ?? "").trim();
   const verified = VERIFIED_PRODUCT_PHOTOS[partKey];
   if (verified) {
@@ -160,7 +147,6 @@ export function getComponentImageInfo(component) {
     };
   }
 
-  // 3. Fallback package illustration
   const pkgType = inferPackageType(component);
   return {
     alt: `${component.name} (${component.partNumber}) Technical Package Illustration`,

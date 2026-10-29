@@ -1,51 +1,24 @@
-// User registration view with client validation, API integration, and password privacy safeguards.
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, UserPlus, AlertCircle } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import "./AuthPage.css";
-/**
- * RegisterPage Component
- *
- * VIVA EXPLANATION:
- * 1. Client-Side + Server-Side Defense in Depth:
- *    Inputs are first validated locally to give instant user feedback, followed by
- *    rigorous backend validation (format, length, duplicate email detection).
- * 2. API Integration:
- *    Invokes `register()` from `AuthContext`, which sends `POST /api/auth/register`.
- * 3. Error Handling:
- *    Catches API error responses (such as HTTP 409 for duplicate emails) and presents
- *    clear, accessible inline feedback.
- * 4. Post-Registration Flow:
- *    Navigates to `/login` with an informational state message, prompting the engineer
- *    to authenticate and receive their JWT session.
- */
 export const RegisterPage = () => {
     const navigate = useNavigate();
     const { register } = useAuth();
-    // Controlled input states
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
-    // Visibility toggle flags for password and confirm password fields
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    // Field validation error state
     const [errors, setErrors] = useState({});
-    // Server error message received from API
     const [serverError, setServerError] = useState(null);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    /**
-     * Run client-side validation against all registration constraints.
-     */
-    const validateForm = () => {
+    const [isSubmitting, setIsSubmitting] = useState(false);const validateForm = () => {
         const newErrors = {};
-        // 1. Full name validation
         if (!name.trim()) {
             newErrors.name = "Full name is required.";
         }
-        // 2. Email format validation
         const trimmedEmail = email.trim();
         if (!trimmedEmail) {
             newErrors.email = "Email address is required.";
@@ -53,14 +26,12 @@ export const RegisterPage = () => {
         else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
             newErrors.email = "Please enter a valid email address (e.g., engineer@cirqon.org).";
         }
-        // 3. Password minimum length validation
         if (!password) {
             newErrors.password = "Password is required.";
         }
         else if (password.length < 8) {
             newErrors.password = "Password must be at least 8 characters.";
         }
-        // 4. Password confirmation match validation
         if (!confirmPassword) {
             newErrors.confirmPassword = "Please confirm your password.";
         }
@@ -69,11 +40,7 @@ export const RegisterPage = () => {
         }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
-    };
-    /**
-     * Handle form submission: validates inputs and calls backend registration API.
-     */
-    const handleSubmit = async (e) => {
+    };const handleSubmit = async (e) => {
         e.preventDefault();
         setServerError(null);
         if (!validateForm())
@@ -81,7 +48,6 @@ export const RegisterPage = () => {
         try {
             setIsSubmitting(true);
             await register(name.trim(), email.trim(), password);
-            // Navigate to /login with a success notification banner
             navigate("/login", {
                 state: {
                     successNote: "Registration successful! You can now log in with your credentials.",
@@ -122,7 +88,6 @@ export const RegisterPage = () => {
           </div>)}
 
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
-          {/* Full Name Field */}
           <div className="form-group">
             <label htmlFor="register-name" className="form-label">
               Full Name
@@ -139,7 +104,6 @@ export const RegisterPage = () => {
               </span>)}
           </div>
 
-          {/* Email Address Field */}
           <div className="form-group">
             <label htmlFor="register-email" className="form-label">
               Email Address
@@ -156,7 +120,6 @@ export const RegisterPage = () => {
               </span>)}
           </div>
 
-          {/* Password Field */}
           <div className="form-group">
             <label htmlFor="register-password" className="form-label">
               Password
@@ -177,7 +140,6 @@ export const RegisterPage = () => {
             {!errors.password && (<span className="form-hint">Must contain at least 8 characters.</span>)}
           </div>
 
-          {/* Confirm Password Field */}
           <div className="form-group">
             <label htmlFor="register-confirm-password" className="form-label">
               Confirm Password
@@ -198,7 +160,6 @@ export const RegisterPage = () => {
               </span>)}
           </div>
 
-          {/* Submit Action */}
           <button type="submit" className="auth-submit-btn" disabled={isSubmitting}>
             {isSubmitting ? "Creating account..." : "Create account"}
           </button>

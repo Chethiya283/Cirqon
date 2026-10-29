@@ -4,23 +4,10 @@ import { Search, Menu, X, Layers, GitCompare, Cpu, Bookmark, LogIn, UserPlus, Us
 import { useAuth } from "../../context/AuthContext";
 import { CirqonLogo } from "../common/CirqonLogo";
 import "./Navbar.css";
-/**
- * Navbar Component
- *
- * Shared top navigation bar for Cirqon.
- *
- * VIVA EXPLANATION:
- * - Uses React Router's `NavLink` for navigation links. `NavLink` automatically
- *   detects if its destination matches the current browser URL (`isActive`)
- *   and applies the `.active` CSS class without requiring manual state tracking.
- * - The URL is the single source of truth for the active page.
- */
 export const Navbar = ({ searchQuery, onSearchChange, compareCount = 0, }) => {
     const navigate = useNavigate();
     const { user, logout } = useAuth();
-    // Local state controlling the mobile slide-down menu drawer
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    // When user interacts with search on another page, navigate to library
     const handleSearchFocus = () => {
         if (window.location.pathname !== "/library") {
             navigate("/library");
@@ -28,16 +15,13 @@ export const Navbar = ({ searchQuery, onSearchChange, compareCount = 0, }) => {
     };
     return (<header className="site-header">
       <div className="site-header-container">
-        {/* Left Zone: Brand Identity + Primary Desktop Navigation */}
         <div className="site-header-left">
-          {/* Brand Logo & Title Link */}
           <Link to="/" className="brand-identity" title="Cirqon — Electronic Component Catalogue & PCB Assistant" onClick={() => setIsMobileMenuOpen(false)} aria-label="Cirqon — Return to homepage">
             <CirqonLogo size="md"/>
           </Link>
 
           <span className="header-brand-divider" aria-hidden="true"/>
 
-          {/* Primary Desktop Navigation (Uses NavLink for automated active state) */}
           <nav className="desktop-nav" aria-label="Main Navigation">
             <NavLink to="/library" className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>
               <Layers size={16} strokeWidth={1.75} className="nav-link-icon" aria-hidden="true"/>
@@ -69,7 +53,6 @@ export const Navbar = ({ searchQuery, onSearchChange, compareCount = 0, }) => {
           </nav>
         </div>
 
-        {/* Center Zone: Prominent Quick-Search Bar */}
         <div className="header-search-wrapper">
           <Search size={16} strokeWidth={1.75} className="header-search-icon" aria-hidden="true"/>
           <input type="text" className="header-search-input" placeholder="Search by part number or keyword..." value={searchQuery} onChange={(e) => onSearchChange(e.target.value)} onFocus={handleSearchFocus} aria-label="Search components by part number or keyword"/>
@@ -78,7 +61,6 @@ export const Navbar = ({ searchQuery, onSearchChange, compareCount = 0, }) => {
             </button>)}
         </div>
 
-        {/* Right Zone: Authentication Navigation Controls */}
         <div className="header-auth-group">
           {user ? (<>
               <div className="nav-user-identity" title={`Signed in as ${user.email}`}>
@@ -102,13 +84,11 @@ export const Navbar = ({ searchQuery, onSearchChange, compareCount = 0, }) => {
             </>)}
         </div>
 
-        {/* Mobile Hamburger Toggle Button */}
         <button type="button" className="mobile-menu-toggle" onClick={() => setIsMobileMenuOpen((prev) => !prev)} aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"} aria-expanded={isMobileMenuOpen}>
           {isMobileMenuOpen ? <X size={20} strokeWidth={1.75}/> : <Menu size={20} strokeWidth={1.75}/>}
         </button>
       </div>
 
-      {/* Mobile Collapsible Navigation Drawer */}
       {isMobileMenuOpen && (<div className="mobile-drawer" role="dialog" aria-modal="true" aria-label="Mobile Navigation">
           <div className="mobile-search-wrapper">
             <Search size={16} className="header-search-icon" aria-hidden="true"/>

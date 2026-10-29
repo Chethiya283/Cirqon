@@ -1,26 +1,7 @@
-/**
- * server/scripts/makeAdmin.js
- *
- * Administrative CLI utility to promote an existing user to the "admin" role.
- *
- * VIVA EXPLANATION:
- * 1. Role-Based Access Control (RBAC) & Privilege Separation:
- *    Administrative privileges (creating, updating, and deleting components in the catalogue)
- *    must be strictly isolated. The public registration endpoint (`/api/auth/register`) hardcodes
- *    `role: "user"` and rejects any client-supplied role parameters to prevent Privilege Escalation
- *    vulnerabilities (CWE-269 / OWASP API4).
- * 2. Out-of-Band Administrative Provisioning:
- *    Admin privileges can only be granted via direct access to the secure server environment
- *    through this script. This ensures no public network endpoint exists that could be abused to
- *    create or promote administrative users.
- * 3. Dry-Run Verification Flag:
- *    The `--dry-run` flag allows operators to inspect and test the user lookup and target role
- *    change before applying persistent writes to MongoDB.
- */
+// CLI utility for out-of-band admin role promotion (no public promotion endpoint)
 
 const path = require("path");
 
-// Ensure resolution of server dependencies
 if (!module.paths.includes(path.resolve(__dirname, "../node_modules"))) {
   module.paths.push(path.resolve(__dirname, "../node_modules"));
 }

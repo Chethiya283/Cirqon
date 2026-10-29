@@ -1,8 +1,3 @@
-/* ========================================================
-   Footprint Validation Panel Styles
-   Cirqon Design System Integration
-   ======================================================== */
-
 .footprint-validation-panel {
   display: flex;
   flex-direction: column;
@@ -27,7 +22,6 @@
   border-left: 4px solid var(--cq-error);
 }
 
-/* 1. Header with Status Badge & Score */
 .validation-panel-header {
   display: flex;
   align-items: center;
@@ -110,7 +104,6 @@
   border-color: var(--cq-border-strong);
 }
 
-/* 2. Summary Paragraph */
 .validation-summary-text {
   margin: 0;
   font-family: var(--cq-font-sans);
@@ -131,7 +124,6 @@
   border-left: 2px solid var(--cq-border-default);
 }
 
-/* 3. Warning Callout */
 .validation-warning-callout {
   display: flex;
   align-items: flex-start;
@@ -164,7 +156,6 @@
   flex: 1;
 }
 
-/* 4. Detailed Checklist Section */
 .validation-checklist-wrapper {
   display: flex;
   flex-direction: column;
@@ -311,7 +302,6 @@
   line-height: var(--cq-line-height-normal);
 }
 
-/* 5. Datasheet Citation */
 .validation-datasheet-citation {
   display: flex;
   align-items: center;
@@ -344,7 +334,6 @@
   text-decoration: underline;
 }
 
-/* Compact Mode Variations */
 .footprint-validation-panel.compact-panel {
   padding: var(--cq-space-3);
   gap: var(--cq-space-2);

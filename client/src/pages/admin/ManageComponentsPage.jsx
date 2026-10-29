@@ -1,4 +1,3 @@
-// Administrative CRUD management view for electronic components.
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -44,9 +43,6 @@ const CATEGORIES = [
 
 const PAGE_SIZE = 10;
 
-/**
- * Validates external HTTP/HTTPS URLs or uploaded asset paths starting with /uploads/.
- */
 function isValidHttpUrl(urlString) {
   const trimmed = urlString.trim();
   if (!trimmed) return true;
@@ -59,9 +55,6 @@ function isValidHttpUrl(urlString) {
   }
 }
 
-/**
- * Validates component image URLs, supporting external HTTP(S), local /images/..., and /uploads/ paths.
- */
 function isValidImageUrl(urlString) {
   const trimmed = urlString.trim();
   if (!trimmed) return true;
@@ -74,9 +67,6 @@ function isValidImageUrl(urlString) {
   }
 }
 
-/**
- * Formats an ISO date string into human-readable format.
- */
 function formatDate(dateStr) {
   if (!dateStr) return "—";
   const d = new Date(dateStr);
@@ -88,10 +78,6 @@ function formatDate(dateStr) {
   });
 }
 
-/**
- * Decomposes a component's specifications map/object into editable rows:
- * [{ name, value, unit }]
- */
 function parseSpecsToRows(specs) {
   if (!specs || typeof specs !== "object") return [];
   const entries = specs instanceof Map ? Array.from(specs.entries()) : Object.entries(specs);
@@ -120,7 +106,6 @@ function parseSpecsToRows(specs) {
     });
   }
 
-  // Handle any stray unit keys not attached to a base key
   for (const [key, val] of entries) {
     if (key.endsWith("Unit") && !pairedUnitKeys.has(key)) {
       rows.push({
@@ -134,9 +119,6 @@ function parseSpecsToRows(specs) {
   return rows;
 }
 
-/**
- * Creates default empty form state.
- */
 function createEmptyFormValues() {
   return {
     partNumber: "",
@@ -160,18 +142,12 @@ export const AdminComponentsPage = () => {
   const [components, setComponents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
-
-  // Operational feedback banner state
   const [feedbackBanner, setFeedbackBanner] = useState(null);
-
-  // Table filter, sort, and pagination state
   const [adminSearchQuery, setAdminSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortField, setSortField] = useState("partNumber");
   const [sortDirection, setSortDirection] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
-
-  // Form modal state (used for Add, Edit, Duplicate)
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingComponent, setEditingComponent] = useState(null);
   const [preservedPackageData, setPreservedPackageData] = useState(null);
@@ -180,38 +156,18 @@ export const AdminComponentsPage = () => {
   const [formErrors, setFormErrors] = useState({});
   const [serverError, setServerError] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
-
-  // File upload state for image
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [imageUploadError, setImageUploadError] = useState(null);
   const [imageFileChosenName, setImageFileChosenName] = useState(null);
-
-  // File upload state for datasheet
   const [isUploadingDatasheet, setIsUploadingDatasheet] = useState(false);
   const [datasheetUploadError, setDatasheetUploadError] = useState(null);
   const [datasheetFileChosenName, setDatasheetFileChosenName] = useState(null);
-
-  // Delete confirmation dialog state
   const [deletingComponent, setDeletingComponent] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  // Trigger state to refresh the component list without full page reload
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  /**
-   * VIVA EXPLANATION:
-   * 1. Accessible Compound Action Menu Pattern:
-   *    - Replaces unwieldy multi-button table columns with a primary "Edit" call-to-action
-   *      accompanied by a compact "More" (three-dot) overflow trigger.
-   *    - Uses React's `createPortal` to render the dropdown menu directly onto `document.body`
-   *      with calculated fixed coordinates, strictly preventing clipping by table scroll containers.
-   *    - Fully adheres to WAI-ARIA Menu semantics: ArrowUp/ArrowDown navigation, Escape dismissal,
-   *      auto-focus on open, and seamless focus restoration to the trigger button on close.
-   * 2. Row-Level Click-to-Inspect Affinity:
-   *    - Makes table rows accessible interactive elements (role="button", tabIndex=0, Enter/Space activation)
-   *      while using event delegation to ignore clicks originating from nested actionable buttons.
-   */
-  const [activeMenu, setActiveMenu] = useState(null);
+  // Portal dropdown menu to document.body so table overflow containers do not clip it
+const [activeMenu, setActiveMenu] = useState(null);
   const menuRef = useRef(null);
 
   const handleOpenMoreMenu = (e, comp) => {
@@ -234,8 +190,6 @@ export const AdminComponentsPage = () => {
     }
     setActiveMenu(null);
   };
-
-  // Close More menu on outside click, window resize, or scroll
   useEffect(() => {
     if (!activeMenu) return;
 
@@ -263,8 +217,6 @@ export const AdminComponentsPage = () => {
       window.removeEventListener("resize", handleWindowChange);
     };
   }, [activeMenu]);
-
-  // Keyboard accessibility inside the open More menu
   useEffect(() => {
     if (!activeMenu || !menuRef.current) return;
     const items = menuRef.current.querySelectorAll("button[role='menuitem']");
@@ -296,8 +248,6 @@ export const AdminComponentsPage = () => {
       setActiveMenu(null);
     }
   };
-
-  // Row click to edit handler (skips when clicking inside interactive controls)
   const handleRowClick = (e, comp) => {
     if (e.target.closest("button, a, input, select, [role='menu'], [role='menuitem']")) {
       return;
@@ -314,14 +264,10 @@ export const AdminComponentsPage = () => {
       handleOpenEditModal(comp);
     }
   };
-
-  // Detect whether form has unsaved modifications
   const isDirty = useMemo(() => {
     if (!isFormOpen) return false;
     return JSON.stringify(formValues) !== initialSnapshot;
   }, [isFormOpen, formValues, initialSnapshot]);
-
-  // Window beforeunload prompt when modal has unsaved edits
   useEffect(() => {
     const handleBeforeUnload = (e) => {
       if (isFormOpen && isDirty) {
@@ -332,8 +278,6 @@ export const AdminComponentsPage = () => {
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [isFormOpen, isDirty]);
-
-  // Fetch all components (including inactive ones) from catalogue
   useEffect(() => {
     let cancelled = false;
     async function loadComponents() {
@@ -371,12 +315,8 @@ export const AdminComponentsPage = () => {
     setLoading(true);
     setRefreshTrigger((prev) => prev + 1);
   };
-
-  // Client-side filtering and sorting
   const filteredAndSortedComponents = useMemo(() => {
     let result = [...components];
-
-    // Filter by search query (partNumber, name, manufacturer)
     if (adminSearchQuery.trim()) {
       const q = adminSearchQuery.trim().toLowerCase();
       result = result.filter(
@@ -386,13 +326,9 @@ export const AdminComponentsPage = () => {
           (comp.manufacturer || "").toLowerCase().includes(q)
       );
     }
-
-    // Filter by category dropdown
     if (selectedCategory && selectedCategory !== "All") {
       result = result.filter((comp) => comp.category === selectedCategory);
     }
-
-    // Sort by selected column
     result.sort((a, b) => {
       const comparison =
         sortField === "updatedAt"
@@ -406,8 +342,6 @@ export const AdminComponentsPage = () => {
 
     return result;
   }, [components, adminSearchQuery, selectedCategory, sortField, sortDirection]);
-
-  // Pagination calculation
   const totalItems = filteredAndSortedComponents.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
   const paginatedComponents = useMemo(() => {
@@ -430,8 +364,6 @@ export const AdminComponentsPage = () => {
     setSelectedCategory("All");
     setCurrentPage(1);
   };
-
-  // Open modal in "Create" mode
   const handleOpenAddModal = () => {
     const empty = createEmptyFormValues();
     setEditingComponent(null);
@@ -446,8 +378,6 @@ export const AdminComponentsPage = () => {
     setDatasheetFileChosenName(null);
     setIsFormOpen(true);
   };
-
-  // Open modal in "Edit" mode with pre-filled values
   const handleOpenEditModal = (component) => {
     const loaded = {
       partNumber: component.partNumber || "",
@@ -488,8 +418,6 @@ export const AdminComponentsPage = () => {
     setDatasheetFileChosenName(null);
     setIsFormOpen(true);
   };
-
-  // Open modal in "Duplicate" mode pre-filled with existing component, empty part number
   const handleOpenDuplicateModal = (component) => {
     const duplicated = {
       partNumber: "", // Empty to require unique part number
@@ -530,8 +458,6 @@ export const AdminComponentsPage = () => {
     setDatasheetFileChosenName(null);
     setIsFormOpen(true);
   };
-
-  // Close form modal with unsaved changes confirmation
   const handleCloseFormModal = () => {
     if (isSaving || isUploadingImage || isUploadingDatasheet) return;
     if (isDirty) {
@@ -550,8 +476,6 @@ export const AdminComponentsPage = () => {
     setDatasheetUploadError(null);
     setDatasheetFileChosenName(null);
   };
-
-  // Toggle isActive status directly from table row
   const handleToggleActive = async (comp) => {
     const newStatus = comp.isActive === false ? true : false;
     try {
@@ -579,8 +503,6 @@ export const AdminComponentsPage = () => {
       });
     }
   };
-
-  // Pin row handlers
   const handleAddPin = () => {
     setFormValues((prev) => ({
       ...prev,
@@ -605,8 +527,6 @@ export const AdminComponentsPage = () => {
       setFormErrors((prev) => ({ ...prev, pins: undefined }));
     }
   };
-
-  // Specification row handlers
   const handleAddSpec = () => {
     setFormValues((prev) => ({
       ...prev,
@@ -631,8 +551,6 @@ export const AdminComponentsPage = () => {
       setFormErrors((prev) => ({ ...prev, specifications: undefined }));
     }
   };
-
-  // Client-side image file upload handler
   const handleImageFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -682,8 +600,6 @@ export const AdminComponentsPage = () => {
       e.target.value = "";
     }
   };
-
-  // Client-side datasheet file upload handler
   const handleDatasheetFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -731,8 +647,6 @@ export const AdminComponentsPage = () => {
       e.target.value = "";
     }
   };
-
-  // Client-side validation mirroring server validation
   const validateForm = () => {
     const errors = {};
     if (!formValues.partNumber.trim()) {
@@ -760,8 +674,6 @@ export const AdminComponentsPage = () => {
       errors.imageUrl =
         "Image URL must be a valid HTTP, HTTPS, or relative image path (e.g. /images/... or /uploads/...).";
     }
-
-    // Validate body dimensions if entered
     if (formValues.bodyLengthMm.trim() !== "") {
       const len = Number(formValues.bodyLengthMm);
       if (isNaN(len) || len <= 0 || len > 1000) {
@@ -774,15 +686,11 @@ export const AdminComponentsPage = () => {
         errors.bodyWidthMm = "Width must be a positive number in mm (max 1000 mm).";
       }
     }
-
-    // Validate pins
     const seenPinNumbers = new Set();
     for (let i = 0; i < formValues.pins.length; i++) {
       const pin = formValues.pins[i];
       const numStr = (pin.number || "").toString().trim();
       const nameStr = (pin.name || "").trim();
-
-      // Skip row if completely empty
       if (!numStr && !nameStr) continue;
 
       if (!numStr) {
@@ -809,14 +717,10 @@ export const AdminComponentsPage = () => {
         break;
       }
     }
-
-    // Validate specifications
     for (let i = 0; i < formValues.specifications.length; i++) {
       const spec = formValues.specifications[i];
       const nameStr = (spec.name || "").trim();
       const valStr = (spec.value || "").trim();
-
-      // Skip row if completely empty
       if (!nameStr && !valStr && !(spec.unit || "").trim()) continue;
 
       if (!nameStr) {
@@ -840,16 +744,12 @@ export const AdminComponentsPage = () => {
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
-
-  // Form submit handler for Create / Edit / Duplicate
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
     setIsSaving(true);
     setServerError(null);
     const isEdit = Boolean(editingComponent);
-
-    // Build base payload
     const payload = {
       partNumber: formValues.partNumber.trim(),
       name: formValues.name.trim(),
@@ -869,8 +769,7 @@ export const AdminComponentsPage = () => {
       if (formValues.manufacturerUrl.trim())
         payload.manufacturerUrl = formValues.manufacturerUrl.trim();
     }
-
-    // Preserve non-edited package geometry (e.g. heightMm, seatedHeightMm, pcbLayout, mountingType)
+    // Preserve unedited package geometry from existing component
     const basePkg = (isEdit ? editingComponent?.package : preservedPackageData) || {};
     const existingBodyDims = basePkg.bodyDimensions || {};
     const newBodyDims = { ...existingBodyDims };
@@ -901,8 +800,6 @@ export const AdminComponentsPage = () => {
     if (packagePayload.name || packagePayload.bodyDimensions || basePkg.pcbLayout) {
       payload.package = packagePayload;
     }
-
-    // Assemble pins
     const validPins = [];
     for (const p of formValues.pins) {
       const numStr = (p.number || "").toString().trim();
@@ -918,8 +815,6 @@ export const AdminComponentsPage = () => {
     if (isEdit || validPins.length > 0) {
       payload.pins = validPins;
     }
-
-    // Assemble specifications Map/Object
     const specObj = {};
     for (const row of formValues.specifications) {
       const trimmedName = (row.name || "").trim();
@@ -979,8 +874,6 @@ export const AdminComponentsPage = () => {
       setIsSaving(false);
     }
   };
-
-  // Open delete confirmation modal
   const handleOpenDeleteDialog = (component) => {
     setDeletingComponent(component);
   };
@@ -989,8 +882,6 @@ export const AdminComponentsPage = () => {
     if (isDeleting) return;
     setDeletingComponent(null);
   };
-
-  // Confirm delete component
   const handleConfirmDelete = async () => {
     if (!deletingComponent) return;
     setIsDeleting(true);
@@ -1044,7 +935,6 @@ export const AdminComponentsPage = () => {
 
   return (
     <div className="admin-page-container">
-      {/* 1. Page Header & Actions Bar */}
       <div className="admin-header-row">
         <div className="admin-header-titles">
           <h1 className="admin-page-title">Manage Components</h1>
@@ -1064,7 +954,6 @@ export const AdminComponentsPage = () => {
         </button>
       </div>
 
-      {/* 2. Feedback Banners (Success & Error) */}
       {feedbackBanner && (
         <div className={`admin-banner banner-${feedbackBanner.type}`} role="alert" aria-live="polite">
           <div className="admin-banner-content">
@@ -1086,7 +975,6 @@ export const AdminComponentsPage = () => {
         </div>
       )}
 
-      {/* 3. Main Components Table Card */}
       <div className="admin-table-card">
         {loading ? (
           <div className="admin-state-container">
@@ -1133,7 +1021,6 @@ export const AdminComponentsPage = () => {
           </div>
         ) : (
           <>
-            {/* Toolbar: Search input, Category filter, Result count, Clear filters */}
             <div className="admin-table-toolbar">
               <div className="admin-toolbar-left">
                 <div className="admin-search-wrapper">
@@ -1357,7 +1244,6 @@ export const AdminComponentsPage = () => {
                   </table>
                 </div>
 
-                {/* Pagination Controls */}
                 <div className="admin-pagination-bar">
                   <div className="admin-pagination-info">
                     Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>
@@ -1396,7 +1282,6 @@ export const AdminComponentsPage = () => {
         )}
       </div>
 
-      {/* 4. Shared Create / Edit / Duplicate Form Modal */}
       {isFormOpen && (
         <div
           className="admin-modal-overlay"
@@ -1439,7 +1324,6 @@ export const AdminComponentsPage = () => {
               )}
 
               <form className="admin-form" onSubmit={handleFormSubmit} noValidate>
-                {/* Row 1: Part Number & Component Name */}
                 <div className="admin-form-row">
                   <div className="admin-form-group">
                     <label htmlFor="input-partNumber" className="admin-form-label">
@@ -1510,7 +1394,6 @@ export const AdminComponentsPage = () => {
                   </div>
                 </div>
 
-                {/* Row 2: Manufacturer & Category */}
                 <div className="admin-form-row">
                   <div className="admin-form-group">
                     <label htmlFor="input-manufacturer" className="admin-form-label">
@@ -1586,7 +1469,6 @@ export const AdminComponentsPage = () => {
                   </div>
                 </div>
 
-                {/* Row 3: Package Name & Body Dimensions (Length & Width) */}
                 <div className="admin-form-row">
                   <div className="admin-form-group">
                     <label htmlFor="input-packageName" className="admin-form-label">
@@ -1679,13 +1561,11 @@ export const AdminComponentsPage = () => {
                   </div>
                 </div>
 
-                {/* Row 4: Component Image (Upload + URL) */}
                 <div className="admin-form-group">
                   <label htmlFor="input-image-file" className="admin-form-label">
                     Component Image (Upload or URL)
                   </label>
 
-                  {/* File Picker */}
                   <div className="admin-file-picker-row">
                     <input
                       id="input-image-file"
@@ -1708,7 +1588,6 @@ export const AdminComponentsPage = () => {
                     <span className="admin-field-error">{imageUploadError}</span>
                   )}
 
-                  {/* Image Preview & Remove button */}
                   {formValues.imageUrl && (
                     <div className="admin-asset-preview image-preview-row">
                       <img
@@ -1739,7 +1618,6 @@ export const AdminComponentsPage = () => {
                     </div>
                   )}
 
-                  {/* Fallback URL Text Input */}
                   <input
                     id="input-imageUrl"
                     type="text"
@@ -1768,7 +1646,6 @@ export const AdminComponentsPage = () => {
                   )}
                 </div>
 
-                {/* Row 5: Datasheet (Upload + URL) & Manufacturer URL */}
                 <div className="admin-form-row">
                   <div className="admin-form-group">
                     <label htmlFor="input-datasheet-file" className="admin-form-label">
@@ -1894,7 +1771,6 @@ export const AdminComponentsPage = () => {
                   </div>
                 </div>
 
-                {/* Row 6: Dynamic Pins Editor */}
                 <div className="admin-form-section">
                   <div className="admin-section-header">
                     <div>
@@ -1971,7 +1847,6 @@ export const AdminComponentsPage = () => {
                   )}
                 </div>
 
-                {/* Row 7: Dynamic Specifications Editor */}
                 <div className="admin-form-section">
                   <div className="admin-section-header">
                     <div>
@@ -2062,7 +1937,6 @@ export const AdminComponentsPage = () => {
                   )}
                 </div>
 
-                {/* Description */}
                 <div className="admin-form-group">
                   <label htmlFor="input-description" className="admin-form-label">
                     Functional Description
@@ -2081,7 +1955,6 @@ export const AdminComponentsPage = () => {
                   />
                 </div>
 
-                {/* Form Buttons */}
                 <div className="admin-form-actions">
                   <button
                     type="button"
@@ -2130,7 +2003,6 @@ export const AdminComponentsPage = () => {
         </div>
       )}
 
-      {/* 5. Delete Confirmation Modal */}
       {deletingComponent && (
         <div
           className="admin-modal-overlay"
@@ -2207,7 +2079,6 @@ export const AdminComponentsPage = () => {
         </div>
       )}
 
-      {/* 6. Accessible Portal-Mounted More Actions Dropdown Menu */}
       {activeMenu &&
         createPortal(
           <div

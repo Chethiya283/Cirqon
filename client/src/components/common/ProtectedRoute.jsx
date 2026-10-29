@@ -1,25 +1,9 @@
-// Route guard component protecting authenticated views and administrative workflows.
 import React from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
 import { ShieldAlert } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-/**
- * ProtectedRoute Component
- *
- * VIVA EXPLANATION:
- * 1. Declarative Route Guarding (Defense in Depth / Presentation Layer):
- *    - Inspects `user`, `token`, and `loading` provided by `AuthContext`.
- *    - While loading initial credentials, renders a non-blocking skeleton/spinner to
- *      prevent premature redirect flickering.
- *    - Unauthenticated callers are redirected to `/login`, preserving `state.from`
- *      for post-authentication redirection.
- * 2. Role-Based Access Control (RBAC) Client-Side Boundary:
- *    - If `requiredRole` is specified and the authenticated `user.role` does not match,
- *      renders a polite HTTP 403 Forbidden message with a navigation link home.
- *    - VIVA DISTINCTION: Client-side routing guards are strictly a UX enhancement (preventing
- *      users from seeing empty/broken interfaces). Real authorization and security boundaries
- *      are enforced independently on the backend by Express middleware (`requireAdmin`).
- */
+
+// Client-side route guard for UX; API access is independently enforced by backend middleware
 export const ProtectedRoute = ({ children, requiredRole, }) => {
     const { user, loading } = useAuth();
     const location = useLocation();
@@ -33,11 +17,9 @@ export const ProtectedRoute = ({ children, requiredRole, }) => {
         Verifying user credentials...
       </div>);
     }
-    // 1. Unauthenticated users are sent to login
     if (!user) {
         return <Navigate to="/login" state={{ from: location }} replace/>;
     }
-    // 2. Authenticated users lacking the required role see a clear 403 screen
     if (requiredRole && user.role !== requiredRole) {
         return (<div className="forbidden-access-container" style={{
                 padding: "64px 24px",

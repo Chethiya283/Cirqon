@@ -5,27 +5,9 @@ const Component = require("../models/Component");
 const { requireAuth } = require("../middleware/authMiddleware");
 
 const router = express.Router();
-
-// Apply requireAuth to all saved-parts routes
 router.use(requireAuth);
 
-/**
- * GET /api/saved-parts
- * 
- * Retrieve all components bookmarked by the currently authenticated engineer.
- * 
- * VIVA EXPLANATION:
- * 1. Population (.populate):
- *    In MongoDB, documents reference each other via ObjectId. Calling `.populate("component")`
- *    instructs Mongoose to query the `Component` collection and inject the full component
- *    object into the `component` field of each returned `SavedPart` document.
- * 2. Identity Security (Anti-IDOR):
- *    The query filter is strictly `{ user: req.user._id }`. The user ID is retrieved
- *    from the verified JWT attached by `requireAuth`, preventing Insecure Direct Object
- *    References (IDOR) where a client could view another user's saved parts.
- * 3. Chronological Ordering:
- *    `.sort({ createdAt: -1 })` returns the most recently bookmarked components first.
- */
+// Queries saved parts scoped to req.user._id (anti-IDOR) and populates component details
 router.get("/", async (req, res) => {
   try {
     const savedParts = await SavedPart.find({ user: req.user._id })
@@ -46,43 +28,21 @@ router.get("/", async (req, res) => {
   }
 });
 
-/**
- * POST /api/saved-parts
- * 
- * Bookmark an electronic component to the user's workspace.
- * Request body: { componentId }
- * 
- * VIVA EXPLANATION:
- * 1. Token-Derived Identity:
- *    The `user` field is populated exclusively from `req.user._id`. The client is NEVER
- *    allowed to pass a `userId` in the body, ensuring an attacker cannot inject bookmarks
- *    into other engineers' accounts.
- * 2. Defensive Validation:
- *    Validates that `componentId` is a 24-character hex MongoDB ObjectId and that the
- *    referenced component exists in the database (returning 404 if nonexistent).
- * 3. Duplicate Prevention:
- *    Checks if the part is already bookmarked by this user, returning HTTP 409 Conflict.
- */
+// Bookmarks a component for req.user._id; unique compound index prevents duplicates
 router.post("/", async (req, res) => {
   try {
     const { componentId } = req.body;
-
-    // 1. Validate ObjectId format
     if (!componentId || !mongoose.Types.ObjectId.isValid(componentId)) {
       return res.status(400).json({
         message: "A valid component ID is required.",
       });
     }
-
-    // 2. Verify component exists in database and is active
     const componentExists = await Component.findById(componentId);
     if (!componentExists || componentExists.isActive === false) {
       return res.status(404).json({
         message: "Component not found in catalog.",
       });
     }
-
-    // 3. Check for existing bookmark
     const existing = await SavedPart.findOne({
       user: req.user._id,
       component: componentId,
@@ -92,8 +52,6 @@ router.post("/", async (req, res) => {
         message: "This component is already saved in your workspace.",
       });
     }
-
-    // 4. Save new bookmark entry
     const savedPart = new SavedPart({
       user: req.user._id, // Strictly derived from authenticated token
       component: componentId,
@@ -121,38 +79,15 @@ router.post("/", async (req, res) => {
   }
 });
 
-/**
- * PUT /api/saved-parts/:componentId
- * 
- * Update engineering metadata (quantity and design note) for a bookmarked component.
- * Request body: { quantity?, note? }
- * 
- * VIVA EXPLANATION:
- * 1. Strict Whitelisting (Anti-Mass Assignment):
- *    Only `quantity` and `note` are extracted from `req.body`. Even if a malicious client sends
- *    `{ user: "attackerId", component: "otherId", role: "admin" }`, those fields are ignored,
- *    preventing mass assignment vulnerabilities.
- * 2. Identity Security (Anti-IDOR / Anti-BOLA):
- *    The query filter is locked to `{ user: req.user._id, component: componentId }`.
- *    The `user` identifier comes strictly from the verified JWT payload attached by `requireAuth`,
- *    never from request headers or body. This ensures engineers can never read or mutate
- *    another user's workspace items.
- * 3. Schema Validation Enforcement (runValidators):
- *    Mongoose skips schema validation on `findOneAndUpdate` by default. Passing
- *    `{ runValidators: true }` ensures the database engine enforces schema-level constraints.
- */
+// Updates quantity and notes scoped strictly to req.user._id
 router.put("/:componentId", async (req, res) => {
   try {
     const { componentId } = req.params;
-
-    // 1. Validate ObjectId format
     if (!componentId || !mongoose.Types.ObjectId.isValid(componentId)) {
       return res.status(400).json({
         message: "A valid component ID is required.",
       });
     }
-
-    // 2. Strict Whitelisting & Validation
     const { quantity, note } = req.body;
     const updateFields = {};
 
@@ -190,8 +125,6 @@ router.put("/:componentId", async (req, res) => {
         message: "At least one valid field (quantity or note) must be provided to update.",
       });
     }
-
-    // 3. Atomically update document scoped strictly to authenticated user
     const updated = await SavedPart.findOneAndUpdate(
       { user: req.user._id, component: componentId },
       { $set: updateFields },
@@ -222,28 +155,15 @@ router.put("/:componentId", async (req, res) => {
   }
 });
 
-/**
- * DELETE /api/saved-parts/:componentId
- * 
- * Remove a component from the authenticated user's saved list.
- * 
- * VIVA EXPLANATION:
- * The query targets `{ user: req.user._id, component: req.params.componentId }`.
- * Users can ONLY delete their own bookmarks; even if an attacker guesses another user's
- * bookmark ID, they cannot delete it because the query is locked to `req.user._id`.
- */
+// Removes saved part scoped strictly to req.user._id
 router.delete("/:componentId", async (req, res) => {
   try {
     const { componentId } = req.params;
-
-    // 1. Validate ObjectId format
     if (!componentId || !mongoose.Types.ObjectId.isValid(componentId)) {
       return res.status(400).json({
         message: "A valid component ID is required.",
       });
     }
-
-    // 2. Remove bookmark scoped strictly to current user
     const deletedEntry = await SavedPart.findOneAndDelete({
       user: req.user._id,
       component: componentId,

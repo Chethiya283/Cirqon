@@ -1,13 +1,8 @@
-// Pure formatting and validation utility functions for component specifications, dimensions, and URLs.
-
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 const SERVER_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
 
-/**
- * Resolves uploaded asset URLs against the backend server origin, while preserving
- * external HTTP(S) links and local Vite /images/ asset paths.
- */
+// Prepends server origin to /uploads/ paths while preserving external URLs and /images/
 export function resolveAssetUrl(url) {
   if (!url || typeof url !== "string") return "";
   const trimmed = url.trim();

@@ -1,9 +1,5 @@
 import React from "react";
 import { Layers, Activity, BatteryCharging, Radio, Sun, Cpu, Grid, Zap, Plug, Shield, } from "lucide-react";
-/**
- * Accessible Lucide icon component for each electronic component category card.
- * Shared across Library, Compare, and PCB Design Assistant pages.
- */
 export const CategoryIcon = ({ categoryName, }) => {
     switch (categoryName) {
         case "All Components":
@@ -30,10 +26,6 @@ export const CategoryIcon = ({ categoryName, }) => {
             return <Layers size={18} aria-hidden="true"/>;
     }
 };
-/**
- * Reusable Category Cards Section modeled directly on the Library page design.
- * Shared across the Library, Compare, and PCB Design Assistant pages.
- */
 export const CategoryCardsSection = ({ categories, categoryCounts, selectedCategory, onSelectCategory, }) => {
     return (<div className="library-sidebar-categories">
       <div className="library-sidebar-heading">Categories</div>

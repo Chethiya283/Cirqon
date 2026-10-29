@@ -1,14 +1,3 @@
-/**
- * HomePage Stylesheet
- * 
- * Precision engineering aesthetic styled strictly using tokens from tokens.css.
- * - Pure design tokens only: zero hardcoded #hex or rgb() values.
- * - Monospace font restricted strictly to MPNs and numeric values.
- * - Consistent 88px desktop / 52px mobile vertical rhythm between sections.
- * - Responsive from 360px up to 1280px+ with zero horizontal overflow.
- * - Gentle fade-in animations respecting prefers-reduced-motion.
- */
-
 .home-page {
   display: flex;
   flex-direction: column;
@@ -27,89 +16,6 @@
   }
 }
 
-/* ========================================================
-   Gentle Fade-In Keyframe (Motion-Safe)
-   ======================================================== */
-@keyframes home-section-appear {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.home-hero-section,
-.home-category-section,
-.home-workflow-section,
-.home-cta-section {
-  animation: home-section-appear 250ms ease-out both;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .home-hero-section,
-  .home-category-section,
-  .home-workflow-section,
-  .home-cta-section {
-    animation: none;
-    transform: none;
-  }
-}
-
-/* Monospace Utility for Part Numbers and Numerical Counts */
-.mono-num {
-  font-family: var(--cq-font-mono);
-  font-variant-numeric: tabular-nums;
-}
-
-/* Section Header Typography */
-.home-section-header {
-  margin-bottom: var(--cq-space-6);
-}
-
-.home-eyebrow {
-  font-family: var(--cq-font-sans);
-  font-size: var(--cq-text-xs);
-  font-weight: var(--cq-weight-semibold);
-  text-transform: none;
-  letter-spacing: var(--cq-tracking-normal);
-  color: var(--cq-teal);
-  margin-bottom: var(--cq-space-1);
-}
-
-.home-section-title {
-  margin: 0 0 var(--cq-space-2);
-  font-size: var(--cq-text-xl);
-  font-weight: var(--cq-weight-semibold);
-  line-height: var(--cq-leading-tight);
-  color: var(--cq-text-primary);
-  letter-spacing: var(--cq-tracking-tight);
-}
-
-.home-section-desc {
-  margin: 0;
-  font-size: var(--cq-text-base);
-  color: var(--cq-text-secondary);
-  max-width: 680px;
-  line-height: var(--cq-leading-normal);
-}
-
-/* ========================================================
-   1. Hero Section (Single Column with Background & Overlay)
-
-   VIVA EXPLANATION:
-   - Decorative CSS Background:
-     The hero photograph is applied as a CSS `background-image` rather than an <img>
-     tag because it is purely decorative ambiance. Assistive technology (screen readers)
-     automatically ignores CSS backgrounds, preserving clean semantic hierarchy.
-   - WCAG AA Contrast Overlay (::before):
-     A flat, solid semi-transparent overlay using the `--cq-bg` token at ~65% opacity
-     ensures the electronics background photo is recognizable while dark navy text
-     (--cq-text-primary) and interactive elements comfortably maintain the WCAG AA
-     minimum 4.5:1 contrast ratio, without requiring gradients, glows, or blur filters.
-   ======================================================== */
 .home-hero-section {
   position: relative;
   overflow: hidden;
@@ -130,7 +36,6 @@
   }
 }
 
-/* Flat Semi-Transparent Overlay (WCAG AA Contrast Protection) */
 .home-hero-section::before {
   content: "";
   position: absolute;
@@ -198,7 +103,6 @@
   max-width: 660px;
 }
 
-/* Large Hero Search Box */
 .home-search-form {
   display: flex;
   align-items: center;
@@ -294,7 +198,6 @@
   outline-offset: 2px;
 }
 
-/* Hero Action Buttons */
 .home-hero-actions {
   display: flex;
   align-items: center;
@@ -357,9 +260,6 @@
   outline-offset: 2px;
 }
 
-/* ========================================================
-   2. Real Category Grid (Enhanced with Lucide Icons)
-   ======================================================== */
 .home-category-section {
   display: flex;
   flex-direction: column;
@@ -413,7 +313,6 @@
   margin-bottom: var(--cq-space-4);
 }
 
-/* Soft Tinted Square for Large Lucide Icon */
 .home-category-icon-box {
   display: flex;
   align-items: center;
@@ -467,9 +366,6 @@
   gap: var(--cq-space-2);
 }
 
-/* ========================================================
-   3. Three-Step Workflow with Original Line-Art SVGs
-   ======================================================== */
 .home-workflow-section {
   display: flex;
   flex-direction: column;
@@ -507,7 +403,6 @@
   box-shadow: var(--cq-shadow-md);
 }
 
-/* Line-Art SVG Illustration Stage */
 .home-workflow-illustration-wrap {
   width: 100%;
   height: 76px;
@@ -565,9 +460,6 @@
   line-height: var(--cq-leading-normal);
 }
 
-/* ========================================================
-   4. Restrained Call To Action Band
-   ======================================================== */
 .home-cta-section {
   display: flex;
   align-items: center;

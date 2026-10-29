@@ -1,4 +1,3 @@
-// My Saved Parts page displaying bookmarked electronic components for active engineering projects.
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Bookmark, Check, RotateCcw, Save, Trash2 } from "lucide-react";
@@ -6,30 +5,15 @@ import { useSavedParts } from "../context/SavedPartsContext";
 import { ComponentThumbnail } from "../components/common/ComponentImage";
 import { getSpecPairs, isValidHttpUrl, resolveAssetUrl, } from "../utils/formatters";
 import "./MyPartsPage.css";
-/**
- * SavedPartCard Component
- *
- * VIVA EXPLANATION:
- * 1. Component State Isolation:
- *    Each card encapsulates its own editing state for BOM quantity and engineering note.
- *    Validates client-side before dispatching network requests to provide instant UI feedback.
- * 2. Strict Input Validation:
- *    - Quantity: Enforces whole positive integers (1 to 10,000).
- *    - Note: Enforces 300 character limit with live character count indicator.
- * 3. Reactive Persistence:
- *    Calls `updateSavedPart` from `SavedPartsContext`, saving to MongoDB with JWT authorization
- *    and optimistically keeping context state synchronized.
- */
 const SavedPartCard = ({ item, onSelectComponent, copiedMpn, onCopyMpn, }) => {
     const { toggleSave, updateSavedPart } = useSavedParts();
     const component = item.component;
-    // Local form state
     const [quantityInput, setQuantityInput] = useState(String(item.quantity ?? 1));
     const [noteInput, setNoteInput] = useState(item.note ?? "");
     const [isSaving, setIsSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
     const [errorMessage, setErrorMessage] = useState(null);
-    // Synchronize state during render when remote props change (React-recommended pattern)
+    // Sync local form state if remote item changes
     const [prevRemote, setPrevRemote] = useState({
         qty: item.quantity,
         note: item.note,
@@ -39,7 +23,6 @@ const SavedPartCard = ({ item, onSelectComponent, copiedMpn, onCopyMpn, }) => {
         setQuantityInput(String(item.quantity ?? 1));
         setNoteInput(item.note ?? "");
     }
-    // Validation
     const parsedQty = Number(quantityInput);
     let qtyError = "";
     if (quantityInput.trim() === "") {
@@ -95,7 +78,6 @@ const SavedPartCard = ({ item, onSelectComponent, copiedMpn, onCopyMpn, }) => {
                 onSelectComponent(component);
             }
         }} aria-label={`${component.name} (${component.partNumber})`}>
-      {/* Top bar with category badge and Remove button */}
       <div className="card-top-bar">
         <span className="card-cat-badge">{component.category}</span>
 
@@ -108,12 +90,10 @@ const SavedPartCard = ({ item, onSelectComponent, copiedMpn, onCopyMpn, }) => {
         </button>
       </div>
 
-      {/* Component visual stage */}
       <div className="card-image-stage" onClick={() => onSelectComponent(component)} title={`View technical details for ${component.name}`}>
         <ComponentThumbnail component={component} size="lg" showProvenanceBadge/>
       </div>
 
-      {/* Card metadata body */}
       <div className="card-body">
         <div className="card-mpn-row">
           <span className="card-mpn" onClick={() => onSelectComponent(component)} title={`Manufacturer Part Number: ${component.partNumber}`}>
@@ -149,7 +129,6 @@ const SavedPartCard = ({ item, onSelectComponent, copiedMpn, onCopyMpn, }) => {
         </div>
       </div>
 
-      {/* BOM Workspace & Engineering Note Panel */}
       <div className="my-parts-bom-panel" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
         <div className="bom-panel-header">
           <span className="bom-panel-title">Saved part details</span>
@@ -160,7 +139,6 @@ const SavedPartCard = ({ item, onSelectComponent, copiedMpn, onCopyMpn, }) => {
         </div>
 
         <div className="bom-fields-grid">
-          {/* Quantity Input */}
           <div className="bom-field-group bom-qty-group">
             <label htmlFor={`qty-${inputIdSuffix}`} className="bom-field-label">
               Qty
@@ -168,7 +146,6 @@ const SavedPartCard = ({ item, onSelectComponent, copiedMpn, onCopyMpn, }) => {
             <input id={`qty-${inputIdSuffix}`} type="number" min={1} max={10000} step={1} className={`bom-input bom-qty-input ${qtyError ? "input-error" : ""}`} value={quantityInput} onChange={(e) => setQuantityInput(e.target.value)} aria-invalid={Boolean(qtyError)} aria-describedby={qtyError ? `qty-err-${inputIdSuffix}` : undefined} disabled={isSaving} placeholder="1"/>
           </div>
 
-          {/* Project Note Input */}
           <div className="bom-field-group bom-note-group">
             <div className="bom-note-label-row">
               <label htmlFor={`note-${inputIdSuffix}`} className="bom-field-label">
@@ -186,7 +163,6 @@ const SavedPartCard = ({ item, onSelectComponent, copiedMpn, onCopyMpn, }) => {
           </div>
         </div>
 
-        {/* Validation Errors */}
         {qtyError && (<div id={`qty-err-${inputIdSuffix}`} className="bom-field-error" role="alert">
             {qtyError}
           </div>)}
@@ -197,7 +173,6 @@ const SavedPartCard = ({ item, onSelectComponent, copiedMpn, onCopyMpn, }) => {
             {errorMessage}
           </div>)}
 
-        {/* Action Controls */}
         <div className="bom-actions-row">
           <button type="button" className="bom-save-btn" onClick={handleSave} disabled={!hasChanges || !isFormValid || isSaving} aria-busy={isSaving}>
             <Save size={13} aria-hidden="true"/>
@@ -206,7 +181,6 @@ const SavedPartCard = ({ item, onSelectComponent, copiedMpn, onCopyMpn, }) => {
         </div>
       </div>
 
-      {/* Card action footer */}
       <div className="card-footer">
         {isValidHttpUrl(component.datasheetUrl) ? (<a className="card-datasheet-btn" href={resolveAssetUrl(component.datasheetUrl)} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} title={`Open official datasheet PDF for ${component.partNumber}`}>
             Datasheet ↗
@@ -220,30 +194,9 @@ const SavedPartCard = ({ item, onSelectComponent, copiedMpn, onCopyMpn, }) => {
       </div>
     </article>);
 };
-/**
- * MyPartsPage Component
- *
- * VIVA EXPLANATION:
- * 1. Protected Personal Workspace:
- *    This view is guarded by `ProtectedRoute`. Only engineers with a valid, verified JWT
- *    can access this page. Component bookmarks are retrieved directly from MongoDB
- *    scoped to `req.user._id`.
- *
- * 2. Visual & Structural Consistency:
- *    Renders saved components using the identical card architecture as the main Library,
- *    providing a unified design language while swapping compare checkboxes for an intuitive
- *    one-click Remove action and inline BOM customization.
- *
- * 3. Guided Empty State:
- *    When no parts are bookmarked, the view displays an actionable empty state guiding
- *    the engineer back to `/library` to explore the catalog rather than showing a blank screen.
- */
 export const MyPartsPage = ({ onSelectComponent, }) => {
     const { savedItems, loading, error, retryLoad } = useSavedParts();
     const [copiedMpn, setCopiedMpn] = useState(null);
-    /**
-     * Copy MPN to clipboard with temporary visual feedback.
-     */
     const handleCopyMpn = (mpn, e) => {
         e.stopPropagation();
         navigator.clipboard.writeText(mpn);
@@ -253,7 +206,6 @@ export const MyPartsPage = ({ onSelectComponent, }) => {
         }, 1500);
     };
     return (<div className="my-parts-page">
-      {/* Header section matching Cirqon catalog control bar styling */}
       <div className="my-parts-header">
         <div className="my-parts-title-group">
           <div className="breadcrumb">
@@ -277,7 +229,6 @@ export const MyPartsPage = ({ onSelectComponent, }) => {
         </div>
       </div>
 
-      {/* Main Content Area */}
       {loading ? (<div className="component-card-grid">
           {Array.from({ length: 4 }).map((_, idx) => (<div className="product-card skeleton-card" key={idx}>
               <div className="skeleton-line skeleton-top"/>

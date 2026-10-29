@@ -1,10 +1,6 @@
-// Utility functions for auditing footprint data provenance and rendering SVG component footprints.
 import { isValidHttpUrl } from "./formatters";
-/**
- * Viva Note: Maps each component to its exact physical package template so that
- * incompatible packages (e.g. TO-92 vs TO-220, radial ceramic vs electrolytic,
- * radial inductor vs axial resistor, 4-pin header vs 4-pin tactile switch) never share a wrong drawing.
- */
+
+// Maps component to dedicated physical package template
 export function getPackageTemplateKind(component) {
     const cat = (component.category || "").toLowerCase();
     const pkg = (component.package?.name || "").toLowerCase();
@@ -55,10 +51,8 @@ export function getPackageTemplateKind(component) {
     }
     return "unsupported";
 }
-/**
- * Returns the default illustrative axial lead-bend span (in mm, on a 2.54 mm grid)
- * based on the stored body length L plus lead-bend clearance.
- */
+
+// Default axial lead-bend span (mm, 2.54mm grid) based on body length plus bend clearance
 export function getDefaultAxialSpanMm(bodyLengthMm) {
     if (bodyLengthMm <= 3.8)
         return 7.62; // DO-35 (3.4 mm body) -> 7.62 mm (0.300")
@@ -66,10 +60,7 @@ export function getDefaultAxialSpanMm(bodyLengthMm) {
         return 10.16; // DO-41 (5.2 mm) & MFR-25 (6.3 mm) -> 10.16 mm (0.400")
     return Number((Math.ceil((bodyLengthMm + 3.0) / 2.54) * 2.54).toFixed(2));
 }
-/**
- * Audits a component's stored footprint data, assigns exact provenance labels,
- * and determines whether an accurate footprint or illustrative package diagram can be drawn.
- */
+
 export function auditComponentFootprint(component) {
     const pins = component.pins || [];
     const pinCount = pins.length;
@@ -87,7 +78,6 @@ export function auditComponentFootprint(component) {
     const storedRowSpacing = component.package?.pcbLayout?.rowSpacingMm;
     const storedPadSize = component.package?.pcbLayout?.padDiameterMm;
     const storedDrill = component.package?.pcbLayout?.drillDiameterMm;
-    // 1. Package field provenance
     const pkgName = component.package?.name?.trim() || "";
     const mounting = component.package?.mountingType?.trim() || "";
     const packageField = pkgName
@@ -103,7 +93,6 @@ export function auditComponentFootprint(component) {
             value: "Not available",
             provenance: "Not available",
         };
-    // 2. Pin count field provenance (Derived from stored pins array length + span when pitch exists)
     let pinCountField;
     if (pinCount > 0) {
         if (templateKind === "pdip" &&
@@ -155,7 +144,6 @@ export function auditComponentFootprint(component) {
             provenance: "Not available",
         };
     }
-    // 3. Lead pitch field provenance
     let leadPitchField;
     if (storedPitch != null) {
         leadPitchField = {
@@ -183,7 +171,6 @@ export function auditComponentFootprint(component) {
             provenance: "Not available",
         };
     }
-    // 4. Body size field provenance
     let bodySizeField;
     if (hasStoredBodySize) {
         const activeDims = bodyDims?.lengthMm != null && bodyDims?.widthMm != null
@@ -214,7 +201,6 @@ export function auditComponentFootprint(component) {
             provenance: "Not available",
         };
     }
-    // 5. Pad size field provenance
     const padSizeField = storedPadSize != null
         ? {
             key: "padSize",
@@ -228,7 +214,6 @@ export function auditComponentFootprint(component) {
             value: "Not available",
             provenance: "Not available",
         };
-    // 6. Drill field provenance
     const drillField = storedDrill != null
         ? {
             key: "drill",
@@ -242,7 +227,6 @@ export function auditComponentFootprint(component) {
             value: "Not available",
             provenance: "Not available",
         };
-    // 7. Pinout field provenance (Pin names always read from stored pinout, never loop counters)
     const pinoutField = pinCount > 0
         ? {
             key: "pinout",
@@ -285,9 +269,7 @@ export function auditComponentFootprint(component) {
         missingFields.push("pinout");
     }
     const hasValidTemplate = templateKind !== "unsupported";
-    // Viva Note: A footprint is drawn when a dedicated package template exists, body dimensions
-    // and pinout are stored in the catalogue, and either fixed lead pitch is stored OR the package
-    // is an axial leaded part with a clearly labelled illustrative/configurable bend span.
+    // Footprint requires a package template, dimensions, pinout, and pitch (or axial bend span)
     const canDrawFootprint = hasValidTemplate &&
         hasStoredBodySize &&
         (storedPitch != null || isAxialPackage) &&
@@ -349,10 +331,6 @@ export function auditComponentFootprint(component) {
         validation,
     };
 }
-/**
- * Validates a component footprint against package-specific engineering requirements.
- * Distinguishes datasheet-checked footprints from illustrative visualization drawings.
- */
 export function validateComponentFootprint(component, auditContext) {
     const templateKind = auditContext?.templateKind ?? getPackageTemplateKind(component);
     const isAxialPackage = auditContext?.isAxialPackage ??
@@ -391,7 +369,6 @@ export function validateComponentFootprint(component, auditContext) {
     const pins = component.pins || [];
     const pinCount = pins.length;
     const checks = [];
-    // 1. Package Identity & Physical Template
     if (pkgName && templateKind !== "unsupported") {
         checks.push({
             id: "package-identity",
@@ -422,7 +399,6 @@ export function validateComponentFootprint(component, auditContext) {
             sourceOrProvenance: "Not available",
         });
     }
-    // 2. Mounting Technology
     if (mountingType) {
         checks.push({
             id: "mounting-type",
@@ -445,7 +421,6 @@ export function validateComponentFootprint(component, auditContext) {
             sourceOrProvenance: "Not available",
         });
     }
-    // 3. Package Body Envelope Dimensions
     if (hasBodyDims) {
         const activeDims = bodyDims?.lengthMm != null && bodyDims?.widthMm != null
             ? bodyDims
@@ -470,7 +445,6 @@ export function validateComponentFootprint(component, auditContext) {
             sourceOrProvenance: "Not available",
         });
     }
-    // 4. Pin Count & Terminal Numbering
     if (pinCount > 0) {
         const allNumbered = pins.every((p) => p.number != null);
         const allNamed = pins.every((p) => p.name && p.name.trim().length > 0);
@@ -505,7 +479,6 @@ export function validateComponentFootprint(component, auditContext) {
             sourceOrProvenance: "Not available",
         });
     }
-    // 5. Terminal Spacing & Lead Pitch (Package-Dependent)
     if (isAxialPackage) {
         checks.push({
             id: "lead-pitch",
@@ -571,7 +544,6 @@ export function validateComponentFootprint(component, auditContext) {
         }
     }
     else {
-        // Rigid lead through-hole (TO-220, TO-92, Headers, etc.)
         if (storedPitch != null) {
             checks.push({
                 id: "lead-pitch",
@@ -593,7 +565,6 @@ export function validateComponentFootprint(component, auditContext) {
             });
         }
     }
-    // 6. Pad Dimensions (Land Pattern)
     if (storedPadSize != null) {
         checks.push({
             id: "pad-dimensions",
@@ -616,7 +587,6 @@ export function validateComponentFootprint(component, auditContext) {
             sourceOrProvenance: canDrawFootprint ? "Placeholder" : "Not available",
         });
     }
-    // 7. Drill Diameter (Through-Hole Only)
     if (isSmd) {
         checks.push({
             id: "drill-diameter",
@@ -649,7 +619,6 @@ export function validateComponentFootprint(component, auditContext) {
             sourceOrProvenance: canDrawFootprint ? "Placeholder" : "Not available",
         });
     }
-    // 8. Documentation / Datasheet Reference
     const hasDatasheet = isValidHttpUrl(component.datasheetUrl);
     if (hasDatasheet) {
         checks.push({
@@ -671,7 +640,6 @@ export function validateComponentFootprint(component, auditContext) {
             sourceOrProvenance: "Not available",
         });
     }
-    // Evaluation of overall status
     const applicableChecks = checks.filter((c) => c.state !== "not-applicable");
     const passedChecks = applicableChecks.filter((c) => c.state === "passed");
     const isDataStatusVerified = component.dataStatus === "verified";
@@ -774,20 +742,14 @@ export function getProvenanceBadgeClass(provenance) {
             return "prov-badge prov-na";
     }
 }
-/**
- * Viva Note: Wraps only numeric tokens in monospace spans so that prose labels,
- * provenance badges, and units/notes remain in the standard sans-serif font.
- */
+// Wraps numeric tokens in monospace spans while leaving prose in sans-serif
 export function renderValueWithMonoNumbers(text) {
     const parts = text.split(/(\d+(?:\.\d+)?)/g);
     return parts.map((part, idx) => /^\d+(?:\.\d+)?$/.test(part) ? (<span key={idx} className="pcb-mono-num">
         {part}
       </span>) : (<span key={idx}>{part}</span>));
 }
-/**
- * Extracts the exact pad coordinates, dimensions, and provenance array used by the
- * SVG footprint renderer for all supported package families.
- */
+
 export function getFootprintGeometry(component, axialSpanOverrideMm) {
     const templateKind = getPackageTemplateKind(component);
     const isAxialPackage = templateKind === "axial-resistor" || templateKind === "axial-diode";
@@ -836,7 +798,6 @@ export function getFootprintGeometry(component, axialSpanOverrideMm) {
             drillProvenance: drillProv,
         };
     };
-    // 1. PDIP-8 / Dual In-Line IC (LM358, NE555) - Preserved visually identical to Phase 1/2
     if (templateKind === "pdip") {
         const pinsPerSide = Math.max(3, Math.min(8, Math.ceil((pinCount || 8) / 2)));
         for (let i = 0; i < pinsPerSide; i++) {
@@ -886,7 +847,6 @@ export function getFootprintGeometry(component, axialSpanOverrideMm) {
             pads,
         };
     }
-    // 2. Axial Resistor (MFR-25) & Axial Diodes (DO-35 1N4148, DO-41 1N4007)
     // Scale: 12 SVG units per mm so DO-35 (3.4x1.75 mm), DO-41 (5.2x2.7 mm), and MFR-25 (6.3x2.4 mm)
     // have visibly distinct, dimensionally proportional bodies and configurable lead-bend span.
     if (templateKind === "axial-resistor" || templateKind === "axial-diode") {
@@ -936,7 +896,6 @@ export function getFootprintGeometry(component, axialSpanOverrideMm) {
             pads,
         };
     }
-    // 3. Non-Polar Radial Ceramic Capacitor (C315C104K5R5TA: 3.81 x 2.54 mm body, 2.54 mm pitch)
     if (templateKind === "radial-ceramic-cap") {
         const svgUnitsPerMm = 18;
         const halfPitchSvg = ((leadPitchMm || 2.54) * svgUnitsPerMm) / 2;
@@ -981,7 +940,6 @@ export function getFootprintGeometry(component, axialSpanOverrideMm) {
             pads,
         };
     }
-    // 4. Radial Cylindrical Power Inductor (RLB0914-101KL: 8.7 mm dia, 5.0 mm pitch)
     if (templateKind === "radial-inductor") {
         const svgUnitsPerMm = 9.2;
         const halfPitchSvg = ((leadPitchMm || 5.0) * svgUnitsPerMm) / 2;
@@ -1026,7 +984,6 @@ export function getFootprintGeometry(component, axialSpanOverrideMm) {
             pads,
         };
     }
-    // 5. TO-220 3-Pin Power Package (LM7805: 10.16 x 4.57 mm, 2.54 mm pitch)
     if (templateKind === "to-220") {
         const svgUnitsPerMm = lengthMm > 0 ? 100 / lengthMm : 9.84;
         const pitchSvg = (leadPitchMm || 2.54) * svgUnitsPerMm;
@@ -1060,7 +1017,6 @@ export function getFootprintGeometry(component, axialSpanOverrideMm) {
             pads,
         };
     }
-    // 6. TO-92 3-Pin Plastic Package (BC547: 5.2 x 4.19 mm D-shape body, 1.27 mm adjacent pitch)
     if (templateKind === "to-92") {
         const svgUnitsPerMm = 15;
         const pitchSvg = (leadPitchMm || 1.27) * svgUnitsPerMm; // 19.05 units
@@ -1095,7 +1051,6 @@ export function getFootprintGeometry(component, axialSpanOverrideMm) {
             pads,
         };
     }
-    // 7. 4-Pin Molex KK 254 Vertical Header (0022232041: 10.16 x 6.35 mm, 2.54 mm pitch, 1.02 mm drill)
     if (templateKind === "header-1x4") {
         const svgUnitsPerMm = 13.5;
         const pitchSvg = (leadPitchMm || 2.54) * svgUnitsPerMm;
@@ -1131,7 +1086,6 @@ export function getFootprintGeometry(component, axialSpanOverrideMm) {
             pads,
         };
     }
-    // 8. 4-Terminal 6x6 mm Tactile Switch (B3F-1000: 6.0 x 6.0 mm body, 6.5 x 4.5 mm pitch, 1.0 mm drill)
     if (templateKind === "tactile-switch-4p") {
         const svgUnitsPerMm = 11.5;
         const halfRowX = ((rowSpacingMm || 6.5) * svgUnitsPerMm) / 2;
@@ -1216,8 +1170,6 @@ export function getFootprintGeometry(component, axialSpanOverrideMm) {
     };
 }
 export function renderFootprintSvg(component, options) {
-    // Viva Note: Enforce the same data-availability rules everywhere — never render a footprint SVG
-    // when stored body dimensions, pinout, or a valid package template are missing.
     const audit = auditComponentFootprint(component);
     if (!audit.canDrawFootprint) {
         return null;
@@ -1287,7 +1239,6 @@ export function renderFootprintSvg(component, options) {
 
         {pad.shape === "Circular" ? (<circle cx={cx} cy={cy} r={pad.width / 2} fill={padFill} stroke={padStroke} strokeWidth={padStrokeWidth}/>) : (<rect x={pad.x} y={pad.y} width={pad.width} height={pad.height} rx={pad.shape === "Square" ? "1" : "1.5"} fill={padFill} stroke={padStroke} strokeWidth={padStrokeWidth}/>)}
 
-        {/* Inner through-hole ring when pad is Circular or Square */}
         {(pad.shape === "Circular" || pad.shape === "Square") && (<circle cx={cx} cy={cy} r={drillRadiusSvg} fill="var(--cq-surface-subtle)" stroke={padStroke} strokeWidth="0.85" strokeDasharray={pad.drill != null ? undefined : "1.5 1"}/>)}
 
         <text x={pad.labelX} y={pad.labelY} fill={isSelected ? "var(--cq-emerald-hover)" : "var(--cq-text-primary)"} fontSize="8.5" fontFamily="var(--cq-font-mono)" fontWeight={isSelected ? "700" : "600"} textAnchor={pad.labelAnchor}>
@@ -1295,7 +1246,6 @@ export function renderFootprintSvg(component, options) {
         </text>
       </g>);
     };
-    // 1. PDIP-8 / Dual In-Line IC (LM358, NE555)
     if (templateKind === "pdip") {
         const leftPads = pads.filter((p) => p.side === "left");
         const rightPads = pads.filter((p) => p.side === "right");
@@ -1306,7 +1256,6 @@ export function renderFootprintSvg(component, options) {
         <circle cx="66" cy="36" r="3.5" fill="var(--cq-emerald)"/>
         {leftPads.map((pad) => renderInteractivePad(pad, "var(--cq-emerald)", "l"))}
         {rightPads.map((pad) => renderInteractivePad(pad, "var(--cq-blue)", "r"))}
-        {/* Catalogue body dimension callout with vertical end-ticks */}
         <g stroke="var(--cq-text-muted)" strokeWidth="1">
           <line x1="50" y1="114" x2="50" y2="119"/>
           <line x1="170" y1="114" x2="170" y2="119"/>
@@ -1324,7 +1273,6 @@ export function renderFootprintSvg(component, options) {
         {renderMeasureOverlay()}
       </svg>);
     }
-    // 2. Axial Resistor (MFR-25) & Axial Diodes (DO-35 1N4148, DO-41 1N4007)
     if (templateKind === "axial-resistor" || templateKind === "axial-diode") {
         const isDiode = templateKind === "axial-diode";
         const isDo35 = (component.package?.name || "")
@@ -1341,15 +1289,12 @@ export function renderFootprintSvg(component, options) {
         return (<svg className="footprint-svg" viewBox={viewBoxStr} fill="none" xmlns="http://www.w3.org/2000/svg" aria-label={`${component.package?.name || "Axial"} Package Diagram`}>
         {renderGridOverlay()}
 
-        {/* Axial wire leads from body ends to user-defined bend pads */}
         <line x1={leftPadCx} y1="54" x2={bodyX} y2="54" stroke="var(--cq-text-secondary)" strokeWidth={isDo35 ? "1.6" : "2.2"}/>
         <line x1={bodyX + bodyW} y1="54" x2={rightPadCx} y2="54" stroke="var(--cq-text-secondary)" strokeWidth={isDo35 ? "1.6" : "2.2"}/>
 
-        {/* Proportional axial package body */}
         <rect x={bodyX} y={bodyY} width={bodyW} height={bodyH} rx={isDiode ? "2.5" : "5"} fill={isDo35 ? "var(--cq-blue-soft)" : "var(--cq-surface)"} stroke="var(--cq-text-primary)" strokeWidth="1.5"/>
 
         {isDiode ? (<>
-            {/* Cathode polarity band near Pin 2 (Cathode) */}
             <rect x={bodyX + bodyW - Math.max(6, bodyW * 0.18)} y={bodyY + 1} width={Math.max(4, bodyW * 0.11)} height={bodyH - 2} fill="var(--cq-emerald)"/>
             <text x={bodyX + 5} y={54 + 3} fill="var(--cq-text-muted)" fontSize="6.5" fontFamily="var(--cq-font-sans)" fontWeight="600">
               A
@@ -1358,7 +1303,6 @@ export function renderFootprintSvg(component, options) {
               K
             </text>
           </>) : (
-            /* MFR-25 metal film resistor bands */
             <g opacity="0.85">
             <line x1={bodyX + bodyW * 0.24} y1={bodyY + 1} x2={bodyX + bodyW * 0.24} y2={bodyY + bodyH - 1} stroke="var(--cq-warning)" strokeWidth="2.8"/>
             <line x1={bodyX + bodyW * 0.42} y1={bodyY + 1} x2={bodyX + bodyW * 0.42} y2={bodyY + bodyH - 1} stroke="var(--cq-blue)" strokeWidth="2.8"/>
@@ -1373,7 +1317,6 @@ export function renderFootprintSvg(component, options) {
           {component.package?.name} · Illustrative axial diagram
         </text>
 
-        {/* Catalogue body dimension line ONLY (never draw a dimension line across the user-selected bend span) */}
         <g stroke="var(--cq-text-muted)" strokeWidth="1">
           <line x1={bodyX} y1="78" x2={bodyX} y2="84"/>
           <line x1={bodyX + bodyW} y1="78" x2={bodyX + bodyW} y2="84"/>
@@ -1389,7 +1332,6 @@ export function renderFootprintSvg(component, options) {
         {renderMeasureOverlay()}
       </svg>);
     }
-    // 3. Non-Polar Radial Ceramic Capacitor (C315C104K5R5TA: 3.81 x 2.54 mm, 2.54 mm pitch)
     if (templateKind === "radial-ceramic-cap") {
         const bodyW = Math.max(64, lengthMm * svgUnitsPerMm);
         const bodyH = Math.max(44, widthMm * svgUnitsPerMm);
@@ -1398,7 +1340,6 @@ export function renderFootprintSvg(component, options) {
         return (<svg className="footprint-svg" viewBox={viewBoxStr} fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Radial Ceramic Capacitor Footprint Diagram">
         {renderGridOverlay()}
 
-        {/* Non-polar conformal coated rectangular/rounded radial ceramic profile */}
         <rect x={bodyX} y={bodyY} width={bodyW} height={bodyH} rx="12" fill="var(--cq-warning-soft)" stroke="var(--cq-text-primary)" strokeWidth="1.5"/>
         <rect x={bodyX + 4} y={bodyY + 4} width={bodyW - 8} height={bodyH - 8} rx="9" fill="none" stroke="var(--cq-warning-border)" strokeWidth="1" strokeDasharray="2 2"/>
 
@@ -1417,16 +1358,13 @@ export function renderFootprintSvg(component, options) {
         {renderMeasureOverlay()}
       </svg>);
     }
-    // 4. Radial Cylindrical Power Inductor (RLB0914-101KL: 8.7 mm dia, 5.0 mm pitch)
     if (templateKind === "radial-inductor") {
         const outerRadius = Math.max(36, (lengthMm * svgUnitsPerMm) / 2);
         return (<svg className="footprint-svg" viewBox={viewBoxStr} fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Radial Cylindrical Inductor Footprint Diagram">
         {renderGridOverlay()}
 
-        {/* Cylindrical ferrite drum top view */}
         <circle cx="110" cy="60" r={outerRadius} fill="var(--cq-surface)" stroke="var(--cq-text-primary)" strokeWidth="1.6"/>
         <circle cx="110" cy="60" r={outerRadius - 5} fill="var(--cq-surface-subtle)" stroke="var(--cq-border-strong)" strokeWidth="1" strokeDasharray="3 2"/>
-        {/* Inductor winding emblem */}
         <path d="M 96 42 Q 101 35 106 42 Q 110 35 114 42 Q 119 35 124 42" fill="none" stroke="var(--cq-text-muted)" strokeWidth="1.2"/>
 
         {pads.map((pad, idx) => renderInteractivePad(pad, idx === 0 ? "var(--cq-emerald)" : "var(--cq-blue)", "rind"))}
@@ -1441,16 +1379,13 @@ export function renderFootprintSvg(component, options) {
         {renderMeasureOverlay()}
       </svg>);
     }
-    // 5. TO-220 3-Pin Power Regulator (LM7805: 10.16 x 4.57 mm, 2.54 mm pitch)
     if (templateKind === "to-220") {
         return (<svg className="footprint-svg" viewBox={viewBoxStr} fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="TO-220 Footprint Vector Diagram">
         {renderGridOverlay()}
 
-        {/* Rear metal heatsink mounting tab */}
         <rect x="60" y="18" width="100" height="16" rx="2" fill="var(--cq-surface-subtle)" stroke="var(--cq-border-strong)" strokeWidth="1.3"/>
         <circle cx="110" cy="26" r="4.5" fill="var(--cq-surface)" stroke="var(--cq-blue)" strokeWidth="1"/>
 
-        {/* Plastic mold body (10.16 x 4.57 mm) */}
         <rect x="60" y="34" width="100" height="42" rx="3" fill="var(--cq-surface)" stroke="var(--cq-text-primary)" strokeWidth="1.5"/>
         <text x="110" y="53" fill="var(--cq-text-primary)" fontSize="9" fontFamily="var(--cq-font-sans)" textAnchor="middle" fontWeight="600">
           {component.package?.name || "TO-220"}
@@ -1468,12 +1403,10 @@ export function renderFootprintSvg(component, options) {
         {renderMeasureOverlay()}
       </svg>);
     }
-    // 6. TO-92 3-Pin Plastic Package (BC547: D-shaped body, 5.2 x 4.19 mm, 1.27 mm pitch)
     if (templateKind === "to-92") {
         return (<svg className="footprint-svg" viewBox={viewBoxStr} fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="TO-92 Footprint Vector Diagram">
         {renderGridOverlay()}
 
-        {/* TO-92 D-shaped plastic body: curved rear arc + flat front face at y=78 */}
         <path d="M 71 78 A 39 39 0 0 1 149 78 Z" fill="var(--cq-surface)" stroke="var(--cq-text-primary)" strokeWidth="1.6"/>
         <line x1="71" y1="78" x2="149" y2="78" stroke="var(--cq-text-primary)" strokeWidth="2.2"/>
 
@@ -1496,7 +1429,6 @@ export function renderFootprintSvg(component, options) {
         {renderMeasureOverlay()}
       </svg>);
     }
-    // 7. 4-Pin Molex KK 254 Vertical Header (0022232041: 10.16 x 6.35 mm, 2.54 mm pitch, 1.02 mm drill)
     if (templateKind === "header-1x4") {
         const shroudW = lengthMm * svgUnitsPerMm; // 137.16
         const shroudH = widthMm * svgUnitsPerMm * 0.65; // ~56
@@ -1505,7 +1437,6 @@ export function renderFootprintSvg(component, options) {
         return (<svg className="footprint-svg" viewBox={viewBoxStr} fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="4-Pin KK 254 Vertical Header Footprint Diagram">
         {renderGridOverlay()}
 
-        {/* KK 254 wafer body + rear friction-lock ramp */}
         <rect x={shroudX} y={shroudY} width={shroudW} height={shroudH} rx="2.5" fill="var(--cq-surface)" stroke="var(--cq-text-primary)" strokeWidth="1.5"/>
         <rect x={shroudX + 4} y={shroudY + 3} width={shroudW - 8} height="7" rx="1" fill="var(--cq-surface-subtle)" stroke="var(--cq-border-strong)" strokeWidth="1"/>
 
@@ -1522,7 +1453,6 @@ export function renderFootprintSvg(component, options) {
         {renderMeasureOverlay()}
       </svg>);
     }
-    // 8. 4-Terminal 6x6 mm Tactile Switch (B3F-1000: 6.0 x 6.0 mm body, 6.5 x 4.5 mm pitch, 1.0 mm drill)
     if (templateKind === "tactile-switch-4p") {
         const bodySide = lengthMm * svgUnitsPerMm; // 69 units
         const bodyX = 110 - bodySide / 2;
@@ -1530,13 +1460,11 @@ export function renderFootprintSvg(component, options) {
         return (<svg className="footprint-svg" viewBox={viewBoxStr} fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="6x6 mm Tactile Switch Footprint Diagram">
         {renderGridOverlay()}
 
-        {/* Internal bridged terminal pairs (1-2 top, 3-4 bottom) */}
         {pads.length === 4 && (<g stroke="var(--cq-border-strong)" strokeWidth="1" strokeDasharray="2 2">
             <line x1={pads[0].x + pads[0].width / 2} y1={pads[0].y + pads[0].height / 2} x2={pads[1].x + pads[1].width / 2} y2={pads[1].y + pads[1].height / 2}/>
             <line x1={pads[2].x + pads[2].width / 2} y1={pads[2].y + pads[2].height / 2} x2={pads[3].x + pads[3].width / 2} y2={pads[3].y + pads[3].height / 2}/>
           </g>)}
 
-        {/* 6x6 mm square switch housing + central circular actuator plunger */}
         <rect x={bodyX} y={bodyY} width={bodySide} height={bodySide} rx="4" fill="var(--cq-surface)" stroke="var(--cq-text-primary)" strokeWidth="1.5"/>
         <circle cx="110" cy="58" r="16" fill="var(--cq-surface-subtle)" stroke="var(--cq-text-primary)" strokeWidth="1.3"/>
 

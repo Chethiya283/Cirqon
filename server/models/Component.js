@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 
 const componentSchema = new mongoose.Schema(
   {
-    // Basic identification
     partNumber: {
       type: String,
       required: true,
@@ -50,14 +49,12 @@ const componentSchema = new mongoose.Schema(
       trim: true,
     },
 
-    // Flexible technical specifications
     specifications: {
       type: Map,
       of: mongoose.Schema.Types.Mixed,
       default: {},
     },
 
-    // Package and PCB footprint information
     package: {
       name: {
         type: String,
@@ -101,7 +98,6 @@ const componentSchema = new mongoose.Schema(
       },
     },
 
-    // Pin information, where applicable
     pins: [
       {
         number: Number,
@@ -110,7 +106,6 @@ const componentSchema = new mongoose.Schema(
       },
     ],
 
-    // Official technical references
     datasheetUrl: {
       type: String,
       default: "",
@@ -123,7 +118,6 @@ const componentSchema = new mongoose.Schema(
       trim: true,
     },
 
-    // Data quality and administration
     dataStatus: {
       type: String,
       enum: ["verified", "incomplete"],
@@ -140,7 +134,6 @@ const componentSchema = new mongoose.Schema(
   }
 );
 
-// Create the model
 const Component = mongoose.model("Component", componentSchema);
 
 module.exports = Component;

@@ -1,50 +1,27 @@
-// Authentication context and provider managing user session, JWT storage, and authentication API calls.
 import React, { createContext, useContext, useEffect, useState } from "react";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
-/**
- * Single, centralized key for JWT persistence in localStorage.
- *
- * VIVA EXPLANATION:
- * LOCALSTORAGE SECURITY TRADE-OFF:
- * - Advantage: Convenient and persistent across browser page reloads and multiple tabs
- *   without requiring stateful server sessions.
- * - Trade-off: LocalStorage is accessible by any JavaScript running in the same origin.
- *   If the application were vulnerable to Cross-Site Scripting (XSS), an attacker could
- *   read `localStorage.getItem()`. To mitigate this, React escapes text content by default
- *   to prevent HTML injection, and we never execute untrusted scripts.
- */
+
+// Persists session across reloads; validated with GET /api/auth/me on mount
 const TOKEN_STORAGE_KEY = "cirqon_auth_token";
+
 const AuthContext = createContext(undefined);
-/**
- * AuthProvider Component
- *
- * VIVA EXPLANATION:
- * 1. Context & Provider Pattern:
- *    React Context allows authentication state to be shared globally across the component
- *    tree without prop-drilling. The `AuthProvider` wraps root components and supplies
- *    the active user, token, and auth methods to any child calling `useAuth()`.
- *
- * 2. Bearer Authentication Scheme:
- *    The token is transmitted in the standard HTTP `Authorization` header as:
- *    `Authorization: Bearer <token>`
- *    The term "Bearer" indicates that the carrier possessing the token is granted access,
- *    allowing the backend to verify the stateless cryptographic signature without database sessions.
- */
+
 export const AuthProvider = ({ children, }) => {
     const [user, setUser] = useState(null);
     const [token, setToken] = useState(null);
-    // Initialize loading: false if no token is stored; true if an active verification is needed
+    // True if a token is in storage and needs verification on mount
     const [loading, setLoading] = useState(() => {
         return Boolean(localStorage.getItem(TOKEN_STORAGE_KEY));
     });
-    // Restore authenticated session on application mount
+
     useEffect(() => {
         const savedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
         if (!savedToken) {
             return;
         }
         let isMounted = true;
-        // Validate the saved token against the backend profile route
+
         fetch(`${API_BASE_URL}/auth/me`, {
             method: "GET",
             headers: {
@@ -66,7 +43,6 @@ export const AuthProvider = ({ children, }) => {
             .catch(() => {
             if (!isMounted)
                 return;
-            // Clear invalidated token from localStorage in one central place
             localStorage.removeItem(TOKEN_STORAGE_KEY);
             setUser(null);
             setToken(null);
@@ -80,9 +56,7 @@ export const AuthProvider = ({ children, }) => {
             isMounted = false;
         };
     }, []);
-    /**
-     * Log in an existing user and store JWT.
-     */
+
     const login = async (email, password) => {
         let response;
         try {
@@ -110,14 +84,11 @@ export const AuthProvider = ({ children, }) => {
         if (!data.token || !data.user) {
             throw new Error("Incomplete authentication payload returned by server.");
         }
-        // Persist token in localStorage in ONE place
         localStorage.setItem(TOKEN_STORAGE_KEY, data.token);
         setToken(data.token);
         setUser(data.user);
     };
-    /**
-     * Register a new user account.
-     */
+
     const register = async (name, email, password) => {
         let response;
         try {
@@ -143,14 +114,13 @@ export const AuthProvider = ({ children, }) => {
             throw new Error(data.message || "Failed to create account.");
         }
     };
-    /**
-     * Log out user: clears state and removes token from localStorage.
-     */
+
     const logout = () => {
         localStorage.removeItem(TOKEN_STORAGE_KEY);
         setUser(null);
         setToken(null);
     };
+
     return (<AuthContext.Provider value={{
             user,
             token,
@@ -162,9 +132,7 @@ export const AuthProvider = ({ children, }) => {
       {children}
     </AuthContext.Provider>);
 };
-/**
- * Hook to consume authentication context in any React component.
- */
+
 // eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
     const context = useContext(AuthContext);

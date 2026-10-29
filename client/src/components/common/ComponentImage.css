@@ -1,8 +1,3 @@
-/* ========================================================
-   CIRQON — Component Product Image Styles
-   Precision White System
-   ======================================================== */
-
 .component-thumb-container {
   position: relative;
   display: inline-flex;
@@ -12,7 +7,6 @@
   user-select: none;
 }
 
-/* Sizing Variants */
 .component-thumb-container.size-sm {
   width: 40px;
   height: 40px;
@@ -49,7 +43,6 @@
   height: 100%;
 }
 
-/* Base Thumbnail Box */
 .component-thumb-box {
   position: relative;
   width: 100%;
@@ -70,7 +63,6 @@
   box-shadow: var(--cq-shadow-md);
 }
 
-/* Image Contained Scaling */
 .thumb-img {
   width: 100%;
   height: 100%;
@@ -88,7 +80,6 @@
   opacity: 1;
 }
 
-/* Loading Shimmer Placeholder */
 .thumb-shimmer {
   position: absolute;
   inset: 0;
@@ -111,7 +102,6 @@
   }
 }
 
-/* Vector Illustration Wrap */
 .thumb-vector-wrap {
   display: flex;
   align-items: center;
@@ -130,7 +120,6 @@
   display: block;
 }
 
-/* Provenance Indicator Badge */
 .provenance-badge {
   position: absolute;
   bottom: -4px;
@@ -158,7 +147,6 @@
   border-color: var(--cq-signal-blue-border);
 }
 
-/* Modal Hero Layout Integration */
 .modal-product-identity {
   display: flex;
   align-items: flex-start;
@@ -209,4 +197,3 @@
   color: var(--cq-signal-blue);
   border: 1px solid var(--cq-signal-blue-border);
 }
-

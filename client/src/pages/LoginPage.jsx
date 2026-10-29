@@ -1,46 +1,20 @@
-// User login authentication view with client validation, API integration, and password privacy guarantees.
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Eye, EyeOff, Lock, CheckCircle2, AlertCircle } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import "./AuthPage.css";
-/**
- * LoginPage Component
- *
- * VIVA EXPLANATION:
- * 1. API Integration with State Management:
- *    Invokes `login(email, password)` from `AuthContext`, which issues `POST /api/auth/login`.
- *    Upon receiving a 200 OK, the JWT and user profile are persisted globally, and the user
- *    is routed to the root application view ("/").
- * 2. Generic Error Handling:
- *    Displays the backend error message inline if authentication fails (e.g., HTTP 401
- *    "Invalid email or password."), protecting against user enumeration.
- * 3. Cross-Page State Handoff:
- *    Reads `location.state?.successNote` passed from `RegisterPage` to display a helpful
- *    onboarding notification upon registration completion.
- */
 export const LoginPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { login } = useAuth();
-    // Retrieve optional registration success note from router location state
     const registrationSuccessNote = location.state?.successNote;
-    // Controlled form input state
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    // Toggle for password visibility
     const [showPassword, setShowPassword] = useState(false);
-    // Field validation error state
     const [errors, setErrors] = useState({});
-    // Server error message received from API
     const [serverError, setServerError] = useState(null);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    /**
-     * Validate all login inputs according to university rubric constraints.
-     */
-    const validateForm = () => {
+    const [isSubmitting, setIsSubmitting] = useState(false);const validateForm = () => {
         const newErrors = {};
-        // 1. Email validation
         const trimmedEmail = email.trim();
         if (!trimmedEmail) {
             newErrors.email = "Email address is required.";
@@ -48,17 +22,13 @@ export const LoginPage = () => {
         else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
             newErrors.email = "Please enter a valid email address (e.g., engineer@cirqon.org).";
         }
-        // 2. Password validation (required only on login; length policy is enforced on registration)
+    // Password length policy is enforced on registration; login only checks presence
         if (!password) {
             newErrors.password = "Password is required.";
         }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
-    };
-    /**
-     * Handle form submission: validates inputs and calls backend login API.
-     */
-    const handleSubmit = async (e) => {
+    };const handleSubmit = async (e) => {
         e.preventDefault();
         setServerError(null);
         if (!validateForm())
@@ -66,7 +36,6 @@ export const LoginPage = () => {
         try {
             setIsSubmitting(true);
             await login(email.trim(), password);
-            // Navigate to home page upon successful authentication
             navigate("/");
         }
         catch (err) {
@@ -111,7 +80,6 @@ export const LoginPage = () => {
           </div>)}
 
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
-          {/* Email Address Field */}
           <div className="form-group">
             <label htmlFor="login-email" className="form-label">
               Email Address
@@ -128,7 +96,6 @@ export const LoginPage = () => {
               </span>)}
           </div>
 
-          {/* Password Field */}
           <div className="form-group">
             <label htmlFor="login-password" className="form-label">
               Password
@@ -148,7 +115,6 @@ export const LoginPage = () => {
               </span>)}
           </div>
 
-          {/* Submit Action */}
           <button type="submit" className="auth-submit-btn" disabled={isSubmitting}>
             {isSubmitting ? "Logging in..." : "Log in"}
           </button>

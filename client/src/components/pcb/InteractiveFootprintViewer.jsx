@@ -24,26 +24,14 @@ const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 4.0;
 const ZOOM_STEP = 1.2;
 const PAN_STEP_SVG = 14;
-/**
- * InteractiveFootprintViewer (Phase 2)
- *
- * Viva Notes:
- * 1. ViewBox-based Pan & Zoom: Instead of CSS transforms (which blur rasterized layers or clip bounds),
- *    zooming and panning dynamically adjust the SVG `viewBox="x y w h"`, preserving crisp vector edges at any zoom.
- * 2. Non-Passive Wheel Listener: Uses a native `{ passive: false }` wheel listener on the canvas container
- *    so `e.preventDefault()` prevents page scrolling while zooming around the cursor position.
- * 3. Single Source of Truth for Pad Selection: `selectedPadNumber` and `hoveredPadNumber` live in one state
- *    hook here, synchronizing the SVG pad elements, the Pad Details panel, and the side-by-side Pad Table.
- */
+// Pan and zoom adjust SVG viewBox dynamically to maintain vector clarity
 export const InteractiveFootprintViewer = ({ component, missingFields, validation: propValidation }) => {
     const validation = useMemo(() => propValidation || validateComponentFootprint(component), [propValidation, component]);
     const defaultAxialSpan = getDefaultAxialSpanMm(component.package?.bodyDimensions?.lengthMm ?? 5);
     const [axialSpanMm, setAxialSpanMm] = useState(defaultAxialSpan);
     const geometry = useMemo(() => getFootprintGeometry(component, axialSpanMm), [component, axialSpanMm]);
     const { viewBoxWidth: baseW, viewBoxHeight: baseH, svgUnitsPerMm, pads, isAxialPackage, } = geometry;
-    // Sorted pads by pin number (1..8) for the Pad Table
     const sortedPads = useMemo(() => [...pads].sort((a, b) => a.number - b.number), [pads]);
-    // Single state location for view transform, pad selection, grid, and measurement
     const [zoom, setZoom] = useState(1);
     const [pan, setPan] = useState({ x: 0, y: 0 });
     const [showGrid, setShowGrid] = useState(false);
@@ -57,7 +45,6 @@ export const InteractiveFootprintViewer = ({ component, missingFields, validatio
     const lastPinchDistRef = useRef(null);
     const isDraggingRef = useRef(false);
     const dragMovedRef = useRef(false);
-    // Measure the actual rendered SVG width so the millimeter scale bar stays calibrated to the SVG scale
     useEffect(() => {
         const el = canvasRef.current;
         if (!el)
@@ -79,7 +66,6 @@ export const InteractiveFootprintViewer = ({ component, missingFields, validatio
     const currentViewW = baseW / zoom;
     const currentViewH = baseH / zoom;
     const viewBoxStr = `${pan.x.toFixed(2)} ${pan.y.toFixed(2)} ${currentViewW.toFixed(2)} ${currentViewH.toFixed(2)}`;
-    // Zoom around a relative fraction (relX, relY in [0..1]) of the viewport
     const applyZoomAtFraction = (targetZoom, relX = 0.5, relY = 0.5) => {
         const clampedZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, targetZoom));
         setZoom((prevZoom) => {
@@ -160,9 +146,7 @@ export const InteractiveFootprintViewer = ({ component, missingFields, validatio
             y: pan.y + relY * currentViewH,
         };
     };
-    // Pointer events for drag-to-pan and 2-finger touch pinch-zoom
     const handlePointerDown = (e) => {
-        // Allow normal button clicks on pads unless dragging or in measure mode
         const target = e.target;
         const isPadTarget = Boolean(target.closest(".footprint-pad-group"));
         activePointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -229,7 +213,6 @@ export const InteractiveFootprintViewer = ({ component, missingFields, validatio
             isDraggingRef.current = false;
         }
     };
-    // Keyboard navigation when canvas is focused (+, -, arrow keys, 0, Escape)
     const handleCanvasKeyDown = (e) => {
         if (e.key === "+" || e.key === "=") {
             e.preventDefault();
@@ -264,7 +247,6 @@ export const InteractiveFootprintViewer = ({ component, missingFields, validatio
             setHoveredPadNumber(null);
         }
     };
-    // Dynamic scale bar calculation based on actual rendered SVG width, mm-to-SVG-unit ratio, and current zoom
     const scaleBarInfo = useMemo(() => {
         const candidateStepsMm = [0.5, 1, 2, 5];
         const pxPerSvgUnit = currentViewW > 0 ? svgRenderedWidthPx / currentViewW : 2.1 * zoom;
@@ -280,7 +262,6 @@ export const InteractiveFootprintViewer = ({ component, missingFields, validatio
         const barWidthPx = Math.round(Math.min(145, Math.max(32, chosenMm * pxPerMm)));
         return { mm: chosenMm, widthPx: barWidthPx };
     }, [svgUnitsPerMm, currentViewW, svgRenderedWidthPx, zoom]);
-    // Measured distance in mm when 2 points are placed
     const measuredDistanceMm = useMemo(() => {
         if (measurePoints.length < 2)
             return null;
@@ -289,7 +270,6 @@ export const InteractiveFootprintViewer = ({ component, missingFields, validatio
         const svgDist = Math.hypot(dx, dy);
         return Number((svgDist / svgUnitsPerMm).toFixed(2));
     }, [measurePoints, svgUnitsPerMm]);
-    // Active pad for the inspection details panel (selected pad takes priority, or hovered pad)
     const inspectedPad = useMemo(() => {
         const targetNum = hoveredPadNumber ?? selectedPadNumber;
         if (targetNum == null)
@@ -297,7 +277,6 @@ export const InteractiveFootprintViewer = ({ component, missingFields, validatio
         return sortedPads.find((p) => p.number === targetNum) || null;
     }, [hoveredPadNumber, selectedPadNumber, sortedPads]);
     return (<div className="pcb-interactive-viewer">
-      {/* Toolbar */}
       <div className="pcb-viewer-toolbar" role="toolbar" aria-label="Footprint viewer controls">
         <div className="pcb-toolbar-group">
           <button type="button" className="pcb-tool-btn" aria-label="Zoom in footprint" title="Zoom in (+)" onClick={() => applyZoomAtFraction(zoom * ZOOM_STEP, 0.5, 0.5)}>
@@ -341,7 +320,6 @@ export const InteractiveFootprintViewer = ({ component, missingFields, validatio
         </div>
       </div>
 
-      {/* Main Split Workspace: Interactive Canvas + Side-by-Side Pad Table */}
       <div className="pcb-viewer-workspace">
         <div className="pcb-canvas-column">
           <div ref={canvasRef} className={`pcb-footprint-canvas interactive-canvas ${measureMode ? "measure-cursor" : ""}`} tabIndex={0} role="application" aria-label={`Interactive footprint canvas for ${component.partNumber}. Use plus and minus keys to zoom, arrow keys to pan, and 0 to reset.`} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUpOrCancel} onPointerCancel={handlePointerUpOrCancel} onKeyDown={handleCanvasKeyDown}>
@@ -365,7 +343,6 @@ export const InteractiveFootprintViewer = ({ component, missingFields, validatio
             axialSpanMm,
         })}
 
-            {/* Real-time mm scale bar */}
             <div className="pcb-scale-bar-overlay" aria-label={`Scale bar: ${scaleBarInfo.mm} millimeters`}>
               <div className="pcb-scale-bar-line" style={{ width: `${scaleBarInfo.widthPx}px` }}/>
               <span className="pcb-scale-bar-label">
@@ -374,7 +351,6 @@ export const InteractiveFootprintViewer = ({ component, missingFields, validatio
             </div>
           </div>
 
-          {/* Two-Click Measurement Readout */}
           {measureMode && (<div className="pcb-measure-banner" role="status">
               <div className="pcb-measure-info">
                 <strong>Measure tool:</strong>{" "}
@@ -396,7 +372,6 @@ export const InteractiveFootprintViewer = ({ component, missingFields, validatio
                 </button>)}
             </div>)}
 
-          {/* Selected / Hovered Pad Details Panel */}
           <div className="pcb-pad-details-panel" aria-live="polite">
             <div className="pcb-pad-details-header">
               <h5>
@@ -493,7 +468,6 @@ export const InteractiveFootprintViewer = ({ component, missingFields, validatio
           </div>
         </div>
 
-        {/* Side-by-Side Physical Component Image & Interactive Pad Table */}
         <div className="pcb-side-column">
           <PcbComponentPhotoPanel component={component}/>
 
@@ -546,7 +520,6 @@ export const InteractiveFootprintViewer = ({ component, missingFields, validatio
         </div>
       </div>
 
-      {/* Footprint Validation System Status & Engineering Checklist */}
       <FootprintValidationPanel validation={validation} datasheetUrl={component.datasheetUrl} manufacturer={component.manufacturer} compact={false} initialExpanded={false}/>
 
       {missingFields.length > 0 && validation.status === "incomplete" && (<div className="pcb-missing-banner">

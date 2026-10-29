@@ -1,13 +1,8 @@
-// Public home landing page featuring a focused single-column hero with atmospheric background photo,
-// real category taxonomy with Lucide icons, interactive search, and engineering pipeline workflow.
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, X, Layers, Cpu, GitCompare, ArrowRight, Bookmark, UserPlus, Activity, BatteryCharging, Radio, Sun, Grid, Zap, Plug, Shield, } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import "./HomePage.css";
-/**
- * Return a clean Lucide icon for each electronic component category.
- */
 function getCategoryLucideIcon(categoryName) {
     switch (categoryName) {
         case "All Components":
@@ -34,51 +29,20 @@ function getCategoryLucideIcon(categoryName) {
             return <Layers size={22} aria-hidden="true"/>;
     }
 }
-/**
- * HomePage Component
- *
- * VIVA EXPLANATION:
- * 1. Single Focused Hero Column:
- *    Organized as a clean, prominent single-column layout prioritizing immediate component
- *    search and discovery without visual clutter.
- *
- * 2. Decorative CSS Background & Contrast Protection:
- *    The hero image is loaded as a CSS `background-image` rather than an <img> tag
- *    because it is purely decorative ambiance. A flat semi-transparent overlay using the
- *    `--cq-bg` token at ~86% opacity ensures that dark text and controls easily exceed
- *    WCAG AA contrast requirements (4.5:1 minimum).
- *
- * 3. Real Category Taxonomy:
- *    Category counts reflect actual MongoDB catalog records directly passed from App.tsx,
- *    ensuring zero mock data or hardcoded vanity statistics.
- *
- * 4. Motion-Safe Line Art:
- *    Procedural line-art SVG diagrams illustrate the Find-Compare-Design pipeline with
- *    animations disabled when `prefers-reduced-motion` is active.
- */
 export const HomePage = ({ categoryCounts, categories, onSearch, onSelectCategory, }) => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const [localSearch, setLocalSearch] = useState("");
-    /**
-     * Handle search submission: sets global search in App.tsx and navigates to /library.
-     */
     const handleSearchSubmit = (e) => {
         e.preventDefault();
         onSearch(localSearch.trim());
         navigate("/library");
     };
-    /**
-     * Handle category click: sets active category filter and navigates to /library.
-     */
     const handleCategoryClick = (categoryName) => {
         onSelectCategory(categoryName);
         navigate("/library");
     };
     return (<div className="home-page">
-      {/* ========================================================
-            1. Hero Section (Single Column with Background Photo & Overlay)
-            ======================================================== */}
       <section className="home-hero-section" aria-labelledby="hero-headline">
         <div className="home-hero-content">
           <div className="home-hero-badge">
@@ -95,7 +59,6 @@ export const HomePage = ({ categoryCounts, categories, onSearch, onSelectCategor
             and reference technical datasheets.
           </p>
 
-          {/* Large Hero Search Box */}
           <form className="home-search-form" onSubmit={handleSearchSubmit} role="search">
             <div className="home-search-input-wrap">
               <Search className="home-search-icon" size={20} aria-hidden="true"/>
@@ -109,7 +72,6 @@ export const HomePage = ({ categoryCounts, categories, onSearch, onSelectCategor
             </button>
           </form>
 
-          {/* Hero Action Buttons */}
           <div className="home-hero-actions">
             <button type="button" className="btn-hero-primary" onClick={() => navigate("/library")}>
               <Layers size={18} aria-hidden="true"/>
@@ -125,9 +87,6 @@ export const HomePage = ({ categoryCounts, categories, onSearch, onSelectCategor
         </div>
       </section>
 
-      {/* ========================================================
-            2. Real Category Grid (Enhanced with Lucide Icons)
-            ======================================================== */}
       <section className="home-category-section" aria-labelledby="category-heading">
         <div className="home-section-header">
           <div className="home-eyebrow">Categories</div>
@@ -144,7 +103,6 @@ export const HomePage = ({ categoryCounts, categories, onSearch, onSelectCategor
             const count = categoryCounts[category.name] ?? 0;
             return (<button key={category.name} type="button" className="home-category-card" onClick={() => handleCategoryClick(category.name)} title={`Explore ${category.name} (${count} items in database)`}>
                 <div className="home-category-header">
-                  {/* Soft tinted square with large Lucide icon */}
                   <div className="home-category-icon-box">
                     {getCategoryLucideIcon(category.name)}
                   </div>
@@ -165,9 +123,6 @@ export const HomePage = ({ categoryCounts, categories, onSearch, onSelectCategor
         </div>
       </section>
 
-      {/* ========================================================
-            3. Three-Step "How It Works" with Original Line-Art SVGs
-            ======================================================== */}
       <section className="home-workflow-section" aria-labelledby="workflow-heading">
         <div className="home-section-header">
           <div className="home-eyebrow">Workflow</div>
@@ -180,22 +135,17 @@ export const HomePage = ({ categoryCounts, categories, onSearch, onSelectCategor
         </div>
 
         <div className="home-workflow-row">
-          {/* Step 1: Find */}
           <div className="home-workflow-card">
             <div className="home-workflow-illustration-wrap">
               <svg className="home-workflow-illustration" viewBox="0 0 80 60" fill="none" aria-hidden="true">
-                {/* Chip outline with pins */}
                 <rect x="14" y="16" width="34" height="28" rx="2" stroke="var(--cq-border-strong)" strokeWidth="1.5" fill="var(--cq-surface)"/>
                 <circle cx="20" cy="22" r="1.5" fill="var(--cq-text-muted)"/>
-                {/* Left pins */}
                 <line x1="8" y1="23" x2="14" y2="23" stroke="var(--cq-text-muted)" strokeWidth="1.5" strokeLinecap="round"/>
                 <line x1="8" y1="30" x2="14" y2="30" stroke="var(--cq-text-muted)" strokeWidth="1.5" strokeLinecap="round"/>
                 <line x1="8" y1="37" x2="14" y2="37" stroke="var(--cq-text-muted)" strokeWidth="1.5" strokeLinecap="round"/>
-                {/* Right pins */}
                 <line x1="48" y1="23" x2="54" y2="23" stroke="var(--cq-text-muted)" strokeWidth="1.5" strokeLinecap="round"/>
                 <line x1="48" y1="30" x2="54" y2="30" stroke="var(--cq-text-muted)" strokeWidth="1.5" strokeLinecap="round"/>
                 <line x1="48" y1="37" x2="54" y2="37" stroke="var(--cq-text-muted)" strokeWidth="1.5" strokeLinecap="round"/>
-                {/* Magnifier lens focused over the chip */}
                 <circle cx="46" cy="28" r="14" stroke="var(--cq-emerald)" strokeWidth="2" fill="var(--cq-surface)" fillOpacity="0.85"/>
                 <line x1="56" y1="38" x2="70" y2="52" stroke="var(--cq-emerald)" strokeWidth="2.5" strokeLinecap="round"/>
                 <circle cx="46" cy="28" r="4" stroke="var(--cq-emerald)" strokeWidth="1" strokeDasharray="2 2"/>
@@ -215,23 +165,19 @@ export const HomePage = ({ categoryCounts, categories, onSearch, onSelectCategor
             </p>
           </div>
 
-          {/* Step 2: Compare */}
           <div className="home-workflow-card">
             <div className="home-workflow-illustration-wrap">
               <svg className="home-workflow-illustration" viewBox="0 0 80 60" fill="none" aria-hidden="true">
-                {/* Left chip */}
                 <rect x="8" y="16" width="24" height="28" rx="2" stroke="var(--cq-border-strong)" strokeWidth="1.5" fill="var(--cq-surface)"/>
                 <line x1="3" y1="23" x2="8" y2="23" stroke="var(--cq-text-muted)" strokeWidth="1.5" strokeLinecap="round"/>
                 <line x1="3" y1="30" x2="8" y2="30" stroke="var(--cq-text-muted)" strokeWidth="1.5" strokeLinecap="round"/>
                 <line x1="3" y1="37" x2="8" y2="37" stroke="var(--cq-text-muted)" strokeWidth="1.5" strokeLinecap="round"/>
 
-                {/* Right chip */}
                 <rect x="48" y="16" width="24" height="28" rx="2" stroke="var(--cq-emerald)" strokeWidth="1.5" fill="var(--cq-emerald-soft)"/>
                 <line x1="72" y1="23" x2="77" y2="23" stroke="var(--cq-emerald)" strokeWidth="1.5" strokeLinecap="round"/>
                 <line x1="72" y1="30" x2="77" y2="30" stroke="var(--cq-emerald)" strokeWidth="1.5" strokeLinecap="round"/>
                 <line x1="72" y1="37" x2="77" y2="37" stroke="var(--cq-emerald)" strokeWidth="1.5" strokeLinecap="round"/>
 
-                {/* Divergence and comparison lines */}
                 <path d="M 36,26 L 43,26 M 40,23 L 43,26 L 40,29" stroke="var(--cq-emerald)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 <path d="M 44,34 L 37,34 M 40,31 L 37,34 L 40,37" stroke="var(--cq-text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
@@ -250,25 +196,19 @@ export const HomePage = ({ categoryCounts, categories, onSearch, onSelectCategor
             </p>
           </div>
 
-          {/* Step 3: Design */}
           <div className="home-workflow-card">
             <div className="home-workflow-illustration-wrap">
               <svg className="home-workflow-illustration" viewBox="0 0 80 60" fill="none" aria-hidden="true">
-                {/* Silkscreen outline */}
                 <rect x="18" y="12" width="44" height="36" rx="2" stroke="var(--cq-border-strong)" strokeWidth="1" strokeDasharray="3 2" fill="var(--cq-surface-subtle)"/>
-                {/* Pin 1 dot */}
                 <circle cx="24" cy="18" r="2" fill="var(--cq-emerald)"/>
-                {/* Left SMT pads */}
                 <rect x="10" y="16" width="6" height="4" rx="0.5" fill="var(--cq-emerald-soft)" stroke="var(--cq-emerald)" strokeWidth="1.2"/>
                 <rect x="10" y="24" width="6" height="4" rx="0.5" fill="var(--cq-emerald-soft)" stroke="var(--cq-emerald)" strokeWidth="1.2"/>
                 <rect x="10" y="32" width="6" height="4" rx="0.5" fill="var(--cq-emerald-soft)" stroke="var(--cq-emerald)" strokeWidth="1.2"/>
                 <rect x="10" y="40" width="6" height="4" rx="0.5" fill="var(--cq-emerald-soft)" stroke="var(--cq-emerald)" strokeWidth="1.2"/>
-                {/* Right SMT pads */}
                 <rect x="64" y="16" width="6" height="4" rx="0.5" fill="var(--cq-emerald-soft)" stroke="var(--cq-emerald)" strokeWidth="1.2"/>
                 <rect x="64" y="24" width="6" height="4" rx="0.5" fill="var(--cq-emerald-soft)" stroke="var(--cq-emerald)" strokeWidth="1.2"/>
                 <rect x="64" y="32" width="6" height="4" rx="0.5" fill="var(--cq-emerald-soft)" stroke="var(--cq-emerald)" strokeWidth="1.2"/>
                 <rect x="64" y="40" width="6" height="4" rx="0.5" fill="var(--cq-emerald-soft)" stroke="var(--cq-emerald)" strokeWidth="1.2"/>
-                {/* Pitch dimension line */}
                 <line x1="6" y1="24" x2="6" y2="32" stroke="var(--cq-blue)" strokeWidth="1"/>
                 <line x1="4" y1="24" x2="8" y2="24" stroke="var(--cq-blue)" strokeWidth="1"/>
                 <line x1="4" y1="32" x2="8" y2="32" stroke="var(--cq-blue)" strokeWidth="1"/>
@@ -290,9 +230,6 @@ export const HomePage = ({ categoryCounts, categories, onSearch, onSelectCategor
         </div>
       </section>
 
-      {/* ========================================================
-            4. Call To Action Restrained Band
-            ======================================================== */}
       <section className="home-cta-section" aria-labelledby="cta-heading">
         <div className="home-cta-content">
           <div className="home-eyebrow">Get started</div>

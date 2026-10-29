@@ -610,8 +610,6 @@ const components = [
   },
 ];
 
-// Viva Note: Added 'imageUrl' to the whitelist below so that running re-seeding
-// preserves and updates component image paths with modern .webp assets.
 function buildSetObject(component) {
   const set = {};
 

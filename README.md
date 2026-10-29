@@ -1,8 +1,7 @@
 # Cirqon — Electronic Component Finder & PCB Design Assistant
 
 > **EE4207 Web Application Development Mini Project**<br />
-> **Student Developer:** Nadun Theekshana<br />
-> **Evaluation Deadline:** 31 October 2026<br />
+> **Student Developer:** D.P.L.C.L. De Silva<br />
 > **Live Architecture:** React 19 (ES Modules, JSX) · Express.js 5 · Node.js · MongoDB Atlas · Mongoose 9
 
 ---

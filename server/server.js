@@ -22,19 +22,17 @@ const app = express();
 
 const PORT = process.env.PORT || 5000;
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Serve static uploaded assets from server/uploads with security headers
 const uploadsDir = path.join(__dirname, "uploads");
 app.use(
   "/uploads",
   (req, res, next) => {
-    // Security header to prevent browser MIME-type sniffing
+    // Prevent browser MIME-type sniffing
     res.setHeader("X-Content-Type-Options", "nosniff");
 
-    // Serve PDF datasheets inline in the browser viewport
+    // Render PDF datasheets inline in browser instead of forcing download
     if (req.path.toLowerCase().endsWith(".pdf")) {
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader("Content-Disposition", "inline");
@@ -49,14 +47,12 @@ app.use("/api/auth", authRoutes);
 app.use("/api/saved-parts", savedPartRoutes);
 app.use("/api/uploads", uploadRoutes);
 
-// Test route
 app.get("/", (req, res) => {
   res.json({
     message: "Cirqon API is running",
   });
 });
 
-// Connect to MongoDB
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => {

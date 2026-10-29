@@ -1,4 +1,3 @@
-// Interactive Footprint Validation component presenting validation status, engineering checklist, and design notices.
 import React, { useState } from "react";
 import { AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, ExternalLink, Minus, ShieldCheck, XCircle, } from "lucide-react";
 import { getCheckStateClass, getProvenanceBadgeClass, renderValueWithMonoNumbers, } from "../../utils/footprint";

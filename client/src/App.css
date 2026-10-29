@@ -1,11 +1,3 @@
-/* ========================================================
-   CIRQON — Precision White Design System
-   Consolidated Stylesheet (Inherits tokens from tokens.css)
-   ======================================================== */
-
-/* ========================================================
-   Global Foundation & App Shell
-   ======================================================== */
 .app-shell {
   display: flex;
   flex-direction: column;
@@ -17,9 +9,6 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ========================================================
-   Top Application Header
-   ======================================================== */
 .topbar {
   position: sticky;
   top: 0;
@@ -147,7 +136,6 @@
   font-weight: 700;
 }
 
-/* Global Search Field */
 .topbar-search {
   width: 100%;
   min-width: 0;
@@ -239,7 +227,6 @@
   gap: 12px;
 }
 
-/* Subtle & Truthful Database Connection Indicator */
 .system-status-indicator {
   display: inline-flex;
   align-items: center;
@@ -274,9 +261,6 @@
   background: var(--cq-error-soft);
 }
 
-/* ========================================================
-   Workspace Shell & Filter Rail Layout
-   ======================================================== */
 .workspace-body {
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
@@ -293,7 +277,6 @@
   max-width: none;
 }
 
-/* Refined Light Filter Sidebar */
 .sidebar {
   position: sticky;
   top: var(--cq-navbar-height);
@@ -323,7 +306,6 @@
   font-family: var(--cq-font-heading);
 }
 
-/* Parametric Filters */
 .sidebar-filters {
   padding-top: 14px;
   border-top: 1px solid var(--cq-border-subtle);
@@ -399,9 +381,6 @@
   font-size: var(--cq-text-xs);
 }
 
-/* ========================================================
-   Main Content Area & Page Layout
-   ======================================================== */
 .main-content {
   background: var(--cq-bg);
   min-width: 0;
@@ -413,7 +392,6 @@
   margin: 0 auto;
 }
 
-/* Catalog Heading & Controls */
 .catalog-control-bar {
   display: flex;
   align-items: flex-end;
@@ -423,9 +401,6 @@
   flex-wrap: wrap;
 }
 
-/* ========================================================
-   Library Redesign: Full-Width Layout, Category Strip & Toolbar
-   ======================================================== */
 .library-view-container {
   display: flex;
   flex-direction: column;
@@ -545,7 +520,6 @@
   max-width: 760px;
 }
 
-/* Integrated On-Page Quick Search Field */
 .library-header-search {
   width: 360px;
   max-width: 100%;
@@ -610,9 +584,6 @@
   background: var(--cq-surface-hover);
 }
 
-/* ========================================================
-   Two-Column Library Layout & Sticky Sidebar
-   ======================================================== */
 .library-two-column-layout {
   display: flex;
   align-items: flex-start;
@@ -620,15 +591,7 @@
   width: 100%;
 }
 
-/* VIVA EXPLANATION: Sticky Sidebar Architecture & Scroll Mechanics
- * 1. position: sticky sticks relative to the nearest scrolling viewport once scroll offset reaches `top: calc(var(--cq-navbar-height) + 16px)`.
- * 2. align-self: flex-start overrides flex default `stretch`, ensuring the sidebar retains its own intrinsic height rather
- *    than matching the main content height, giving it full vertical room to slide and stick.
- * 3. max-height: calc(100vh - var(--cq-navbar-height) - 32px) with overflow-y: auto guarantees that if categories + filters
- *    exceed the visible viewport, the sidebar scrolls internally without overflowing or being clipped.
- * 4. Ancestor requirement: Requires `overflow-x: clip` instead of `overflow-x: hidden` on body (index.css) to avoid creating
- *    an unintended scroll context that breaks viewport-relative sticky pinning.
- */
+/* Sticky sidebar pinned below navbar; scrolls internally if content overflows */
 .library-sidebar {
   position: sticky;
   top: calc(var(--cq-navbar-height) + 16px);
@@ -761,7 +724,6 @@
   font-weight: var(--cq-weight-semibold);
 }
 
-/* Parametric Filters Section in Sidebar */
 .library-sidebar-filters {
   display: flex;
   flex-direction: column;
@@ -833,7 +795,6 @@
   outline-offset: 1px;
 }
 
-/* Mobile Collapsible Filters Toggle (<900px) */
 .library-mobile-filters-toggle {
   display: none;
   align-items: center;
@@ -889,7 +850,6 @@
   font-size: 9px;
 }
 
-/* Right Main Panel */
 .library-main-panel {
   flex: 1;
   min-width: 0;
@@ -898,7 +858,6 @@
   gap: var(--cq-space-4);
 }
 
-/* Responsive Adaptation: Under 900px */
 @media (max-width: 900px) {
   .library-two-column-layout {
     flex-direction: column;
@@ -920,7 +879,7 @@
     display: none;
   }
 
-  /* Horizontal scrolling category strip */
+  
   .library-sidebar-cat-list {
     flex-direction: row;
     overflow-x: auto;
@@ -937,7 +896,7 @@
     min-width: 155px;
   }
 
-  /* Collapsible filters trigger & panel */
+  
   .library-mobile-filters-toggle {
     display: flex;
   }
@@ -951,9 +910,6 @@
   }
 }
 
-/* ========================================================
-   Unified Toolbar Under Category Strip
-   ======================================================== */
 .library-toolbar {
   display: flex;
   align-items: center;
@@ -987,7 +943,6 @@
   white-space: nowrap;
 }
 
-/* Custom Select Styling */
 .custom-select-container {
   position: relative;
   display: inline-flex;
@@ -1209,7 +1164,6 @@
   white-space: nowrap;
 }
 
-/* Toolbar Controls: Sort & View Toggle */
 .catalog-sort-bar {
   display: inline-flex;
   align-items: center;
@@ -1303,19 +1257,10 @@
   font-size: var(--cq-text-xs);
 }
 
-/* ========================================================
-   Component Product Card Grid
-   ======================================================== */
 .catalog-cards-container {
   width: 100%;
 }
 
-/* VIVA EXPLANATION: Responsive Grid System
- * - grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) creates an intrinsic fluid layout.
- * - 'auto-fill' automatically computes the maximum number of columns that can fit with a min width of 260px.
- * - '1fr' stretches each card uniformly to consume remaining fractional space across the grid track.
- * - Eliminates rigid breakpoint media queries, seamlessly accommodating viewports from 360px to 1440px+.
- */
 .component-card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -1329,19 +1274,6 @@
   }
 }
 
-/* VIVA EXPLANATION: Product Card Hierarchy & Elevation
- * - Card Hierarchy:
- *   1. Corners: Compare checkbox (left) & Save bookmark (right) for quick utility actions.
- *   2. Image Stage: 4:3 fixed ratio anchor with neutral surface background (--cq-surface-subtle).
- *   3. MPN: Monospace font (--cq-font-mono) for immediate technical identification.
- *   4. Name: Maximum 2 lines clamped (-webkit-line-clamp: 2) to maintain strict vertical rhythm.
- *   5. Quiet Metadata: Manufacturer and package case rendered in muted tone (--cq-text-muted).
- *   6. Specs: 2 to 3 discrete key parameters in a clean compact list.
- *   7. Footer: Quiet small text link for datasheet alongside a single prominent primary "View details" button.
- * - Hover Interaction: 150ms transition with 2px elevation lift (translateY(-2px)),
- *   border colour shift to --cq-emerald, and soft shadow (--cq-shadow-md).
- * - Motion Safety: Respects prefers-reduced-motion to protect users with vestibular disorders.
- */
 .product-card {
   background: var(--cq-surface);
   border: 1px solid var(--cq-border-default);
@@ -1379,7 +1311,6 @@
   }
 }
 
-/* Card Top Bar & Corner Controls */
 .card-top-bar {
   display: flex;
   align-items: center;
@@ -1494,12 +1425,7 @@
   color: var(--cq-emerald);
 }
 
-/* VIVA EXPLANATION: Image Aspect Ratio Handling & CLS Elimination
- * - aspect-ratio: 4 / 3 establishes a rigid geometric container before images download.
- * - Prevents Cumulative Layout Shift (CLS) on dynamic component catalogs.
- * - Neutral surface background (--cq-surface-subtle) ensures smooth, non-jarring contrast.
- * - If product photograph is missing or encounters a 404, renders a clean category icon placeholder.
- */
+/* Fixed aspect ratio prevents layout shift while images load */
 .card-image-stage {
   position: relative;
   width: 100%;
@@ -1545,7 +1471,6 @@
   letter-spacing: var(--cq-tracking-normal);
 }
 
-/* Card Body */
 .card-body {
   padding: var(--cq-space-3);
   display: flex;
@@ -1614,7 +1539,6 @@
   color: var(--cq-text-muted);
 }
 
-/* Key Specifications List */
 .card-specs-list {
   margin-top: auto;
   background: var(--cq-surface-subtle);
@@ -1659,7 +1583,6 @@
   padding: 4px 0;
 }
 
-/* Card Footer: Small datasheet text link + Primary View Details button */
 .card-footer {
   display: flex;
   align-items: center;
@@ -1757,7 +1680,6 @@
   outline-offset: 2px;
 }
 
-/* Loading Skeletons & Empty State */
 .skeleton-card {
   padding: var(--cq-space-3);
   gap: var(--cq-space-3);
@@ -1948,17 +1870,7 @@
   outline-offset: 2px;
 }
 
-/* ========================================================
-   Engineering Data Table
-   ======================================================== */
-
-/* VIVA EXPLANATION: Table Sticky Headers & Scrolling Container
- * - thead th: position: sticky; top: 0 with z-index: 10 pins column headers across long scroll runs.
- * - Solid background (--cq-surface-subtle) ensures rows scrolling underneath remain obscured.
- * - table-responsive-wrapper: overflow-x: auto with -webkit-overflow-scrolling: touch contains table
- *   width within the viewport, preventing page-level horizontal overflow on mobile (360px) and tablet (768px).
- * - Comfortable cell padding (12px 16px) establishes clean tabular scanning.
- */
+/* Sticky thead; container prevents page-level horizontal overflow on mobile */
 .engineering-table-container {
   background: var(--cq-surface);
   border: 1px solid var(--cq-border-default);
@@ -2080,7 +1992,6 @@
   text-align: center;
 }
 
-/* Table Row & Cell States */
 .table-row {
   border-bottom: 1px solid var(--cq-border-subtle);
   cursor: pointer;
@@ -2102,7 +2013,6 @@
   color: var(--cq-text-primary);
 }
 
-/* Accessible Table Checkbox */
 .td-select {
   text-align: center;
 }
@@ -2158,7 +2068,6 @@
   cursor: not-allowed;
 }
 
-/* MPN Column */
 .table-mpn-group {
   display: flex;
   flex-direction: column;
@@ -2206,7 +2115,6 @@
   font-weight: var(--cq-weight-bold);
 }
 
-/* Part Identity */
 .table-name-desc {
   display: flex;
   flex-direction: column;
@@ -2269,7 +2177,6 @@
   color: var(--cq-text-muted);
 }
 
-/* Specifications list */
 .table-specs-list {
   display: flex;
   flex-direction: column;
@@ -2298,7 +2205,6 @@
   color: var(--cq-text-muted);
 }
 
-/* Actions in Table */
 .table-datasheet-link {
   display: inline-flex;
   align-items: center;
@@ -2394,7 +2300,6 @@
   border-color: var(--cq-emerald);
 }
 
-/* Loading, Empty, and Error States */
 .table-feedback-cell {
   padding: 48px 20px;
   text-align: center;
@@ -2500,9 +2405,6 @@
   font-size: 22px;
 }
 
-/* ========================================================
-   Component Comparison Matrix Workspace
-   ======================================================== */
 .compare-view {
   display: flex;
   flex-direction: column;
@@ -2633,7 +2535,6 @@
   background: var(--cq-accent-hover) !important;
 }
 
-/* Compare Empty State */
 .compare-empty-container {
   display: flex;
   justify-content: center;
@@ -2777,7 +2678,6 @@
   gap: 10px;
 }
 
-/* Compare Matrix Table */
 .compare-table-wrapper {
   overflow-x: auto;
   border: 1px solid var(--cq-border-default);
@@ -2959,7 +2859,6 @@
   color: var(--cq-accent);
 }
 
-/* Compare Add Slot Column */
 .add-slot-col {
   width: 180px;
   min-width: 160px;
@@ -3030,7 +2929,6 @@
   border-bottom: 1px solid var(--cq-border-subtle);
 }
 
-/* Table Section Rows */
 .section-row td {
   padding: 9px 16px;
   background: var(--cq-surface-2);
@@ -3044,7 +2942,6 @@
   border-bottom: 1px solid var(--cq-border-default);
 }
 
-/* Table Data Cells */
 .compare-table td {
   padding: 11px 16px;
   border-bottom: 1px solid var(--cq-border-subtle);
@@ -3067,7 +2964,6 @@
   white-space: nowrap;
 }
 
-/* Differential Row Highlighting */
 .row-divergent td {
   background-color: var(--cq-warning-soft);
 }
@@ -3129,9 +3025,6 @@
   text-decoration: underline;
 }
 
-/* ========================================================
-   PCB Design Assistant View
-   ======================================================== */
 .breadcrumb-link-btn {
   background: none;
   border: none;
@@ -3156,7 +3049,6 @@
   padding-bottom: var(--cq-space-8);
 }
 
-/* Single Part Focus Hero Banner */
 .pcb-focused-banner {
   display: flex;
   align-items: center;
@@ -3279,7 +3171,6 @@
   color: var(--cq-text-primary);
 }
 
-/* PCB Not Found Card */
 .pcb-not-found-card {
   display: flex;
   flex-direction: column;
@@ -3428,7 +3319,6 @@
   border-top: 1px solid var(--cq-border-default);
 }
 
-/* Precision CAD Footprint Schematic Canvas */
 .pcb-footprint-canvas {
   position: relative;
   display: flex;
@@ -3457,13 +3347,11 @@
   user-select: none;
 }
 
-/* Viva Note: Monospace strictly scoped to part numbers and numeric values */
 .pcb-mono-num {
   font-family: var(--cq-font-mono);
   font-weight: 600;
 }
 
-/* Provenance Legend Bar */
 .pcb-provenance-legend {
   display: flex;
   flex-direction: column;
@@ -3500,7 +3388,6 @@
   line-height: var(--cq-leading-snug);
 }
 
-/* Four Provenance Labels: Catalogue, Derived, Placeholder, Not available */
 .prov-badge {
   display: inline-flex;
   align-items: center;
@@ -3594,7 +3481,6 @@
   color: var(--cq-error);
 }
 
-/* Drawn Footprint Wrapper & Fabrication Disclaimer */
 .pcb-drawn-wrapper {
   display: flex;
   flex-direction: column;
@@ -3614,7 +3500,6 @@
   line-height: var(--cq-leading-snug);
 }
 
-/* Honest Empty State when footprint cannot be drawn from stored data */
 .pcb-footprint-empty-state {
   display: flex;
   flex-direction: column;
@@ -3653,7 +3538,6 @@
   line-height: var(--cq-leading-snug);
 }
 
-/* Data Sources Panel */
 .pcb-data-sources-panel {
   display: flex;
   flex-direction: column;
@@ -3780,10 +3664,6 @@
   display: block;
 }
 
-/* ========================================================
-   Phase 2: Interactive Footprint Viewer Styles
-   Uses tokens.css only; mono font restricted to numbers/MPNs
-   ======================================================== */
 .pcb-card-interactive {
   grid-column: 1 / -1;
 }
@@ -3998,7 +3878,6 @@
   color: var(--cq-text-primary);
 }
 
-/* Selected Pad Details Panel */
 .pcb-pad-details-panel {
   display: flex;
   flex-direction: column;
@@ -4082,7 +3961,6 @@
   color: var(--cq-text-muted);
 }
 
-/* Side-by-Side Physical Component Image & Interactive Pad Table */
 .pcb-side-column {
   display: flex;
   flex-direction: column;
@@ -4261,7 +4139,6 @@
   color: var(--cq-text-muted);
 }
 
-/* Stack pad table under drawing on tablet and mobile (768px & 360px) */
 @media (max-width: 960px) {
   .pcb-viewer-workspace,
   .pcb-empty-workspace {
@@ -4275,7 +4152,6 @@
   }
 }
 
-/* Respect prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
   .pcb-tool-btn,
   .pcb-pad-row {
@@ -4401,9 +4277,6 @@
   outline-offset: 2px;
 }
 
-/* ========================================================
-   Footer
-   ======================================================== */
 .page-footer {
   display: flex;
   justify-content: space-between;
@@ -4426,9 +4299,6 @@
   color: var(--cq-accent);
 }
 
-/* ========================================================
-   Responsive Media Rules
-   ======================================================== */
 @media (max-width: 1100px) {
   .topbar {
     grid-template-columns: 1fr;

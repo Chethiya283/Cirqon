@@ -1,19 +1,8 @@
-// React Error Boundary protecting against client-side crashes and rendering failures.
 import { Component } from "react";
 import { AlertTriangle, Home, RotateCcw } from "lucide-react";
 import "./ErrorBoundary.css";
-/**
- * ErrorBoundary Component
- *
- * VIVA EXPLANATION:
- * 1. Declarative Crash Containment:
- *    React unmounts the entire component tree if an unhandled rendering error occurs,
- *    resulting in a blank white screen. This class component intercepts errors via
- *    `componentDidCatch` and `getDerivedStateFromError`, keeping the application shell intact.
- * 2. Self-Healing User Recovery:
- *    Provides engineers with a one-click "Reload Page" action (`window.location.reload()`)
- *    and a "Return to Home" fallback, ensuring users are never trapped in a broken state.
- */
+
+// Catches unhandled rendering errors to display a recovery screen instead of crashing
 export class ErrorBoundary extends Component {
     constructor(props) {
         super(props);

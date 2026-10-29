@@ -1,14 +1,4 @@
-/* ========================================================
-   CIRQON — Compare Tray Dock Component Styles
-   Tokens-only, sticky bottom dock with responsive layout
-   ======================================================== */
-
-/* VIVA EXPLANATION: Sticky Bottom Docking & Layers
- * 1. position: fixed with bottom: 16px and horizontal centering (left: 50% + translateX(-50%)).
- * 2. z-index: 900 keeps the dock above scrollable catalog items and table rows without obscuring modals (z-index 1000).
- * 3. Responsive width: min(880px, calc(100% - 32px)) ensures comfortable horizontal margin on 360px mobile viewports.
- * 4. Strictly tokens-driven: uses --cq-surface, --cq-border-default, and --cq-shadow-lg for elevation.
- */
+/* Fixed bottom bar centered with margin to avoid viewport edges */
 .compare-bar {
   position: fixed;
   bottom: 16px;
@@ -177,7 +167,6 @@
   cursor: not-allowed;
 }
 
-/* Responsive Dock layout on tablet and mobile */
 @media (max-width: 768px) {
   .compare-bar {
     bottom: 12px;

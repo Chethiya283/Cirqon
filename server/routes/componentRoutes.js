@@ -8,10 +8,6 @@ const { requireAuth, requireAdmin } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-/**
- * Permitted component categories.
- * Enforced on both server and client validation to maintain data integrity.
- */
 const ALLOWED_CATEGORIES = [
   "Resistors",
   "Capacitors",
@@ -24,16 +20,10 @@ const ALLOWED_CATEGORIES = [
   "Switches and protection components",
 ];
 
-/**
- * Escapes special characters for safe regular expression matching.
- */
 function escapeRegex(string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-/**
- * Validates that a string is a well-formed HTTP or HTTPS URL, or a local /uploads/ asset path.
- */
 function isValidHttpUrl(urlString) {
   if (typeof urlString !== "string") return false;
   const trimmed = urlString.trim();
@@ -47,15 +37,7 @@ function isValidHttpUrl(urlString) {
   }
 }
 
-/**
- * VIVA EXPLANATION — 4. Why Old Uploaded Files are Deleted from Disk (Storage Hygiene & Traversal Defense):
- * When a component's imageUrl or datasheetUrl is replaced or the component itself is deleted,
- * leaving old files on disk causes storage leaks and disk exhaustion over time.
- * Security Guard: We ensure the file path strictly begins with "/uploads/" and resolve it
- * against the absolute server/uploads directory using path.resolve(). Verifying that the target
- * strictly resides inside server/uploads guards against path traversal (e.g. attempting to delete
- * system or code files via "../").
- */
+// Deletes superseded upload from disk; path check prevents directory traversal
 function safelyDeleteUploadedFile(fileUrl) {
   if (!fileUrl || typeof fileUrl !== "string") return;
   const trimmed = fileUrl.trim();
@@ -74,16 +56,12 @@ function safelyDeleteUploadedFile(fileUrl) {
   try {
     if (fs.existsSync(resolvedPath) && fs.statSync(resolvedPath).isFile()) {
       fs.unlinkSync(resolvedPath);
-      console.log("Successfully removed unreferenced upload:", resolvedPath);
     }
   } catch (err) {
     console.error("Failed to delete unreferenced upload:", err.message);
   }
 }
 
-/**
- * Validates image URLs: supports both external HTTP(S) URLs and local relative paths (e.g. /images/...).
- */
 function isValidImageUrl(urlString) {
   if (typeof urlString !== "string") return false;
   const trimmed = urlString.trim();
@@ -97,14 +75,7 @@ function isValidImageUrl(urlString) {
   }
 }
 
-/**
- * VIVA EXPLANATION — 1. Whitelisting Request Fields (Mass Assignment Defense / CWE-915):
- * Never trust `req.body` directly. If raw client input were passed directly into Mongoose
- * methods (like `Model.create()` or `findByIdAndUpdate()`), an attacker could inject
- * unauthorized internal attributes, attempt to overwrite MongoDB's immutable `_id`, modify
- * timestamps (`createdAt`), or alter administrative flags. By explicitly picking only
- * recognized, validated schema properties, we ensure strict data sanitization and boundary control.
- */
+// Whitelist permitted schema attributes to prevent mass assignment (CWE-915)
 function extractWhitelistedComponentFields(body, isUpdate = false) {
   const allowed = {};
 
@@ -162,8 +133,7 @@ function extractWhitelistedComponentFields(body, isUpdate = false) {
     allowed.isActive = Boolean(body.isActive);
   }
 
-  // Specifications map
-  if (body.specifications !== undefined) {
+    if (body.specifications !== undefined) {
     if (
       body.specifications &&
       typeof body.specifications === "object" &&
@@ -175,8 +145,7 @@ function extractWhitelistedComponentFields(body, isUpdate = false) {
     }
   }
 
-  // Package & mechanical packaging object
-  if (body.package !== undefined) {
+    if (body.package !== undefined) {
     if (
       body.package &&
       typeof body.package === "object" &&
@@ -277,8 +246,7 @@ function extractWhitelistedComponentFields(body, isUpdate = false) {
     }
   }
 
-  // Pins array
-  if (body.pins !== undefined) {
+    if (body.pins !== undefined) {
     if (Array.isArray(body.pins)) {
       allowed.pins = body.pins.map((pin) => ({
         number: pin.number != null ? Number(pin.number) : undefined,
@@ -291,14 +259,10 @@ function extractWhitelistedComponentFields(body, isUpdate = false) {
   return allowed;
 }
 
-/**
- * Validates component input payloads for required fields, enum constraints, positive numbers, and URL formats.
- */
 function validateComponentPayload(body, isUpdate = false) {
   const errors = [];
 
-  // Required core fields (partNumber, name, manufacturer, category)
-  if (!isUpdate || body.partNumber !== undefined) {
+    if (!isUpdate || body.partNumber !== undefined) {
     if (
       !body.partNumber ||
       typeof body.partNumber !== "string" ||
@@ -340,8 +304,7 @@ function validateComponentPayload(body, isUpdate = false) {
     }
   }
 
-  // URLs must be valid http(s) if given
-  if (body.datasheetUrl) {
+    if (body.datasheetUrl) {
     if (!isValidHttpUrl(body.datasheetUrl)) {
       errors.push("Datasheet URL must be a valid HTTP or HTTPS URL.");
     }
@@ -367,8 +330,7 @@ function validateComponentPayload(body, isUpdate = false) {
     }
   }
 
-  // pinCount must be a positive integer if given
-  if (
+    if (
     body.pinCount !== undefined &&
     body.pinCount !== null &&
     body.pinCount !== ""
@@ -379,8 +341,7 @@ function validateComponentPayload(body, isUpdate = false) {
     }
   }
 
-  // Mounting type validation if provided
-  if (body.package?.mountingType) {
+    if (body.package?.mountingType) {
     const validMounting = ["Through-Hole", "Surface-Mount"];
     if (!validMounting.includes(body.package.mountingType)) {
       errors.push(
@@ -389,15 +350,13 @@ function validateComponentPayload(body, isUpdate = false) {
     }
   }
 
-  // dataStatus validation if provided
-  if (body.dataStatus) {
+    if (body.dataStatus) {
     if (!["verified", "incomplete"].includes(body.dataStatus)) {
       errors.push("dataStatus must be either 'verified' or 'incomplete'.");
     }
   }
 
-  // Pins validation: positive integers, unique within part, non-empty names
-  if (body.pins !== undefined) {
+    if (body.pins !== undefined) {
     if (!Array.isArray(body.pins)) {
       errors.push("Pins must be provided as an array.");
     } else {
@@ -437,8 +396,7 @@ function validateComponentPayload(body, isUpdate = false) {
     }
   }
 
-  // Specifications validation: non-empty names and non-empty values
-  if (body.specifications !== undefined) {
+    if (body.specifications !== undefined) {
     if (
       !body.specifications ||
       typeof body.specifications !== "object" ||
@@ -466,8 +424,7 @@ function validateComponentPayload(body, isUpdate = false) {
     }
   }
 
-  // Package body dimensions validation: positive numbers
-  if (body.package?.bodyDimensions) {
+    if (body.package?.bodyDimensions) {
     const { lengthMm, widthMm } = body.package.bodyDimensions;
 
     if (lengthMm !== undefined && lengthMm !== null && lengthMm !== "") {
@@ -492,11 +449,6 @@ function validateComponentPayload(body, isUpdate = false) {
   return errors;
 }
 
-// ============================================================================
-// READ ROUTES (Public Catalogue Access)
-// ============================================================================
-
-// GET /api/components - List components with optional filtering
 router.get("/", async (req, res) => {
   try {
     const {
@@ -507,31 +459,26 @@ router.get("/", async (req, res) => {
       includeInactive,
     } = req.query;
 
-    // Start with active components only, unless explicitly requested by an admin manage view
-    const filter = {};
+        const filter = {};
     if (includeInactive !== "true") {
       filter.isActive = true;
     }
 
-    // Search by component name or part number
-    if (search) {
+        if (search) {
       const searchRegex = new RegExp(escapeRegex(search), "i");
 
       filter.$or = [{ name: searchRegex }, { partNumber: searchRegex }];
     }
 
-    // Filter by category
-    if (category) {
+        if (category) {
       filter.category = category;
     }
 
-    // Filter by manufacturer
-    if (manufacturer) {
+        if (manufacturer) {
       filter.manufacturer = new RegExp(escapeRegex(manufacturer), "i");
     }
 
-    // Filter by package name
-    if (packageName) {
+        if (packageName) {
       filter["package.name"] = new RegExp(escapeRegex(packageName), "i");
     }
 
@@ -548,7 +495,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-// GET /api/components/:id - Fetch single component by ID
 router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -575,24 +521,10 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// ============================================================================
-// WRITE ROUTES (Protected by requireAuth, then requireAdmin)
-// ============================================================================
-
-/**
- * VIVA EXPLANATION — 2. Why requireAdmin Comes After requireAuth:
- * Express executes middleware in strict pipeline sequence. In Role-Based Access Control (RBAC),
- * Authentication (verifying caller identity) MUST precede Authorization (verifying permissions).
- * `requireAuth` first extracts and validates the cryptographic JWT Bearer token, queries the
- * user record, and attaches `req.user`. `requireAdmin` then verifies that `req.user.role === "admin"`.
- * If `requireAdmin` were placed first, `req.user` would be undefined, causing premature failure.
- */
-
-// POST /api/components - Create a new component (Admin only)
+// requireAuth must attach req.user before requireAdmin checks role
 router.post("/", requireAuth, requireAdmin, async (req, res) => {
   try {
-    // 1. Validate payload requirements and data types
-    const validationErrors = validateComponentPayload(req.body, false);
+        const validationErrors = validateComponentPayload(req.body, false);
     if (validationErrors.length > 0) {
       return res.status(400).json({
         message: validationErrors.join(" "),
@@ -601,8 +533,7 @@ router.post("/", requireAuth, requireAdmin, async (req, res) => {
 
     const trimmedPartNumber = req.body.partNumber.trim();
 
-    // 2. Enforce case-insensitive uniqueness check for partNumber before insert
-    const existing = await Component.findOne({
+        const existing = await Component.findOne({
       partNumber: { $regex: new RegExp(`^${escapeRegex(trimmedPartNumber)}$`, "i") },
     });
 
@@ -612,15 +543,12 @@ router.post("/", requireAuth, requireAdmin, async (req, res) => {
       });
     }
 
-    // 3. Extract strictly whitelisted attributes (never trust raw request body)
-    const whitelistedData = extractWhitelistedComponentFields(req.body, false);
+        const whitelistedData = extractWhitelistedComponentFields(req.body, false);
 
-    // 4. Save new component document
-    const component = new Component(whitelistedData);
+        const component = new Component(whitelistedData);
     const savedComponent = await component.save();
 
-    // 5. Return 201 Created with saved document
-    res.status(201).json(savedComponent);
+        res.status(201).json(savedComponent);
   } catch (error) {
     // Handle MongoDB duplicate key index violation (error code 11000)
     if (error.code === 11000) {
@@ -629,8 +557,7 @@ router.post("/", requireAuth, requireAdmin, async (req, res) => {
       });
     }
 
-    // Handle Mongoose schema validation failure
-    if (error.name === "ValidationError") {
+        if (error.name === "ValidationError") {
       const messages = Object.values(error.errors).map((e) => e.message);
       return res.status(400).json({
         message: messages.join(" ") || "Validation failed.",
@@ -644,36 +571,31 @@ router.post("/", requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
-// PUT /api/components/:id - Update an existing component (Admin only)
 router.put("/:id", requireAuth, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
-    // 1. Validate ObjectId format
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+        if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
         message: "Invalid component ID format.",
       });
     }
 
-    // 2. Verify component exists
-    const existingComponent = await Component.findById(id);
+        const existingComponent = await Component.findById(id);
     if (!existingComponent) {
       return res.status(404).json({
         message: "Component not found.",
       });
     }
 
-    // 3. Validate update payload
-    const validationErrors = validateComponentPayload(req.body, true);
+        const validationErrors = validateComponentPayload(req.body, true);
     if (validationErrors.length > 0) {
       return res.status(400).json({
         message: validationErrors.join(" "),
       });
     }
 
-    // 4. If partNumber is being updated, verify case-insensitive uniqueness against other components
-    if (req.body.partNumber !== undefined) {
+        if (req.body.partNumber !== undefined) {
       const trimmedPartNumber = String(req.body.partNumber).trim();
       const duplicate = await Component.findOne({
         _id: { $ne: id },
@@ -689,8 +611,7 @@ router.put("/:id", requireAuth, requireAdmin, async (req, res) => {
       }
     }
 
-    // 5. Extract strictly whitelisted attributes for update
-    const whitelistedUpdates = extractWhitelistedComponentFields(
+        const whitelistedUpdates = extractWhitelistedComponentFields(
       req.body,
       true
     );
@@ -718,15 +639,13 @@ router.put("/:id", requireAuth, requireAdmin, async (req, res) => {
       };
     }
 
-    // 6. Update document with runValidators enabled to enforce schema rules
-    const updatedComponent = await Component.findByIdAndUpdate(
+        const updatedComponent = await Component.findByIdAndUpdate(
       id,
       { $set: whitelistedUpdates },
       { new: true, runValidators: true }
     );
 
-    // 7. If imageUrl or datasheetUrl changed, clean up previous uploaded files from disk
-    if (
+        if (
       whitelistedUpdates.imageUrl !== undefined &&
       existingComponent.imageUrl &&
       existingComponent.imageUrl !== updatedComponent.imageUrl
@@ -764,28 +683,17 @@ router.put("/:id", requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
-/**
- * VIVA EXPLANATION — 3. Why Delete Cleans Orphan References:
- * Unlike relational SQL databases with foreign keys and `ON DELETE CASCADE`, MongoDB does not
- * automatically remove references in related collections. If a `Component` document is deleted,
- * user bookmarks stored in `SavedPart` pointing to that `Component`'s `_id` become dangling/orphan
- * references. Subsequent queries calling `.populate("component")` would return `null` components,
- * producing runtime frontend errors. Cascading the deletion to remove referencing `SavedPart` records
- * guarantees referential integrity across the application.
- */
-// DELETE /api/components/:id - Delete a component and clean referencing bookmarks (Admin only)
+// Cascades deletion to SavedPart to prevent orphan references in MongoDB
 router.delete("/:id", requireAuth, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
-    // 1. Validate ObjectId format
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+        if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
         message: "Invalid component ID format.",
       });
     }
 
-    // 2. Verify component exists before deleting
     const component = await Component.findById(id);
     if (!component) {
       return res.status(404).json({
@@ -793,14 +701,11 @@ router.delete("/:id", requireAuth, requireAdmin, async (req, res) => {
       });
     }
 
-    // 3. Remove all SavedPart bookmarks that reference this component to prevent orphan records
-    const bookmarkCleanup = await SavedPart.deleteMany({ component: id });
+        const bookmarkCleanup = await SavedPart.deleteMany({ component: id });
 
-    // 4. Delete the component itself
-    await Component.findByIdAndDelete(id);
+        await Component.findByIdAndDelete(id);
 
-    // 5. Clean up any uploaded assets from disk
-    safelyDeleteUploadedFile(component.imageUrl);
+        safelyDeleteUploadedFile(component.imageUrl);
     safelyDeleteUploadedFile(component.datasheetUrl);
 
     res.json({

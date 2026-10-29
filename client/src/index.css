@@ -1,11 +1,5 @@
-/* ========================================================
-   CIRQON — Global Styles & Accessible Resets
-   Imports Design Tokens from tokens.css
-   ======================================================== */
-
 @import "./styles/tokens.css";
 
-/* Box sizing rules for all elements */
 *,
 *::before,
 *::after {
@@ -20,12 +14,7 @@ html {
   overflow-x: clip;
 }
 
-/* VIVA EXPLANATION: overflow-x: clip vs. overflow-x: hidden for position: sticky
- * - Traditional 'overflow-x: hidden' on <body> or <html> causes browsers to create a new scroll container
- *   or compute overflow-y to 'auto', which breaks position: sticky on descendant elements.
- * - 'overflow-x: clip' suppresses horizontal overflow without creating a scroll context,
- *   preserving document-level scrolling and ensuring sticky sidebars/headers anchor reliably to the viewport.
- */
+/* overflow-x: clip avoids breaking position: sticky in child containers */
 body {
   min-width: 320px;
   min-height: 100vh;
@@ -43,7 +32,6 @@ body {
   overflow-x: clip;
 }
 
-/* Headings: Tight letter spacing, clear hierarchy */
 h1, h2, h3, h4, h5, h6 {
   color: var(--cq-text-primary);
   font-family: var(--cq-font-heading);
@@ -69,7 +57,6 @@ h3 {
   font-weight: var(--cq-weight-semibold);
 }
 
-/* Sentence-case default for labels and UI elements (no forced uppercase tracking) */
 label,
 button,
 nav,
@@ -81,7 +68,7 @@ option {
   letter-spacing: var(--cq-tracking-normal);
 }
 
-/* Monospace restricted specifically to part numbers and numeric technical specs */
+/* Monospace font restricted to part numbers and technical measurements */
 code,
 pre,
 kbd,
@@ -94,7 +81,6 @@ samp,
   letter-spacing: -0.01em;
 }
 
-/* Accessible interactive elements */
 button,
 input,
 select,
@@ -130,19 +116,16 @@ a:hover {
   text-decoration: underline;
 }
 
-/* High-contrast text selection */
 ::selection {
   color: var(--cq-text-inverse);
   background: var(--cq-teal);
 }
 
-/* Accessible focus ring (WCAG AA compliant) */
 :focus-visible {
   outline: 2px solid var(--cq-teal);
   outline-offset: 2px;
 }
 
-/* Accessible scrollbars with warm neutral track */
 ::-webkit-scrollbar {
   width: 7px;
   height: 7px;

@@ -1,4 +1,3 @@
-// Modal dialog presenting complete component specifications, CAD footprint, pinout table, and documentation links.
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bookmark, Cpu } from "lucide-react";
@@ -14,7 +13,6 @@ export const ComponentDetailsModal = ({ component, onClose, }) => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const { isSaved, toggleSave } = useSavedParts();
-    // Close the component details modal with the Escape key.
     useEffect(() => {
         if (!component)
             return;
@@ -31,11 +29,6 @@ export const ComponentDetailsModal = ({ component, onClose, }) => {
     if (!component)
         return null;
     const saved = isSaved(component._id);
-    /**
-     * Handle bookmark click.
-     * If not logged in, redirects user to /login.
-     * If logged in, toggles save state via SavedPartsContext.
-     */
     const handleToggleSave = () => {
         if (!user) {
             navigate("/login");
