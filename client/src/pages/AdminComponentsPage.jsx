@@ -1285,7 +1285,7 @@ export const AdminComponentsPage = () => {
                           >
                             <td className="col-component">
                               <div className="admin-cell-component">
-                                <div className="admin-thumb-wrapper-48" aria-hidden="true">
+                                <div className="admin-thumb-wrapper" aria-hidden="true">
                                   <ComponentThumbnail
                                     component={comp}
                                     size="sm"

@@ -366,11 +366,12 @@
   min-width: 0;
 }
 
+.admin-thumb-wrapper,
 .admin-thumb-wrapper-48 {
-  width: 48px;
-  height: 48px;
-  min-width: 48px;
-  min-height: 48px;
+  width: 60px;
+  height: 60px;
+  min-width: 60px;
+  min-height: 60px;
   border-radius: var(--cq-radius-sm);
   border: 1px solid var(--cq-border-default);
   background: var(--cq-surface);
@@ -381,6 +382,7 @@
   justify-content: center;
 }
 
+.admin-thumb-wrapper .component-thumb-container,
 .admin-thumb-wrapper-48 .component-thumb-container {
   width: 100% !important;
   height: 100% !important;
