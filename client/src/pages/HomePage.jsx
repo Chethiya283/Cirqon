@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, X, Layers, Cpu, GitCompare, ArrowRight, Bookmark, UserPlus, Activity, BatteryCharging, Radio, Sun, Grid, Zap, Plug, Shield, } from "lucide-react";
-import { useAuth } from "../auth/AuthContext";
+import { useAuth } from "../context/AuthContext";
 import "./HomePage.css";
 /**
  * Return a clean Lucide icon for each electronic component category.

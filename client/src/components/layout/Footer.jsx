@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ExternalLink } from "lucide-react";
-import { CirqonLogo } from "./CirqonLogo";
+import { CirqonLogo } from "../common/CirqonLogo";
 import "./Footer.css";
 /**
  * Footer Component

@@ -2,7 +2,7 @@
 import React from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
 import { ShieldAlert } from "lucide-react";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "../../context/AuthContext";
 /**
  * ProtectedRoute Component
  *

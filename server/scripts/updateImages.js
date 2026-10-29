@@ -82,9 +82,9 @@ async function runImageUpdate() {
   } catch (err) {
     if (isDryRun) {
       console.warn(`[WARN] Database connection unavailable (${err.message}).`);
-      console.warn(`[INFO] Falling back to server/seedComponents.js for dry-run inspection.\n`);
+      console.warn(`[INFO] Falling back to server/scripts/seedComponents.js for dry-run inspection.\n`);
 
-      const seedPath = path.resolve(__dirname, "../seedComponents.js");
+      const seedPath = path.resolve(__dirname, "./seedComponents.js");
       const seedContent = fs.readFileSync(seedPath, "utf8");
       const startMarker = "const components = [";
       const endMarker = "function buildSetObject";

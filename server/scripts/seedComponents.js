@@ -1,8 +1,8 @@
 
 const mongoose = require("mongoose");
-require("dotenv").config({ path: require("path").join(__dirname, ".env") });
+require("dotenv").config({ path: require("path").join(__dirname, "../.env") });
 
-const Component = require("./models/Component");
+const Component = require("../models/Component");
 
 const components = [
   {

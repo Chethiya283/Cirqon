@@ -3,7 +3,7 @@
    Imports Design Tokens from tokens.css
    ======================================================== */
 
-@import "./tokens.css";
+@import "./styles/tokens.css";
 
 /* Box sizing rules for all elements */
 *,

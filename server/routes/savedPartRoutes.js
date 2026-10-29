@@ -2,7 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const SavedPart = require("../models/SavedPart");
 const Component = require("../models/Component");
-const { requireAuth } = require("../middleware/auth");
+const { requireAuth } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 

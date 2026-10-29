@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ZoomIn, ZoomOut, RotateCcw, Grid, Ruler, } from "lucide-react";
-import { ComponentThumbnail } from "../ComponentImage";
-import { getDefaultAxialSpanMm, getFootprintGeometry, getProvenanceBadgeClass, renderFootprintSvg, renderValueWithMonoNumbers, validateComponentFootprint, } from "../utils/footprint";
+import { ComponentThumbnail } from "../common/ComponentImage";
+import { getDefaultAxialSpanMm, getFootprintGeometry, getProvenanceBadgeClass, renderFootprintSvg, renderValueWithMonoNumbers, validateComponentFootprint, } from "../../utils/footprint";
 import { FootprintValidationPanel } from "./FootprintValidationPanel";
 export const PcbComponentPhotoPanel = ({ component }) => {
     return (<div className="pcb-component-photo-panel" role="region" aria-label={`Physical component image for ${component.name} (${component.partNumber})`}>

@@ -2,13 +2,13 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bookmark, Cpu } from "lucide-react";
-import { useAuth } from "../auth/AuthContext";
-import { useSavedParts } from "../auth/SavedPartsContext";
-import { ComponentThumbnail } from "../ComponentImage";
-import { getComponentImageInfo } from "../componentImageUtils";
-import { auditComponentFootprint, getProvenanceBadgeClass, renderFootprintSvg, renderValueWithMonoNumbers, } from "../utils/footprint";
-import { FootprintValidationPanel } from "./FootprintValidationPanel";
-import { formatDimensions, getSpecPairs, isValidHttpUrl, resolveAssetUrl, } from "../utils/formatters";
+import { useAuth } from "../../context/AuthContext";
+import { useSavedParts } from "../../context/SavedPartsContext";
+import { ComponentThumbnail } from "../common/ComponentImage";
+import { getComponentImageInfo } from "../../utils/componentImageUtils";
+import { auditComponentFootprint, getProvenanceBadgeClass, renderFootprintSvg, renderValueWithMonoNumbers, } from "../../utils/footprint";
+import { FootprintValidationPanel } from "../pcb/FootprintValidationPanel";
+import { formatDimensions, getSpecPairs, isValidHttpUrl, resolveAssetUrl, } from "../../utils/formatters";
 import "./ComponentDetailsModal.css";
 export const ComponentDetailsModal = ({ component, onClose, }) => {
     const navigate = useNavigate();

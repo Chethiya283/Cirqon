@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { Search, Menu, X, Layers, GitCompare, Cpu, Bookmark, LogIn, UserPlus, User, LogOut, SlidersHorizontal, } from "lucide-react";
-import { useAuth } from "../auth/AuthContext";
-import { CirqonLogo } from "./CirqonLogo";
+import { useAuth } from "../../context/AuthContext";
+import { CirqonLogo } from "../common/CirqonLogo";
 import "./Navbar.css";
 /**
  * Navbar Component

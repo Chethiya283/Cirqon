@@ -3,11 +3,11 @@
 const fs = require("fs");
 const path = require("path");
 
-process.env.NODE_PATH = path.join(__dirname, "node_modules");
+process.env.NODE_PATH = path.join(__dirname, "../node_modules");
 require("module").Module._initPaths();
 
 // Load the seed components definition
-const seedPath = path.join(__dirname, "seedComponents.js");
+const seedPath = path.join(__dirname, "../scripts/seedComponents.js");
 const seedContent = fs.readFileSync(seedPath, "utf8");
 
 // Extract the components array by running the file in a restricted sandbox or parsing

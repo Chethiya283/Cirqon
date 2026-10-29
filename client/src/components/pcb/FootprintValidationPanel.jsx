@@ -1,8 +1,8 @@
 // Interactive Footprint Validation component presenting validation status, engineering checklist, and design notices.
 import React, { useState } from "react";
 import { AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, ExternalLink, Minus, ShieldCheck, XCircle, } from "lucide-react";
-import { getCheckStateClass, getProvenanceBadgeClass, renderValueWithMonoNumbers, } from "../utils/footprint";
-import { isValidHttpUrl, resolveAssetUrl } from "../utils/formatters";
+import { getCheckStateClass, getProvenanceBadgeClass, renderValueWithMonoNumbers, } from "../../utils/footprint";
+import { isValidHttpUrl, resolveAssetUrl } from "../../utils/formatters";
 import "./FootprintValidationPanel.css";
 export const FootprintValidationPanel = ({ validation, datasheetUrl, manufacturer, compact = false, initialExpanded = true, }) => {
     const [expanded, setExpanded] = useState(initialExpanded);

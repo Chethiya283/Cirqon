@@ -4,7 +4,7 @@ const path = require("path");
 const fs = require("fs");
 const Component = require("../models/Component");
 const SavedPart = require("../models/SavedPart");
-const { requireAuth, requireAdmin } = require("../middleware/auth");
+const { requireAuth, requireAdmin } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 

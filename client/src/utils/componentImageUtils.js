@@ -1,4 +1,4 @@
-import { resolveAssetUrl } from "./utils/formatters";
+import { resolveAssetUrl } from "./formatters";
 
 /**
  * Curated product illustrations matched exactly to component part numbers.

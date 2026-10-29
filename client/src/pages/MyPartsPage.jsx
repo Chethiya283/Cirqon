@@ -2,8 +2,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Bookmark, Check, RotateCcw, Save, Trash2 } from "lucide-react";
-import { useSavedParts } from "../auth/SavedPartsContext";
-import { ComponentThumbnail } from "../ComponentImage";
+import { useSavedParts } from "../context/SavedPartsContext";
+import { ComponentThumbnail } from "../components/common/ComponentImage";
 import { getSpecPairs, isValidHttpUrl, resolveAssetUrl, } from "../utils/formatters";
 import "./MyPartsPage.css";
 /**

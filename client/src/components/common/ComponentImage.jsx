@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./ComponentImage.css";
-import { getComponentImageInfo } from "./componentImageUtils";
+import { getComponentImageInfo } from "../../utils/componentImageUtils";
 /**
  * Renders an authentic, package-accurate vector drawing for each component type.
  * Used as an instant fallback during network latency, image 404s, or offline usage.

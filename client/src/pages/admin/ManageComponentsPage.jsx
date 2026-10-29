@@ -23,10 +23,10 @@ import {
   ArrowDown,
   MoreHorizontal,
 } from "lucide-react";
-import { useAuth } from "../auth/AuthContext";
-import { ComponentThumbnail } from "../ComponentImage";
-import { resolveAssetUrl } from "../utils/formatters";
-import "./AdminComponentsPage.css";
+import { useAuth } from "../../context/AuthContext";
+import { ComponentThumbnail } from "../../components/common/ComponentImage";
+import { resolveAssetUrl } from "../../utils/formatters";
+import "./ManageComponentsPage.css";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
