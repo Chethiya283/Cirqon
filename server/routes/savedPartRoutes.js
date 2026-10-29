@@ -32,7 +32,12 @@ router.get("/", async (req, res) => {
       .populate("component")
       .sort({ createdAt: -1 });
 
-    res.json(savedParts);
+    // Exclude hidden/inactive parts from user workspaces and counts
+    const activeSavedParts = savedParts.filter(
+      (item) => item.component && item.component.isActive !== false
+    );
+
+    res.json(activeSavedParts);
   } catch (error) {
     console.error("Error fetching saved parts:", error.message);
     res.status(500).json({
@@ -69,9 +74,9 @@ router.post("/", async (req, res) => {
       });
     }
 
-    // 2. Verify component exists in database
+    // 2. Verify component exists in database and is active
     const componentExists = await Component.findById(componentId);
-    if (!componentExists) {
+    if (!componentExists || componentExists.isActive === false) {
       return res.status(404).json({
         message: "Component not found in catalog.",
       });

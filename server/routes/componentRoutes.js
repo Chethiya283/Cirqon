@@ -396,6 +396,99 @@ function validateComponentPayload(body, isUpdate = false) {
     }
   }
 
+  // Pins validation: positive integers, unique within part, non-empty names
+  if (body.pins !== undefined) {
+    if (!Array.isArray(body.pins)) {
+      errors.push("Pins must be provided as an array.");
+    } else {
+      const pinNumbersSeen = new Set();
+      for (let i = 0; i < body.pins.length; i++) {
+        const pin = body.pins[i];
+        if (!pin || typeof pin !== "object") {
+          errors.push(`Pin at row ${i + 1} must be an object.`);
+          continue;
+        }
+
+        const rawNum = pin.number;
+        const pinNum = Number(rawNum);
+        if (
+          rawNum === undefined ||
+          rawNum === null ||
+          rawNum === "" ||
+          !Number.isInteger(pinNum) ||
+          pinNum <= 0
+        ) {
+          errors.push(`Pin number at row ${i + 1} must be a positive integer.`);
+        } else {
+          if (pinNumbersSeen.has(pinNum)) {
+            errors.push(
+              `Duplicate pin number "${pinNum}" found at row ${i + 1}. Pin numbers must be unique within a part.`
+            );
+          }
+          pinNumbersSeen.add(pinNum);
+        }
+
+        if (!pin.name || typeof pin.name !== "string" || !pin.name.trim()) {
+          errors.push(`Pin name at row ${i + 1} cannot be empty.`);
+        } else if (pin.name.trim().length > 50) {
+          errors.push(`Pin name at row ${i + 1} cannot exceed 50 characters.`);
+        }
+      }
+    }
+  }
+
+  // Specifications validation: non-empty names and non-empty values
+  if (body.specifications !== undefined) {
+    if (
+      !body.specifications ||
+      typeof body.specifications !== "object" ||
+      Array.isArray(body.specifications)
+    ) {
+      errors.push("Specifications must be an object.");
+    } else {
+      for (const [key, value] of Object.entries(body.specifications)) {
+        if (!key || typeof key !== "string" || !key.trim()) {
+          errors.push("Specification names cannot be empty.");
+        } else if (key.trim().length > 60) {
+          errors.push(`Specification name "${key}" cannot exceed 60 characters.`);
+        }
+
+        if (
+          value === undefined ||
+          value === null ||
+          (typeof value === "string" && !value.trim())
+        ) {
+          errors.push(`Specification value for "${key}" cannot be empty.`);
+        } else if (typeof value === "string" && value.trim().length > 200) {
+          errors.push(`Specification value for "${key}" cannot exceed 200 characters.`);
+        }
+      }
+    }
+  }
+
+  // Package body dimensions validation: positive numbers
+  if (body.package?.bodyDimensions) {
+    const { lengthMm, widthMm } = body.package.bodyDimensions;
+
+    if (lengthMm !== undefined && lengthMm !== null && lengthMm !== "") {
+      const len = Number(lengthMm);
+      if (isNaN(len) || len <= 0) {
+        errors.push("Body length must be a positive number in mm.");
+      } else if (len > 1000) {
+        errors.push("Body length cannot exceed 1000 mm.");
+      }
+    }
+
+    if (widthMm !== undefined && widthMm !== null && widthMm !== "") {
+      const wid = Number(widthMm);
+      if (isNaN(wid) || wid <= 0) {
+        errors.push("Body width must be a positive number in mm.");
+      } else if (wid > 1000) {
+        errors.push("Body width cannot exceed 1000 mm.");
+      }
+    }
+  }
+
   return errors;
 }
 
@@ -406,11 +499,19 @@ function validateComponentPayload(body, isUpdate = false) {
 // GET /api/components - List components with optional filtering
 router.get("/", async (req, res) => {
   try {
-    const { search, category, manufacturer, package: packageName } =
-      req.query;
+    const {
+      search,
+      category,
+      manufacturer,
+      package: packageName,
+      includeInactive,
+    } = req.query;
 
-    // Start with active components only
-    const filter = { isActive: true };
+    // Start with active components only, unless explicitly requested by an admin manage view
+    const filter = {};
+    if (includeInactive !== "true") {
+      filter.isActive = true;
+    }
 
     // Search by component name or part number
     if (search) {
