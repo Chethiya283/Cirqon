@@ -9,3 +9,8 @@ build/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Project reports, submissions, and office documents
+Submission/
+*.docx
+*.doc

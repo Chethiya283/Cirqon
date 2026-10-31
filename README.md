@@ -26,10 +26,10 @@ Hardware engineers and electronics students frequently struggle with scattered d
 | **Validation & Error Handling** | **2 Marks** | Dual client-server validation boundaries, regex-checked case-insensitive unique MPNs, HTTP 400/401/403/404/409 error codes, and React Error Boundaries. |
 | **Database Design** | **4 Marks** | Mongoose schemas with type safety, enum constraints, compound unique indexes, subdocuments, and referential integrity between `User`, `Component`, and `SavedPart`. |
 | **UI/UX & Responsiveness** | **2 Marks** | Professional engineering palette (CSS Design Tokens), responsive layout across 360px–1280px+, accessible modals, and custom interactive SVG CAD viewers. |
-| **Code Quality & Structure** | **2 Marks** | 100% pure JavaScript/JSX ES Modules, clean separation of concerns (`auth`, `components`, `pages`, `models`, `routes`), and comprehensive viva documentation. |
+| **Code Quality & Structure** | **2 Marks** | 100% pure JavaScript/JSX ES Modules, clean separation of concerns (`context`, `components`, `pages`, `models`, `routes`), and modular codebase. |
 | **Documentation** | **2 Marks** | Comprehensive README, setup instructions, Mermaid ERD, REST API documentation, and security rationale. |
 | **Demonstration** | **2 Marks** | Structured 5-minute evaluation demonstration script covering all required rubric workflows. |
-| **Total Marks** | **26 / 26** | **Full Rubric Compliance** |
+| **Total Allocated Marks** | **30 Marks** | Implementation structured across all evaluation criteria. |
 
 ---
 
@@ -108,7 +108,7 @@ erDiagram
 
 ### Step 1: Clone the Repository
 ```bash
-git clone https://github.com/nadun-theekshana/Cirqon.git
+git clone https://github.com/Chethiya283/Cirqon.git
 cd Cirqon
 ```
 
@@ -140,7 +140,7 @@ VITE_API_BASE_URL=http://localhost:5000/api
    ```
 2. Populate the component catalog with verified seed data:
    ```bash
-   node seedComponents.js
+   node scripts/seedComponents.js
    ```
 3. Start the Express API server:
    ```bash
@@ -176,8 +176,9 @@ To grant admin privileges for evaluating the CRUD operations:
 1. Register a user in the web application (e.g. `alex@cirqon.org`).
 2. Run the out-of-band administrative provisioning script from the server folder:
    ```bash
-   node server/scripts/makeAdmin.js alex@cirqon.org
+   node scripts/makeAdmin.js alex@cirqon.org
    ```
+   *(or from the project root: `node server/scripts/makeAdmin.js alex@cirqon.org`)*
 
 ### Evaluator Credentials
 - **Admin Account (for CRUD Evaluation):** `alex@cirqon.org` (Role: `admin`)
@@ -210,7 +211,7 @@ All write endpoints require a JSON Web Token in the `Authorization: Bearer <toke
 
 ## 9. Security & Defensive Design Architecture (Viva Highlights)
 
-1. **Defense-in-Depth Validation:** Client-side validation (`AdminComponentsPage.jsx`) provides instant visual feedback, while authoritative server-side validation (`componentRoutes.js`) verifies all constraints.
+1. **Defense-in-Depth Validation:** Client-side validation (`ManageComponentsPage.jsx`) provides instant visual feedback, while authoritative server-side validation (`componentRoutes.js`) verifies all constraints.
 2. **Mass-Assignment Defense (CWE-915):** The server explicitly extracts whitelisted properties (`extractWhitelistedComponentFields`). Malicious injected parameters (e.g., `_id`, `createdAt`, `role`) are silently discarded.
 3. **Stateless JWT Authorization:** Tokens carry cryptographically signed user payloads. `requireAuth` verifies the HMAC signature, while `requireAdmin` checks role permissions.
 4. **Storage Hygiene & Path Traversal Prevention:** Uploaded files receive cryptographically random UUIDs (`crypto.randomUUID()`). File deletions resolve paths strictly within `server/uploads/` to defeat `../` directory traversal attacks.
