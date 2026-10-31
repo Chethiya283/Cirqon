@@ -1,253 +1,167 @@
-# Cirqon — Electronic Component Finder & PCB Design Assistant
+# Cirqon — Electronic Component Finder and PCB Design Assistant
 
-> **EE4207 Web Application Development Mini Project**<br />
-> **Student Developer:** D.P.L.C.L. De Silva<br />
-> **Live Architecture:** React 19 (ES Modules, JSX) · Express.js 5 · Node.js · MongoDB Atlas · Mongoose 9
+Cirqon is a MERN web application for electronics students and designers. It brings component records, specifications, datasheet links and footprint information into one searchable catalogue, and it includes a PCB Design Assistant that shows how reliable each footprint's data is.
 
----
+Developed for **EE4207 – Web Application Development Mini Project**, University of Ruhuna.
 
-## 1. Project Overview
+- Live application: https://cirqon-xi.vercel.app
+- Backend API: https://cirqon-api.onrender.com
 
-**Cirqon** is an engineering-grade web application tailored for electronics students, PCB designers, and hardware engineers. It provides an intuitive, high-performance platform to search, filter, compare, and audit electronic components alongside an interactive CAD PCB Footprint Visualizer and personal engineering workspaces.
+## Key Features
 
-### The Problem It Solves
-Hardware engineers and electronics students frequently struggle with scattered datasheets, incompatible footprints, and fragmented component catalogs. Cirqon unifies parametric electrical search with mechanical CAD package auditing and role-based component administration, ensuring accurate part selection before fabricating printed circuit boards.
+- **Component catalogue:** browse by category, search by part number, name or manufacturer, sort, and switch between card and table views. The catalogue contains 11 components in 9 categories.
+- **Component details:** specifications, pinout, package information, and datasheet and manufacturer links.
+- **Component management (CRUD):** admins create, edit and delete components from the Manage page, with client-side and server-side validation. Duplicate part numbers are rejected (HTTP 409).
+- **Authentication and roles:** register and log in with JWT. New accounts always get the `user` role. Admin-only routes return 401 without a token and 403 for non-admin users.
+- **Saved parts:** logged-in users save components to *My Parts* and edit a quantity and a note.
+- **Compare:** select several components and compare their specifications side by side, with differing rows highlighted.
+- **PCB Design Assistant:** interactive SVG footprint viewer (zoom, pan, measure, millimetre grid, pad table). Each value is labelled *Catalogue*, *Derived*, *Placeholder* or *Not available*, and a validation panel marks each footprint *Verified*, *Illustrative* or *Incomplete*. Footprints are not drawn when the required data is missing.
+- **File handling:** admins can upload component images (JPG, PNG or WebP, up to 2 MB) and PDF datasheets (up to 10 MB). Uploads get random file names and the file signature is checked on the server.
+- **Responsive interface:** layout adapts to phone and desktop widths; styling uses shared CSS design tokens.
 
----
+## Technology Stack
 
-## 2. EE4207 Evaluation Rubric Alignment
+| Layer | Technologies |
+| :--- | :--- |
+| Frontend | React 19, JavaScript (JSX), Vite, React Router, CSS, Lucide icons |
+| Backend | Node.js, Express 5, JSON Web Tokens, bcryptjs, Multer |
+| Database | MongoDB Atlas, Mongoose |
+| Deployment | Vercel (frontend), Render (backend) |
+| Tooling | ESLint, Nodemon, Git and GitHub |
 
-| Rubric Criteria | Allocated Marks | Cirqon Implementation Highlights |
-| :--- | :---: | :--- |
-| **Create (CRUD)** | **4 Marks** | Admin interface (`/admin/components`) with client & server validation, file uploads (JPG/PNG/WebP, PDF datasheets), and persistent MongoDB Atlas storage. |
-| **Read (CRUD)** | **4 Marks** | Fast catalog search (300ms debounce), multi-category filtering, column sorting, single-item technical details modal, and side-by-side comparison matrix. |
-| **Update (CRUD)** | **4 Marks** | Full component modification with pre-filled forms, mass-assignment defense, and defensive partial subdocument merging preserving CAD geometries. |
-| **Delete (CRUD)** | **4 Marks** | Safe deletion workflow with explicit confirmation dialog, automatic cascade deletion of referencing user bookmarks, and disk asset cleanup. |
-| **Validation & Error Handling** | **2 Marks** | Dual client-server validation boundaries, regex-checked case-insensitive unique MPNs, HTTP 400/401/403/404/409 error codes, and React Error Boundaries. |
-| **Database Design** | **4 Marks** | Mongoose schemas with type safety, enum constraints, compound unique indexes, subdocuments, and referential integrity between `User`, `Component`, and `SavedPart`. |
-| **UI/UX & Responsiveness** | **2 Marks** | Professional engineering palette (CSS Design Tokens), responsive layout across 360px–1280px+, accessible modals, and custom interactive SVG CAD viewers. |
-| **Code Quality & Structure** | **2 Marks** | 100% pure JavaScript/JSX ES Modules, clean separation of concerns (`context`, `components`, `pages`, `models`, `routes`), and modular codebase. |
-| **Documentation** | **2 Marks** | Comprehensive README, setup instructions, Mermaid ERD, REST API documentation, and security rationale. |
-| **Demonstration** | **2 Marks** | Structured 5-minute evaluation demonstration script covering all required rubric workflows. |
-| **Total Allocated Marks** | **30 Marks** | Implementation structured across all evaluation criteria. |
+## System Architecture
 
----
-
-## 3. Technology Stack
-
-- **Frontend:** React 19, React Router 7, Vite 8, Lucide React icons
-- **Styling:** Vanilla CSS leveraging a centralized Design Tokens architecture (`tokens.css`)
-- **Backend:** Node.js, Express.js 5 (REST API, Router, Custom Middleware)
-- **Database & ODM:** MongoDB Atlas (Cloud Cluster), Mongoose 9
-- **Authentication & Security:** JSON Web Tokens (JWT), Bcrypt.js (12 salt rounds), Multer with MIME/Magic-byte inspection
-- **Development & Tooling:** ESLint 10, Nodemon, Git
-
----
-
-## 4. Database Design & Entity-Relationship Diagram (ERD)
-
-Cirqon enforces referential integrity and strict typing using Mongoose. The database consists of three core collections:
+The React app runs in the browser and calls the Express REST API over HTTPS. The API checks authentication and roles, validates input, and reads and writes MongoDB Atlas through Mongoose models. Uploaded files are stored in `server/uploads` and served from `/uploads`.
 
 ```mermaid
-erDiagram
-    USER ||--o{ SAVED_PART : "bookmarks"
-    COMPONENT ||--o{ SAVED_PART : "referenced by"
-
-    USER {
-        ObjectId _id PK
-        string name "User full name"
-        string email UK "Normalized lowercase, unique"
-        string passwordHash "Bcrypt hashed (12 salt rounds)"
-        string role "Enum: 'user', 'admin'"
-        date createdAt
-        date updatedAt
-    }
-
-    COMPONENT {
-        ObjectId _id PK
-        string partNumber UK "Indexed, unique (case-insensitive)"
-        string name "Component descriptive name"
-        string category "Enum: 9 electronic categories"
-        string manufacturer "Manufacturer name"
-        string description "Functional engineering description"
-        string imageUrl "Uploaded asset path or external URL"
-        string datasheetUrl "Uploaded PDF asset or external URL"
-        string manufacturerUrl "Official manufacturer product link"
-        object package "Nested: bodyDimensions, pcbLayout, mountingType"
-        array pins "Subdocuments: pin number, name, function"
-        object specifications "Map of parametric electrical ratings"
-        string dataStatus "Enum: 'verified', 'incomplete'"
-        boolean isActive "Default: true"
-        date createdAt
-        date updatedAt
-    }
-
-    SAVED_PART {
-        ObjectId _id PK
-        ObjectId user FK "References USER._id (indexed)"
-        ObjectId component FK "References COMPONENT._id (indexed)"
-        int quantity "Default: 1, Min: 1, Max: 10000"
-        string note "Design notes (max 300 characters)"
-        date createdAt
-        date updatedAt
-    }
+flowchart LR
+  B["React + Vite client<br/>(Vercel)"] -- "REST / JSON + JWT" --> A["Express API<br/>(Render)"]
+  A -- "Mongoose" --> D[("MongoDB Atlas<br/>User, Component, SavedPart")]
+  A -- "Multer" --> U["server/uploads<br/>images, datasheets"]
 ```
 
-### Referential Integrity & Cascade Deletion
-- **Compound Unique Index:** `SavedPart` enforces `{ user: 1, component: 1 }` with `unique: true`, preventing duplicate bookmarks by the same engineer.
-- **Cascade Cleanup:** Deleting a `Component` document automatically invokes `SavedPart.deleteMany({ component: id })`, eliminating orphaned records and preventing `null` reference errors when calling `.populate("component")`.
+### Database
 
----
+| Collection | Main fields |
+| :--- | :--- |
+| `User` | name, email (unique), passwordHash, role (`user` or `admin`), timestamps |
+| `Component` | partNumber (unique), name, category (9 allowed values), manufacturer, description, imageUrl, datasheetUrl, manufacturerUrl, specifications, package, pins, dataStatus (`verified` or `incomplete`), isActive, timestamps |
+| `SavedPart` | user (ref), component (ref), quantity (1–10000), note (max 300 characters), timestamps |
 
-## 5. Prerequisites & Environment Setup
+A user can save many components and a component can be saved by many users, so `SavedPart` links the two. A unique index on `(user, component)` prevents duplicate saves, and deleting a component also deletes its `SavedPart` records.
 
-### Prerequisites
-- **Node.js:** v18.0.0 or later (v20+ recommended)
-- **npm:** v9.0.0 or later
-- **MongoDB:** Active MongoDB Atlas cluster URI or local MongoDB instance (`mongodb://localhost:27017/cirqon`)
+### API Summary
 
-### Step 1: Clone the Repository
-```bash
-git clone https://github.com/Chethiya283/Cirqon.git
-cd Cirqon
+Write routes need the header `Authorization: Bearer <token>`.
+
+| Route | Access |
+| :--- | :--- |
+| `POST /api/auth/register`, `POST /api/auth/login` | Public |
+| `GET /api/auth/me` | Logged-in user |
+| `GET /api/components`, `GET /api/components/:id` | Public |
+| `POST /api/components`, `PUT /api/components/:id`, `DELETE /api/components/:id` | Admin |
+| `POST /api/uploads/image`, `POST /api/uploads/datasheet` | Admin |
+| `GET`, `POST /api/saved-parts`; `PUT`, `DELETE /api/saved-parts/:componentId` | Logged-in user |
+
+## Project Structure
+
+```text
+Cirqon/
+├── client/                  # React + Vite frontend
+│   └── src/
+│       ├── components/      # common, layout, library, compare, pcb
+│       ├── context/         # AuthContext, SavedPartsContext
+│       ├── pages/           # Home, Login, Register, MyParts, admin/Manage
+│       ├── utils/           # footprint logic and formatters
+│       ├── styles/          # design tokens
+│       └── tests/           # footprint validation tests
+├── server/                  # Express API
+│   ├── models/              # User, Component, SavedPart
+│   ├── routes/              # auth, components, saved parts, uploads
+│   ├── middleware/          # JWT and admin checks
+│   ├── scripts/             # seedComponents, makeAdmin, updateImages
+│   ├── tests/               # footprint validation test
+│   └── server.js
+├── docs/                    # image checklist
+└── scripts/                 # helper script for component images
 ```
 
-### Step 2: Configure Environment Variables
+## Installation and Setup
 
-#### Backend (`server/.env`):
-Create a `.env` file inside the `server/` directory:
-```env
-PORT=5000
-MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.example.mongodb.net/cirqon?retryWrites=true&w=majority
-JWT_SECRET=cirqon_super_secure_jwt_secret_key_2026
-```
+**Prerequisites:** Node.js (current LTS recommended), npm, Git, and a MongoDB Atlas cluster or a local MongoDB instance.
 
-#### Frontend (`client/.env`):
-Create a `.env` file inside the `client/` directory (optional for default localhost):
-```env
-VITE_API_BASE_URL=http://localhost:5000/api
-```
+1. Clone the repository:
 
----
+   ```bash
+   git clone https://github.com/Chethiya283/Cirqon.git
+   cd Cirqon
+   ```
 
-## 6. Installation & Execution Guide
+2. Create the environment files (see the next section), then install and start the backend:
 
-### Backend Setup
-1. Navigate to the server folder and install dependencies:
    ```bash
    cd server
    npm install
-   ```
-2. Populate the component catalog with verified seed data:
-   ```bash
-   node scripts/seedComponents.js
-   ```
-3. Start the Express API server:
-   ```bash
-   npm run dev
-   # Server runs on http://localhost:5000
+   node scripts/seedComponents.js   # optional: loads the 11 catalogue components
+   npm run dev                      # http://localhost:5000
    ```
 
-### Frontend Setup
-1. Open a new terminal, navigate to the client folder, and install dependencies:
+3. In a second terminal, install and start the frontend:
+
    ```bash
    cd client
    npm install
-   ```
-2. Run the frontend development server:
-   ```bash
-   npm run dev
-   # Client runs on http://localhost:5173
-   ```
-3. Run the production build or linter:
-   ```bash
-   npm run build
-   npm run lint
+   npm run dev                      # http://localhost:5173
    ```
 
----
+Other client commands: `npm run build`, `npm run lint`, `npm run preview`. For production, the server uses `npm start`.
 
-## 7. Administrative User Setup & Demo Credentials
+### Creating an admin
 
-Cirqon implements strict **Role-Based Access Control (RBAC)**. Public registration (`POST /api/auth/register`) hardcodes `role: "user"` to prevent privilege escalation.
+Public registration always creates a normal user. Register an account in the app, then promote it from the `server` folder (add `--dry-run` first to preview):
 
-### Promoting a User to Administrator
-To grant admin privileges for evaluating the CRUD operations:
-1. Register a user in the web application (e.g. `alex@cirqon.org`).
-2. Run the out-of-band administrative provisioning script from the server folder:
-   ```bash
-   node scripts/makeAdmin.js alex@cirqon.org
-   ```
-   *(or from the project root: `node server/scripts/makeAdmin.js alex@cirqon.org`)*
+```bash
+node scripts/makeAdmin.js <user-email>
+```
 
-### Evaluator Credentials
-- **Admin Account (for CRUD Evaluation):** `alex@cirqon.org` (Role: `admin`)
-- **Engineer Account (for Workspace Evaluation):** `test1@cirqon.org` (Role: `user`)
+## Environment Variables
 
----
+Copy `server/.env.example` to `server/.env` and `client/.env.example` to `client/.env`, then replace the placeholders. Never commit `.env` files (they are listed in `.gitignore`).
 
-## 8. REST API Reference
+| Variable | Where | Purpose |
+| :--- | :--- | :--- |
+| `MONGODB_URI` | server | MongoDB connection string |
+| `JWT_SECRET` | server | Secret used to sign and verify login tokens |
+| `PORT` | server | API port (defaults to 5000) |
+| `VITE_API_BASE_URL` | client | Base URL of the API (defaults to `http://localhost:5000/api`) |
 
-All write endpoints require a JSON Web Token in the `Authorization: Bearer <token>` header.
+```env
+# server/.env
+PORT=5000
+MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/<database>?retryWrites=true&w=majority
+JWT_SECRET=<long-random-secret>
 
-| Method | Endpoint | Access Level | Description |
-| :--- | :--- | :--- | :--- |
-| **GET** | `/api/components` | Public | List components with optional query parameters (`search`, `category`, `manufacturer`, `package`). |
-| **GET** | `/api/components/:id` | Public | Retrieve detailed component specifications by MongoDB ObjectId. |
-| **POST** | `/api/components` | Admin | Create a new component. Validates required fields, enum taxonomy, and case-insensitive unique MPN. |
-| **PUT** | `/api/components/:id` | Admin | Update component attributes. Whitelists inputs and preserves CAD geometries. |
-| **DELETE** | `/api/components/:id` | Admin | Permanently delete a component, cascade cleanup referencing bookmarks, and remove uploaded disk files. |
-| **POST** | `/api/uploads/image` | Admin | Upload component product image (JPG/PNG/WebP, max 2 MB). |
-| **POST** | `/api/uploads/datasheet` | Admin | Upload official PDF datasheet (PDF only, max 10 MB). |
-| **POST** | `/api/auth/register` | Public | Register a new user account with bcrypt password hashing (12 rounds). |
-| **POST** | `/api/auth/login` | Public | Authenticate user and issue signed JWT bearer token. |
-| **GET** | `/api/auth/me` | Authenticated | Verify session token and retrieve current user profile. |
-| **GET** | `/api/saved-parts` | Authenticated | Retrieve bookmarked parts for the authenticated user. |
-| **POST** | `/api/saved-parts` | Authenticated | Bookmark a component in user workspace (`{ componentId }`). |
-| **PUT** | `/api/saved-parts/:componentId` | Authenticated | Update quantity (1–10,000) and design notes (max 300 chars). |
-| **DELETE** | `/api/saved-parts/:componentId` | Authenticated | Remove component bookmark from user workspace. |
+# client/.env
+VITE_API_BASE_URL=http://localhost:5000/api
+```
 
----
+## Deployment
 
-## 9. Security & Defensive Design Architecture (Viva Highlights)
+- **Frontend (Vercel):** https://cirqon-xi.vercel.app. Set `VITE_API_BASE_URL` to the backend API address, for example `https://cirqon-api.onrender.com/api`.
+- **Backend (Render):** https://cirqon-api.onrender.com. Set `MONGODB_URI` and `JWT_SECRET` as environment variables on the host.
+- **Database:** MongoDB Atlas.
 
-1. **Defense-in-Depth Validation:** Client-side validation (`ManageComponentsPage.jsx`) provides instant visual feedback, while authoritative server-side validation (`componentRoutes.js`) verifies all constraints.
-2. **Mass-Assignment Defense (CWE-915):** The server explicitly extracts whitelisted properties (`extractWhitelistedComponentFields`). Malicious injected parameters (e.g., `_id`, `createdAt`, `role`) are silently discarded.
-3. **Stateless JWT Authorization:** Tokens carry cryptographically signed user payloads. `requireAuth` verifies the HMAC signature, while `requireAdmin` checks role permissions.
-4. **Storage Hygiene & Path Traversal Prevention:** Uploaded files receive cryptographically random UUIDs (`crypto.randomUUID()`). File deletions resolve paths strictly within `server/uploads/` to defeat `../` directory traversal attacks.
-5. **Magic Byte Inspection:** File uploads inspect both the HTTP Content-Type header and binary magic byte signatures (`FF D8 FF` for JPEG, `89 50 4E 47` for PNG, `%PDF-` for PDF) to reject renamed executables.
-6. **Graceful Error Containment:** All server routes return structured JSON errors without exposing server stack traces, database connection URIs, or internal system paths.
+Notes: the free Render service sleeps when idle, so the first request can take a short time. Render's disk is not permanent, so files uploaded after deployment may be lost when the service restarts.
 
----
+## Testing and Validation
 
-## 10. Five-Minute Project Demonstration Walkthrough
+- **Footprint validation tests:** `server/tests/testFootprintValidation.cjs` checks the seeded catalogue against the footprint rules and prints the result for each component. Run it from the `server` folder with `node tests/testFootprintValidation.cjs`. A second test file, `client/src/tests/footprintValidation.test.js`, tests the client's footprint functions but is not connected to a test runner.
+- **Static checks:** `npm run lint` and `npm run build` in `client`.
+- **Input validation:** the Add/Edit form checks required fields in the browser, and the API validates again (required fields, allowed categories, unique part number, upload type, size and file signature, saved-part quantity and note length).
+- **API access control:** admin routes need a valid admin token (401 and 403 responses).
+- There is no automated API or end-to-end test suite; those flows were tested manually.
 
-Follow this step-by-step sequence during your project evaluation to demonstrate all rubric criteria:
+## Author
 
-### Minute 1: Problem Statement & Brand Identity
-- Open `http://localhost:5173/` in your browser.
-- Point out the clean single-column hero section with the dark-overlay circuit canvas and typography-styled Cirqon wordmark.
-- Highlight the real-time category counter pills showing live counts queried directly from MongoDB Atlas.
-
-### Minute 2: Component Library & Parametric Discovery (Read)
-- Click **Library** in the navbar (or press `/` from anywhere on the page to focus the search bar).
-- Type `"LM358"` to show live 300ms debounced search filtering.
-- Select category pills (e.g. *Integrated circuits (ICs)*) and switch between **Grid View** and **Table View**.
-- Click on any component card to open the **Component Details Modal**. Walk through the General Information, Electrical Specifications, Pinout Table, and official Datasheet link.
-
-### Minute 3: PCB Design Assistant & Footprint CAD Inspection
-- Click **View in PCB Assistant** from the modal (or click **PCB Assistant** in the top navigation).
-- Demonstrate the interactive SVG CAD canvas rendering physical body boundaries, copper pads, lead pitch, and pin labels.
-- Point out the **Footprint Validation Panel** executing 8 physical rule checks (package identity, lead pitch, drill diameter, mounting type) capped at Illustrative status for engineering integrity.
-
-### Minute 4: Component Comparison & Engineer Workspace
-- Navigate to **Compare** and select 2–4 parts (e.g., LM358 vs NE555).
-- Highlight the **DIFF badges** that automatically flag divergent electrical specifications (e.g., channel count, supply voltage).
-- Log in as an engineer (`test1@cirqon.org`), click **Save Part**, navigate to **My Parts**, and edit the order quantity and design notes to show persistent workspace updates.
-
-### Minute 5: Administrative Component CRUD & MongoDB Persistence (Create, Update, Delete)
-- Log in as an administrator (`alex@cirqon.org`) and click **Manage** in the navbar.
-- **Create:** Click **Add Component**, enter a new test part (e.g., `MCP6002`, Microchip, IC, SOIC-8), upload a datasheet or image, and click **Create Component**. Show the green success banner.
-- **Persistence:** Switch to the **Library** view to prove the newly added component appears immediately in the catalogue and updates the category count without refreshing.
-- **Update:** Return to **Manage**, click **Edit** on the newly created part, change its name, and save.
-- **Delete & Cascade:** Click **Delete**, highlight the confirmation modal warning that user bookmarks will be cascaded, and confirm. Verify the item is removed and that no orphan bookmarks remain in MongoDB.
+**Chethiya De Silva**
+Department of Electrical and Information Engineering, Faculty of Engineering, University of Ruhuna
